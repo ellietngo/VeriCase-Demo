@@ -1,33 +1,90 @@
 import { Link } from 'react-router-dom'
-import { Shield, CheckCircle, Zap, Lock, ChevronDown } from 'lucide-react'
+import { Shield, ClipboardCheck, Zap, Users, ChevronDown } from 'lucide-react'
+
+const heroStyle: React.CSSProperties = {
+  background: 'linear-gradient(-45deg, #00416A, #1a5c30, #003456, #0f4a23)',
+  backgroundSize: '400% 400%',
+  animation: 'hero-gradient 14s ease infinite',
+}
+
+const shineStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '70px',
+  height: '100%',
+  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)',
+  animation: 'hero-shine 10s ease-in-out infinite',
+  animationDelay: '2s',
+  pointerEvents: 'none',
+}
 
 export default function LandingPage() {
   return (
     <div>
       {/* Hero */}
       <section
-        className="relative min-h-screen flex flex-col items-center justify-center px-6 py-20 text-white"
-        style={{ background: 'linear-gradient(160deg, #1a6b9a 0%, #00416A 100%)' }}
+        className="relative min-h-screen flex flex-col items-center justify-center px-6 py-20 text-white overflow-hidden"
+        style={heroStyle}
         aria-label="Hero"
       >
-        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/50 mb-8 select-none">
+        {/* Shine sweep */}
+        <div style={shineStyle} aria-hidden="true" />
+
+        {/* Floating decorative circles */}
+        <div
+          className="absolute border border-white/8 rounded-full"
+          style={{ top: '14%', right: '6%', width: 130, height: 130, animation: 'float-slow 9s ease-in-out infinite' }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute border border-white/6 rounded-full"
+          style={{ bottom: '22%', left: '4%', width: 90, height: 90, animation: 'float-med 7s ease-in-out infinite', animationDelay: '2s' }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute rounded-full bg-white/4 border border-white/8"
+          style={{ top: '38%', left: '8%', width: 44, height: 44, animation: 'float-slow 11s ease-in-out infinite', animationDelay: '4s' }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute border border-white/5 rounded-full"
+          style={{ top: '60%', right: '12%', width: 60, height: 60, animation: 'float-med 8s ease-in-out infinite', animationDelay: '1s' }}
+          aria-hidden="true"
+        />
+
+        {/* Content */}
+        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/45 mb-10 select-none">
           A MetaPhase Demo
         </span>
 
-        <div
-          className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 border border-white/20"
-          style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(8px)' }}
-          aria-hidden="true"
-        >
-          <Shield size={44} className="text-white" strokeWidth={1.5} />
+        {/* Shield with pulsing rings */}
+        <div className="relative mb-8" style={{ width: 96, height: 96 }} aria-hidden="true">
+          <div
+            className="absolute rounded-3xl border border-white/15"
+            style={{ inset: -10, animation: 'pulse-out 3.5s ease-out infinite' }}
+          />
+          <div
+            className="absolute rounded-3xl border border-white/8"
+            style={{ inset: -20, animation: 'pulse-out 3.5s ease-out infinite', animationDelay: '1.2s' }}
+          />
+          <div
+            className="w-24 h-24 rounded-3xl flex items-center justify-center border border-white/20"
+            style={{ background: 'rgba(255,255,255,0.11)', backdropFilter: 'blur(8px)' }}
+          >
+            <Shield size={46} strokeWidth={1.5} />
+          </div>
         </div>
 
         <h1 className="text-6xl font-extrabold tracking-tight text-center mb-4 leading-none">
           VeriCase
         </h1>
 
-        <p className="text-xl text-white/75 text-center max-w-xs leading-relaxed mb-12">
-          Citizenship verification,<br />made simple.
+        <p className="text-xl text-white/75 text-center max-w-xs leading-relaxed mb-3">
+          Citizenship verification,<br />built for the field.
+        </p>
+        <p className="text-sm text-white/45 text-center max-w-xs leading-relaxed mb-12">
+          Fast, evidence-based determinations for Border Patrol officers.
         </p>
 
         <Link
@@ -36,40 +93,43 @@ export default function LandingPage() {
             hover:bg-white/90 active:scale-95 transition-all duration-200
             focus:outline-none focus:ring-4 focus:ring-white/50"
         >
-          Begin Verification
+          Begin Case
         </Link>
 
-        <div className="absolute bottom-8 flex flex-col items-center gap-1.5 text-white/30 select-none" aria-hidden="true">
+        <div className="absolute bottom-8 flex flex-col items-center gap-1.5 text-white/25 select-none" aria-hidden="true">
           <span className="text-xs uppercase tracking-widest">Learn more</span>
           <ChevronDown size={16} className="animate-bounce" />
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="bg-white px-6 py-16" aria-labelledby="how-it-works-heading">
+      {/* Features */}
+      <section className="bg-white px-6 py-16" aria-labelledby="features-heading">
         <div className="max-w-sm mx-auto">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cbp-blue text-center mb-3">
-            Simple by Design
+            Built for Operations
           </p>
-          <h2 id="how-it-works-heading" className="text-3xl font-extrabold text-[#222222] text-center mb-12">
+          <h2 id="features-heading" className="text-3xl font-extrabold text-[#222222] text-center mb-12">
             How It Works
           </h2>
 
           <div className="space-y-10">
             <FeatureRow
-              icon={<CheckCircle size={22} strokeWidth={2} className="text-cbp-blue" />}
-              title="One Simple Question"
-              description="We ask whether you are a U.S. citizen. That's the entire verification — no documents, no forms, no waiting."
+              icon={<ClipboardCheck size={22} strokeWidth={2} className="text-cbp-green" />}
+              iconBg="bg-cbp-tint-green"
+              title="Guided Case Review"
+              description="A structured verification workflow walks officers through applicable citizenship pathways and legal criteria."
             />
             <FeatureRow
               icon={<Zap size={22} strokeWidth={2} className="text-cbp-blue" />}
-              title="Instant Result"
-              description="Your status is determined immediately and displayed on screen. No processing delays."
+              iconBg="bg-cbp-tint"
+              title="Instant Determination"
+              description="Citizenship status is resolved immediately from officer inputs — no processing delay, no waiting."
             />
             <FeatureRow
-              icon={<Lock size={22} strokeWidth={2} className="text-cbp-blue" />}
-              title="Completely Private"
-              description="No data is collected, stored, or transmitted. Your session leaves no trace."
+              icon={<Users size={22} strokeWidth={2} className="text-cbp-green" />}
+              iconBg="bg-cbp-tint-green"
+              title="Officer-Focused Design"
+              description="Designed for the pace of border operations. Clear, decisive, and built around the officer's workflow."
             />
           </div>
 
@@ -95,8 +155,18 @@ export default function LandingPage() {
           </div>
 
           <p className="text-xs text-[#555555] leading-relaxed mb-8">
-            A demonstration product by MetaPhase. Not affiliated with or endorsed by DHS, CBP,
-            USCIS, or any U.S. government agency. No data is collected or stored.
+            A demonstration product by{' '}
+            <a
+              href="https://metaphase.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline focus:outline-none focus:underline"
+              style={{ color: '#E86820' }}
+            >
+              MetaPhase
+            </a>
+            . Not affiliated with or endorsed by DHS, CBP, USCIS, or any U.S. government agency.
+            No data is collected or stored.
           </p>
 
           <p className="text-xs font-semibold uppercase tracking-widest text-[#333333] mb-4">
@@ -116,7 +186,7 @@ export default function LandingPage() {
               </li>
               <li>
                 <a
-                  href="https://www.uscis.gov/n-560"
+                  href="https://www.uscis.gov/citizenship/learn-about-citizenship"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-cbp-blue hover:underline focus:outline-none focus:underline"
@@ -139,16 +209,18 @@ export default function LandingPage() {
 
 function FeatureRow({
   icon,
+  iconBg,
   title,
   description,
 }: {
   icon: React.ReactNode
+  iconBg: string
   title: string
   description: string
 }) {
   return (
     <div className="flex gap-5">
-      <div className="flex-shrink-0 w-11 h-11 rounded-2xl bg-cbp-tint flex items-center justify-center">
+      <div className={`flex-shrink-0 w-11 h-11 rounded-2xl ${iconBg} flex items-center justify-center`}>
         {icon}
       </div>
       <div>

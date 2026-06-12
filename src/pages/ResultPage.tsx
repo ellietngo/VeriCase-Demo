@@ -54,7 +54,7 @@ export default function ResultPage() {
 
             {/* Label */}
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#808080] text-center mb-2">
-              Verification Complete
+              Determination Complete
             </p>
 
             {/* Heading */}
@@ -79,8 +79,8 @@ export default function ResultPage() {
             {/* Description */}
             <p className="text-sm text-[#555555] text-center leading-relaxed mb-6">
               {isCitizen
-                ? 'You have self-reported as a United States citizen. This verification is for demonstration purposes only.'
-                : 'You have indicated non-U.S. citizenship. For information about citizenship and naturalization pathways, visit USCIS.gov.'}
+                ? 'The subject has verbally indicated U.S. citizenship. This determination is for demonstration purposes only.'
+                : 'The subject has verbally indicated non-U.S. citizenship. For information about citizenship and naturalization pathways, visit USCIS.gov.'}
             </p>
 
             {!isCitizen && (
@@ -104,7 +104,7 @@ export default function ResultPage() {
                   focus:outline-none focus:ring-4 focus:ring-cbp-navy/20"
               >
                 <RotateCcw size={16} aria-hidden="true" />
-                Verify Again
+                New Case
               </button>
               <Link
                 to="/"
@@ -119,7 +119,7 @@ export default function ResultPage() {
           </div>
 
           <p className="mt-6 text-xs text-[#AAAAAA] text-center leading-relaxed px-4">
-            This is a MetaPhase demonstration. No data has been collected or stored.
+            Demonstration mode — no case data has been collected or stored.
             Not affiliated with any U.S. government agency.
           </p>
         </div>

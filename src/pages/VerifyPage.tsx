@@ -32,7 +32,7 @@ export default function VerifyPage() {
       <main className="flex-1 flex flex-col justify-center px-6 py-12">
         <div className="max-w-sm mx-auto w-full">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cbp-blue mb-4">
-            Citizenship Verification
+            Subject Interview
           </p>
 
           <h1 className="text-3xl font-extrabold text-[#222222] leading-tight mb-3">
@@ -40,7 +40,7 @@ export default function VerifyPage() {
           </h1>
 
           <p className="text-sm text-[#555555] leading-relaxed mb-10">
-            Select the option that best describes your citizenship status. Your answer is not stored.
+            Record the subject's verbal response to proceed with the determination.
           </p>
 
           <div className="space-y-4" role="group" aria-labelledby="question-heading">
@@ -52,7 +52,7 @@ export default function VerifyPage() {
             >
               <span className="block text-lg">Yes, I am a U.S. Citizen</span>
               <span className="block text-sm text-white/60 font-normal mt-0.5">
-                Born in the U.S. or naturalized
+                Subject verbally confirmed citizenship
               </span>
             </button>
 
@@ -64,13 +64,13 @@ export default function VerifyPage() {
             >
               <span className="block text-lg">No, I am not a U.S. Citizen</span>
               <span className="block text-sm text-[#808080] font-normal mt-0.5">
-                Permanent resident, visa holder, or foreign national
+                Subject verbally denied citizenship
               </span>
             </button>
           </div>
 
           <p className="mt-8 text-xs text-[#AAAAAA] text-center leading-relaxed">
-            Your response is not recorded or stored. This is a demonstration only.
+            Demonstration mode — no case data is collected or stored.
           </p>
         </div>
       </main>
