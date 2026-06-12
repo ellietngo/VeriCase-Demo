@@ -32,20 +32,10 @@ const QUESTIONS = {
 type QuestionId = keyof typeof QUESTIONS
 type NextStep = QuestionId | 'citizen' | 'non-citizen'
 
-const pageStyle: React.CSSProperties = {
-  background: 'linear-gradient(-45deg, #00416A, #1a5c30, #003456, #0f4a23)',
-  backgroundSize: '400% 400%',
-  animation: 'hero-gradient 14s ease infinite',
-}
-
-const shineStyle: React.CSSProperties = {
-  position: 'absolute',
-  top: 0, left: 0,
-  width: '140px', height: '100%',
-  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
-  animation: 'hero-shine 20s ease-in-out infinite',
-  animationDelay: '3s',
-  pointerEvents: 'none',
+const QUESTION_PROGRESS: Record<QuestionId, number> = {
+  q1: 22,
+  q2: 54,
+  q3: 78,
 }
 
 export default function VerifyPage() {
@@ -54,6 +44,7 @@ export default function VerifyPage() {
   const [questionNum, setQuestionNum] = useState(1)
 
   const question = QUESTIONS[currentQ]
+  const progress = QUESTION_PROGRESS[currentQ]
 
   const handleChoice = (next: NextStep) => {
     if (next === 'citizen' || next === 'non-citizen') {
@@ -65,23 +56,17 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden" style={pageStyle}>
-      {/* Decorative layer */}
-      <div style={shineStyle} aria-hidden="true" />
-      <div className="absolute border border-white/8 rounded-full pointer-events-none" style={{ top: '8%', right: '5%', width: 110, height: 110, animation: 'float-slow 9s ease-in-out infinite' }} aria-hidden="true" />
-      <div className="absolute border border-white/6 rounded-full pointer-events-none" style={{ bottom: '18%', left: '4%', width: 78, height: 78, animation: 'float-med 7s ease-in-out infinite', animationDelay: '2s' }} aria-hidden="true" />
-      <div className="absolute rounded-full border border-white/6 pointer-events-none" style={{ top: '48%', left: '7%', width: 40, height: 40, animation: 'float-slow 11s ease-in-out infinite', animationDelay: '5s' }} aria-hidden="true" />
-      <div className="absolute border border-white/5 rounded-full pointer-events-none" style={{ top: '68%', right: '8%', width: 54, height: 54, animation: 'float-med 8s ease-in-out infinite', animationDelay: '3s' }} aria-hidden="true" />
-
-      {/* Header — frosted glass */}
-      <header
-        className="relative z-10 px-4 py-4 text-white"
-        style={{ background: 'rgba(0,25,45,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
-      >
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: 'linear-gradient(160deg, #e8eef2 0%, #dfe9e2 100%)' }}
+    >
+      {/* Header */}
+      <header className="bg-cbp-navy text-white px-4 py-4">
         <div className="max-w-sm mx-auto flex items-center gap-3">
           <Link
             to="/"
-            className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors
+              focus:outline-none focus:ring-2 focus:ring-white/50"
             aria-label="Back to home"
           >
             <ArrowLeft size={20} aria-hidden="true" />
@@ -93,12 +78,36 @@ export default function VerifyPage() {
         </div>
       </header>
 
+      {/* Progress bar — full width, no padding */}
+      <div style={{ height: 3, background: 'rgba(0,65,106,0.12)' }}>
+        <div
+          style={{
+            height: '100%',
+            width: `${progress}%`,
+            background: 'linear-gradient(90deg, #00416A, #1a5c30)',
+            transition: 'width 700ms ease-in-out',
+          }}
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Interview progress"
+        />
+      </div>
+
       {/* Main */}
-      <main className="relative z-10 flex-1 flex flex-col justify-center px-6 py-10">
+      <main className="flex-1 flex flex-col justify-center px-6 py-10">
         <div className="max-w-sm mx-auto w-full">
-          <div className="bg-white rounded-3xl overflow-hidden shadow-2xl">
+          <div
+            className="bg-white rounded-3xl overflow-hidden"
+            style={{ boxShadow: '0 4px 28px rgba(0,65,106,0.10)' }}
+          >
             {/* Gradient accent strip */}
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg, #00416A, #1a5c30)' }} aria-hidden="true" />
+            <div
+              className="h-1.5"
+              style={{ background: 'linear-gradient(90deg, #00416A, #1a5c30)' }}
+              aria-hidden="true"
+            />
 
             <div className="p-7">
               <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-cbp-blue mb-4">
@@ -118,7 +127,9 @@ export default function VerifyPage() {
                   <button
                     key={i}
                     onClick={() => handleChoice(opt.next as NextStep)}
-                    className="w-full py-5 px-5 rounded-2xl text-left flex items-center gap-3 active:scale-[0.98] transition-all duration-150 focus:outline-none focus:ring-4"
+                    className="w-full py-5 px-5 rounded-2xl text-left flex items-center gap-3
+                      active:scale-[0.98] transition-all duration-150
+                      focus:outline-none focus:ring-4"
                     style={
                       i === 0
                         ? { background: '#00416A', color: 'white' }
@@ -127,18 +138,25 @@ export default function VerifyPage() {
                   >
                     <div className="flex-1">
                       <div className="font-semibold text-base leading-snug">{opt.label}</div>
-                      <div className="text-sm font-normal mt-0.5" style={{ color: i === 0 ? 'rgba(255,255,255,0.58)' : '#808080' }}>
+                      <div
+                        className="text-sm font-normal mt-0.5"
+                        style={{ color: i === 0 ? 'rgba(255,255,255,0.58)' : '#808080' }}
+                      >
                         {opt.sub}
                       </div>
                     </div>
-                    <ChevronRight size={18} aria-hidden="true" style={{ color: i === 0 ? 'rgba(255,255,255,0.5)' : '#AAAAAA', flexShrink: 0 }} />
+                    <ChevronRight
+                      size={18}
+                      aria-hidden="true"
+                      style={{ color: i === 0 ? 'rgba(255,255,255,0.5)' : '#AAAAAA', flexShrink: 0 }}
+                    />
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          <p className="mt-6 text-xs text-center leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
+          <p className="mt-6 text-xs text-[#999999] text-center leading-relaxed">
             Demonstration mode — no case data is collected or stored.
           </p>
         </div>
