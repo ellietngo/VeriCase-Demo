@@ -79,9 +79,9 @@ export default function VerifyPage() {
       </header>
 
       {/* Progress bar — separate section */}
-      <div className="bg-white border-b border-[#E8E8E8] px-6 py-5">
+      <div className="bg-white border-b border-[#E8E8E8] px-6 py-3">
         <div className="max-w-sm mx-auto">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold uppercase tracking-widest text-[#888888]">
               Interview in progress
             </span>
@@ -94,7 +94,7 @@ export default function VerifyPage() {
                 width: `${progress}%`,
                 background: 'linear-gradient(90deg, #00416A 0%, #1a7a40 45%, #2a9a50 55%, #1a5c30 100%)',
                 backgroundSize: '200% 100%',
-                animation: 'progress-shimmer 2.2s linear infinite',
+                animation: 'progress-shimmer 5s linear infinite',
                 transition: 'width 750ms cubic-bezier(0.4, 0, 0.2, 1)',
               }}
               role="progressbar"
@@ -108,7 +108,7 @@ export default function VerifyPage() {
       </div>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col justify-center px-6 py-10">
+      <main className="flex-1 flex flex-col justify-center px-4 py-6">
         <div className="max-w-sm mx-auto w-full">
           <div
             className="bg-white rounded-3xl overflow-hidden"
@@ -121,16 +121,16 @@ export default function VerifyPage() {
               aria-hidden="true"
             />
 
-            <div className="p-7">
-              <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-cbp-blue mb-4">
+            <div className="p-5">
+              <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-cbp-blue mb-3">
                 Question {questionNum}
               </span>
 
-              <h1 className="text-2xl font-extrabold text-[#222222] leading-tight mb-3">
+              <h1 className="text-xl font-extrabold text-[#222222] leading-tight mb-2">
                 {question.text}
               </h1>
 
-              <p className="text-sm text-[#555555] leading-relaxed mb-8">
+              <p className="text-sm text-[#555555] leading-relaxed mb-5">
                 {question.sub}
               </p>
 
@@ -139,7 +139,7 @@ export default function VerifyPage() {
                   <button
                     key={i}
                     onClick={() => handleChoice(opt.next as NextStep)}
-                    className="w-full py-5 px-5 rounded-2xl text-left flex items-center gap-3
+                    className="w-full py-4 px-4 rounded-2xl text-left flex items-center gap-3
                       active:scale-[0.98] transition-all duration-150
                       focus:outline-none focus:ring-4"
                     style={
@@ -168,7 +168,7 @@ export default function VerifyPage() {
             </div>
           </div>
 
-          <p className="mt-6 text-xs text-[#999999] text-center leading-relaxed">
+          <p className="mt-4 text-xs text-[#999999] text-center leading-relaxed">
             Demonstration mode — no case data is collected or stored.
           </p>
         </div>
