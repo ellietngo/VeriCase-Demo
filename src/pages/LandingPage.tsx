@@ -11,11 +11,11 @@ const shineStyle: React.CSSProperties = {
   position: 'absolute',
   top: 0,
   left: 0,
-  width: '70px',
+  width: '140px',
   height: '100%',
-  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent)',
-  animation: 'hero-shine 10s ease-in-out infinite',
-  animationDelay: '2s',
+  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
+  animation: 'hero-shine 20s ease-in-out infinite',
+  animationDelay: '6s',
   pointerEvents: 'none',
 }
 

@@ -1,11 +1,14 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { CheckCircle2, XCircle, Shield, RotateCcw, Home } from 'lucide-react'
+import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Check } from 'lucide-react'
+
+const MAX_STEPS = 3
 
 export default function ResultPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const isCitizen: boolean | undefined = location.state?.isCitizen
+  const steps: number = location.state?.steps ?? 1
 
   useEffect(() => {
     if (isCitizen === undefined) {
@@ -25,6 +28,35 @@ export default function ResultPage() {
         </div>
       </header>
 
+      {/* Completed progress bar */}
+      <div className="bg-white border-b border-[#EEEEEE] px-6 py-4">
+        <div className="max-w-sm mx-auto">
+          <div className="flex items-center">
+            {Array.from({ length: MAX_STEPS }, (_, i) => (
+              <React.Fragment key={i}>
+                {i > 0 && (
+                  <div
+                    className="flex-1 h-0.5 mx-2"
+                    style={{ background: i < steps ? '#008000' : '#EEEEEE' }}
+                  />
+                )}
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{
+                    background: i + 1 <= steps ? '#008000' : '#F6F6F6',
+                    color: i + 1 <= steps ? 'white' : '#AAAAAA',
+                    border: i + 1 > steps ? '1px solid #EEEEEE' : 'none',
+                  }}
+                >
+                  {i + 1 <= steps ? <Check size={14} aria-hidden="true" /> : i + 1}
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+          <p className="text-xs text-[#AAAAAA] mt-2.5">Interview complete</p>
+        </div>
+      </div>
+
       {/* Main */}
       <main className="flex-1 flex flex-col justify-center px-6 py-12">
         <div className="max-w-sm mx-auto w-full">
@@ -33,50 +65,37 @@ export default function ResultPage() {
             <div className="flex justify-center mb-6">
               {isCitizen ? (
                 <div className="w-20 h-20 rounded-full bg-[#ECF5EC] flex items-center justify-center">
-                  <CheckCircle2
-                    size={44}
-                    className="text-cbp-success"
-                    strokeWidth={1.5}
-                    aria-hidden="true"
-                  />
+                  <CheckCircle2 size={44} className="text-cbp-success" strokeWidth={1.5} aria-hidden="true" />
                 </div>
               ) : (
                 <div className="w-20 h-20 rounded-full bg-[#EDF3F9] flex items-center justify-center">
-                  <XCircle
-                    size={44}
-                    className="text-cbp-blue"
-                    strokeWidth={1.5}
-                    aria-hidden="true"
-                  />
+                  <XCircle size={44} className="text-cbp-blue" strokeWidth={1.5} aria-hidden="true" />
                 </div>
               )}
             </div>
 
-            {/* Label */}
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#808080] text-center mb-2">
               Determination Complete
             </p>
 
-            {/* Heading */}
             <h1 className="text-2xl font-extrabold text-[#222222] text-center mb-4">
               {isCitizen ? 'Citizenship Confirmed' : 'Non-Citizen Status'}
             </h1>
 
-            {/* Status badge */}
             <div className="flex justify-center mb-6">
               <span
-                className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full ${
+                className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full"
+                style={
                   isCitizen
-                    ? 'bg-[#ECF5EC] text-cbp-success'
-                    : 'bg-[#EDF3F9] text-cbp-blue'
-                }`}
+                    ? { background: '#ECF5EC', color: '#008000' }
+                    : { background: '#EDF3F9', color: '#1460AA' }
+                }
               >
                 <span className="text-[8px]" aria-hidden="true">●</span>
                 {isCitizen ? 'U.S. Citizen' : 'Non-U.S. Citizen'}
               </span>
             </div>
 
-            {/* Description */}
             <p className="text-sm text-[#555555] text-center leading-relaxed mb-6">
               {isCitizen
                 ? 'The subject has verbally indicated U.S. citizenship. This determination is for demonstration purposes only.'
@@ -88,8 +107,7 @@ export default function ResultPage() {
                 href="https://www.uscis.gov/citizenship"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center text-sm text-cbp-blue font-medium hover:underline mb-6
-                  focus:outline-none focus:underline"
+                className="block text-center text-sm text-cbp-blue font-medium hover:underline mb-6 focus:outline-none focus:underline"
               >
                 Learn about U.S. Citizenship →
               </a>
