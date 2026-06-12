@@ -78,21 +78,33 @@ export default function VerifyPage() {
         </div>
       </header>
 
-      {/* Progress bar — full width, no padding */}
-      <div style={{ height: 3, background: 'rgba(0,65,106,0.12)' }}>
-        <div
-          style={{
-            height: '100%',
-            width: `${progress}%`,
-            background: 'linear-gradient(90deg, #00416A, #1a5c30)',
-            transition: 'width 700ms ease-in-out',
-          }}
-          role="progressbar"
-          aria-valuenow={progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Interview progress"
-        />
+      {/* Progress bar — separate section */}
+      <div className="bg-white border-b border-[#E8E8E8] px-6 py-5">
+        <div className="max-w-sm mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#888888]">
+              Interview in progress
+            </span>
+            <span className="text-sm font-bold text-cbp-navy tabular-nums">{progress}%</span>
+          </div>
+          <div className="w-full rounded-full overflow-hidden" style={{ height: 10, background: '#E8E8E8' }}>
+            <div
+              style={{
+                height: '100%',
+                width: `${progress}%`,
+                background: 'linear-gradient(90deg, #00416A 0%, #1a7a40 45%, #2a9a50 55%, #1a5c30 100%)',
+                backgroundSize: '200% 100%',
+                animation: 'progress-shimmer 2.2s linear infinite',
+                transition: 'width 750ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Interview progress"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Main */}
