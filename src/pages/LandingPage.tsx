@@ -57,7 +57,7 @@ export default function LandingPage() {
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-none mb-5 lg:mb-6">
-              <span className="block" style={{ color: '#7dd3fc' }}>Guided interview.</span>
+              <span className="block text-white/85">Guided interview.</span>
               <span className="block text-white">Instant determination.</span>
             </h1>
 
