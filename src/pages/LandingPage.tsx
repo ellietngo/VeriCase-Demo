@@ -81,9 +81,10 @@ export default function LandingPage() {
             <div
               className="rounded-3xl p-6"
               style={{
-                background: 'rgba(0,10,20,0.45)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.10)',
+                background: 'rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                boxShadow: '0 24px 48px rgba(0,0,0,0.18)',
               }}
             >
               {/* Card header */}
@@ -140,7 +141,7 @@ export default function LandingPage() {
                 </div>
                 <div
                   className="w-full rounded-full overflow-hidden"
-                  style={{ height: 8, background: 'rgba(255,255,255,0.12)' }}
+                  style={{ height: 8, background: 'rgba(255,255,255,0.18)' }}
                 >
                   <div
                     style={{
@@ -159,7 +160,7 @@ export default function LandingPage() {
                   <span
                     key={chip}
                     className="text-[10px] font-semibold px-2.5 py-1 rounded-lg"
-                    style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)' }}
+                    style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.65)' }}
                   >
                     {chip}
                   </span>
