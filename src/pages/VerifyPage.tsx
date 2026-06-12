@@ -57,16 +57,24 @@ export default function VerifyPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(160deg, #e8eef2 0%, #dfe9e2 100%)' }}
+      className="relative min-h-screen flex flex-col overflow-hidden"
+      style={{ background: 'linear-gradient(160deg, #0e2f48 0%, #122d1e 100%)' }}
     >
-      {/* Header */}
-      <header className="bg-cbp-navy text-white px-4 py-4">
+      {/* Floating decorative circles */}
+      <div className="absolute border border-white/8 rounded-full pointer-events-none" style={{ top: '8%', right: '5%', width: 110, height: 110, animation: 'float-slow 9s ease-in-out infinite' }} aria-hidden="true" />
+      <div className="absolute border border-white/6 rounded-full pointer-events-none" style={{ bottom: '18%', left: '4%', width: 78, height: 78, animation: 'float-med 7s ease-in-out infinite', animationDelay: '2s' }} aria-hidden="true" />
+      <div className="absolute border border-white/5 rounded-full pointer-events-none" style={{ top: '48%', left: '7%', width: 40, height: 40, animation: 'float-slow 11s ease-in-out infinite', animationDelay: '5s' }} aria-hidden="true" />
+      <div className="absolute border border-white/5 rounded-full pointer-events-none" style={{ top: '68%', right: '8%', width: 54, height: 54, animation: 'float-med 8s ease-in-out infinite', animationDelay: '3s' }} aria-hidden="true" />
+
+      {/* Header — frosted glass */}
+      <header
+        className="relative z-10 px-4 py-4 text-white"
+        style={{ background: 'rgba(0,25,45,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+      >
         <div className="max-w-sm mx-auto flex items-center gap-3">
           <Link
             to="/"
-            className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors
-              focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
             aria-label="Back to home"
           >
             <ArrowLeft size={20} aria-hidden="true" />
@@ -78,21 +86,24 @@ export default function VerifyPage() {
         </div>
       </header>
 
-      {/* Progress bar — separate section */}
-      <div className="bg-white border-b border-[#E8E8E8] px-6 py-3">
+      {/* Progress bar — frosted glass */}
+      <div
+        className="relative z-10 px-6 py-3"
+        style={{ background: 'rgba(0,20,40,0.35)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+      >
         <div className="max-w-sm mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#888888]">
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.55)' }}>
               Interview in progress
             </span>
-            <span className="text-sm font-bold text-cbp-navy tabular-nums">{progress}%</span>
+            <span className="text-sm font-bold text-white tabular-nums">{progress}%</span>
           </div>
-          <div className="w-full rounded-full overflow-hidden" style={{ height: 10, background: '#E8E8E8' }}>
+          <div className="w-full rounded-full overflow-hidden" style={{ height: 10, background: 'rgba(255,255,255,0.12)' }}>
             <div
               style={{
                 height: '100%',
                 width: `${progress}%`,
-                background: 'linear-gradient(90deg, #00416A, #1a5c30)',
+                background: 'linear-gradient(90deg, #1a7a40, #2aaa55)',
                 transition: 'width 750ms cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
                 overflow: 'hidden',
@@ -109,7 +120,7 @@ export default function VerifyPage() {
                   position: 'absolute',
                   top: 0, bottom: 0,
                   width: '40%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
                   animation: 'progress-shimmer 3.5s linear infinite',
                   animationDelay: '0.8s',
                 }}
@@ -120,11 +131,11 @@ export default function VerifyPage() {
       </div>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col justify-center px-4 py-6">
+      <main className="relative z-10 flex-1 flex flex-col justify-center px-4 py-6">
         <div className="max-w-sm mx-auto w-full">
           <div
             className="bg-white rounded-3xl overflow-hidden"
-            style={{ boxShadow: '0 4px 28px rgba(0,65,106,0.10)' }}
+            style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.35)' }}
           >
             {/* Gradient accent strip */}
             <div
@@ -180,7 +191,7 @@ export default function VerifyPage() {
             </div>
           </div>
 
-          <p className="mt-4 text-xs text-[#999999] text-center leading-relaxed">
+          <p className="mt-4 text-xs text-center leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
             Demonstration mode — no case data is collected or stored.
           </p>
         </div>
