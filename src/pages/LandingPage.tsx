@@ -77,9 +77,9 @@ export default function LandingPage() {
           </div>
 
           {/* ── Right: live demo preview card (desktop only) ── */}
-          <div className="hidden lg:block w-[400px] xl:w-[440px] flex-shrink-0">
+          <div className="hidden lg:block w-[480px] xl:w-[520px] flex-shrink-0">
             <div
-              className="rounded-3xl p-6"
+              className="rounded-3xl p-7"
               style={{
                 background: 'rgba(255,255,255,0.07)',
                 backdropFilter: 'blur(8px)',
@@ -88,60 +88,64 @@ export default function LandingPage() {
               }}
             >
               {/* Card header */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-5">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/45 mb-1">
                     Live Example
                   </p>
-                  <p className="text-base font-extrabold text-white">Citizenship Intake</p>
+                  <p className="text-lg font-extrabold text-white">Citizenship Intake</p>
                 </div>
                 <span
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0"
-                  style={{ background: 'rgba(0,160,0,0.2)', color: '#4ade80' }}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full flex-shrink-0"
+                  style={{ background: 'rgba(0,160,0,0.22)', color: '#4ade80' }}
                 >
                   <span className="text-[8px]" aria-hidden="true">●</span> Active
                 </span>
               </div>
 
               {/* Mini question preview — static, non-interactive */}
-              <div className="bg-white rounded-2xl p-4 mb-4" aria-hidden="true">
-                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
+              <div
+                className="rounded-2xl p-5 mb-5"
+                style={{ background: 'rgba(255,255,255,0.88)' }}
+                aria-hidden="true"
+              >
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
                   Question 1
                 </span>
-                <p className="text-sm font-extrabold text-[#111] leading-snug mt-1 mb-3">
+                <p className="text-base font-extrabold text-[#111] leading-snug mt-1.5 mb-4">
                   Are you a United States citizen?
                 </p>
-                <div className="space-y-2 pointer-events-none select-none">
+                <div className="space-y-2.5 pointer-events-none select-none">
                   <div
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl"
                     style={{ background: '#00416A' }}
                   >
-                    <span className="text-xs font-semibold text-white flex-1">Yes, I am a U.S. Citizen</span>
-                    <ChevronRight size={13} className="text-white/40 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-white flex-1">Yes, I am a U.S. Citizen</span>
+                    <ChevronRight size={15} className="text-white/40 flex-shrink-0" aria-hidden="true" />
                   </div>
                   <div
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
-                    style={{ background: '#F5F6F8', border: '1px solid #E4E8EC' }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                    style={{ background: '#F0F2F4', border: '1px solid #E0E4E8' }}
                   >
-                    <span className="text-xs font-semibold text-[#333] flex-1">No, I am not a U.S. Citizen</span>
-                    <ChevronRight size={13} style={{ color: '#bbb' }} className="flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-[#333] flex-1">No, I am not a U.S. Citizen</span>
+                    <ChevronRight size={15} style={{ color: '#bbb' }} className="flex-shrink-0" aria-hidden="true" />
                   </div>
                 </div>
               </div>
 
               {/* Progress bar */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/50">
                     Guided Interview
                   </span>
-                  <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
+                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-white/50">
                     22% Complete
                   </span>
                 </div>
                 <div
                   className="w-full rounded-full overflow-hidden"
-                  style={{ height: 8, background: 'rgba(255,255,255,0.18)' }}
+                  style={{ height: 10, background: 'rgba(255,255,255,0.18)' }}
                 >
                   <div
                     style={{
@@ -155,15 +159,15 @@ export default function LandingPage() {
               </div>
 
               {/* Feature chips */}
-              <div className="flex gap-2 flex-wrap">
+              <div className="grid grid-cols-3 gap-2">
                 {['Guided flow', 'Auto-routing', 'Instant result'].map(chip => (
-                  <span
+                  <div
                     key={chip}
-                    className="text-[10px] font-semibold px-2.5 py-1 rounded-lg"
-                    style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.65)' }}
+                    className="text-center text-xs font-semibold px-3 py-2.5 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.75)' }}
                   >
                     {chip}
-                  </span>
+                  </div>
                 ))}
               </div>
             </div>
