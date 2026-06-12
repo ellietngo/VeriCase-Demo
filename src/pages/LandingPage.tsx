@@ -34,7 +34,7 @@ export default function LandingPage() {
 
           {/* ── Left: text content ── */}
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left flex-1 min-w-0">
-            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/45 mb-8 select-none">
+            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/65 mb-8 select-none">
               A MetaPhase Demo
             </span>
 
@@ -57,11 +57,11 @@ export default function LandingPage() {
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-none mb-5 lg:mb-6">
-              <span className="block text-white/70">Guided interview.</span>
+              <span className="block text-white/85">Guided interview.</span>
               <span className="block text-white">Instant determination.</span>
             </h1>
 
-            <p className="text-sm md:text-base text-white/55 max-w-xs lg:max-w-sm leading-relaxed mb-10">
+            <p className="text-sm md:text-base text-white/75 max-w-xs lg:max-w-sm leading-relaxed mb-10">
               Fast, evidence-based citizenship verification for Border Patrol officers —
               one question at a time, every time.
             </p>
@@ -90,13 +90,13 @@ export default function LandingPage() {
               {/* Card header */}
               <div className="flex items-start justify-between mb-5">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/45 mb-1">
+                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-white/55 mb-1">
                     Live Example
                   </p>
-                  <p className="text-lg font-extrabold text-white">Citizenship Intake</p>
+                  <p className="text-xl font-extrabold text-white">Citizenship Intake</p>
                 </div>
                 <span
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full flex-shrink-0"
+                  className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full flex-shrink-0"
                   style={{ background: 'rgba(0,160,0,0.22)', color: '#4ade80' }}
                 >
                   <span className="text-[8px]" aria-hidden="true">●</span> Active
@@ -113,10 +113,10 @@ export default function LandingPage() {
                 }}
                 aria-hidden="true"
               >
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/40">
+                <span className="text-sm font-bold uppercase tracking-[0.18em] text-white/50">
                   Question 1
                 </span>
-                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4">
+                <p className="text-lg font-extrabold text-white leading-snug mt-1.5 mb-4">
                   Are you a United States citizen?
                 </p>
                 <div className="space-y-2.5 pointer-events-none select-none">
@@ -124,15 +124,15 @@ export default function LandingPage() {
                     className="flex items-center gap-3 px-4 py-3 rounded-xl"
                     style={{ background: 'rgba(255,255,255,0.92)' }}
                   >
-                    <span className="text-sm font-semibold text-[#00416A] flex-1">Yes, I am a U.S. Citizen</span>
-                    <ChevronRight size={15} style={{ color: '#00416A', opacity: 0.5 }} className="flex-shrink-0" aria-hidden="true" />
+                    <span className="text-base font-semibold text-[#00416A] flex-1">Yes, I am a U.S. Citizen</span>
+                    <ChevronRight size={16} style={{ color: '#00416A', opacity: 0.5 }} className="flex-shrink-0" aria-hidden="true" />
                   </div>
                   <div
                     className="flex items-center gap-3 px-4 py-3 rounded-xl"
                     style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
                   >
-                    <span className="text-sm font-semibold text-white/65 flex-1">No, I am not a U.S. Citizen</span>
-                    <ChevronRight size={15} style={{ color: 'rgba(255,255,255,0.3)' }} className="flex-shrink-0" aria-hidden="true" />
+                    <span className="text-base font-semibold text-white/70 flex-1">No, I am not a U.S. Citizen</span>
+                    <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.35)' }} className="flex-shrink-0" aria-hidden="true" />
                   </div>
                 </div>
               </div>
@@ -140,10 +140,10 @@ export default function LandingPage() {
               {/* Progress bar */}
               <div className="mb-5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+                  <span className="text-sm font-bold uppercase tracking-[0.18em] text-white/55">
                     Guided Interview
                   </span>
-                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-white/50">
+                  <span className="text-sm font-bold uppercase tracking-[0.12em] text-white/55">
                     22% Complete
                   </span>
                 </div>
@@ -167,8 +167,8 @@ export default function LandingPage() {
                 {['Guided flow', 'Auto-routing', 'Instant result'].map(chip => (
                   <div
                     key={chip}
-                    className="text-center text-xs font-semibold px-3 py-2.5 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.75)' }}
+                    className="text-center text-sm font-semibold px-3 py-2.5 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)' }}
                   >
                     {chip}
                   </div>
@@ -237,7 +237,7 @@ export default function LandingPage() {
               <Shield size={14} className="text-cbp-navy" strokeWidth={2} />
               <span className="font-bold text-sm text-cbp-navy tracking-tight">VeriCase</span>
             </div>
-            <p className="text-xs text-[#555555] leading-relaxed max-w-xs">
+            <p className="text-xs text-[#444444] leading-relaxed max-w-xs">
               A demonstration product by{' '}
               <a
                 href="https://metaphase.tech"
@@ -280,7 +280,7 @@ export default function LandingPage() {
                   </a>
                 </li>
                 <li>
-                  <span className="text-sm text-[#AAAAAA]">Verification History — coming soon</span>
+                  <span className="text-sm text-[#888888]">Verification History — coming soon</span>
                 </li>
               </ul>
             </nav>
@@ -306,7 +306,7 @@ function FeatureRow({
       </div>
       <div>
         <h3 className="font-bold text-[#222222] mb-1">{title}</h3>
-        <p className="text-sm text-[#555555] leading-relaxed">{description}</p>
+        <p className="text-sm text-[#444444] leading-relaxed">{description}</p>
       </div>
     </div>
   )
