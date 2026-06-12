@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Shield, ClipboardCheck, Zap, Users, ChevronDown } from 'lucide-react'
+import { Shield, ClipboardCheck, Zap, Users, ChevronDown, ChevronRight } from 'lucide-react'
 
 const heroStyle: React.CSSProperties = {
   background: 'linear-gradient(-45deg, #00416A, #1a5c30, #003456, #0f4a23)',
@@ -10,10 +10,8 @@ const heroStyle: React.CSSProperties = {
 
 const shineStyle: React.CSSProperties = {
   position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '140px',
-  height: '100%',
+  top: 0, left: 0,
+  width: '140px', height: '100%',
   background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
   animation: 'hero-shine 20s ease-in-out infinite',
   animationDelay: '6s',
@@ -29,51 +27,148 @@ export default function LandingPage() {
         style={heroStyle}
         aria-label="Hero"
       >
-        {/* Shine sweep */}
         <div style={shineStyle} aria-hidden="true" />
 
-        {/* Content */}
-        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/45 mb-10 select-none">
-          A MetaPhase Demo
-        </span>
+        {/* Two-column layout on large screens */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center lg:flex-row lg:items-center lg:gap-20">
 
-        {/* Shield with pulsing rings */}
-        <div className="relative mb-8 w-24 h-24 md:w-32 md:h-32" aria-hidden="true">
-          <div
-            className="absolute rounded-3xl border border-white/15"
-            style={{ inset: -10, animation: 'pulse-out 3.5s ease-out infinite' }}
-          />
-          <div
-            className="absolute rounded-3xl border border-white/8"
-            style={{ inset: -20, animation: 'pulse-out 3.5s ease-out infinite', animationDelay: '1.2s' }}
-          />
-          <div
-            className="w-full h-full rounded-3xl flex items-center justify-center border border-white/20"
-            style={{ background: 'rgba(255,255,255,0.11)', backdropFilter: 'blur(8px)' }}
-          >
-            <Shield className="w-10 h-10 md:w-14 md:h-14" strokeWidth={1.5} />
+          {/* ── Left: text content ── */}
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left flex-1 min-w-0">
+            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/45 mb-8 select-none">
+              A MetaPhase Demo
+            </span>
+
+            {/* Shield — shown on mobile/tablet, hidden on desktop where card takes over */}
+            <div className="relative mb-8 w-24 h-24 lg:hidden" aria-hidden="true">
+              <div
+                className="absolute rounded-3xl border border-white/15"
+                style={{ inset: -10, animation: 'pulse-out 3.5s ease-out infinite' }}
+              />
+              <div
+                className="absolute rounded-3xl border border-white/8"
+                style={{ inset: -20, animation: 'pulse-out 3.5s ease-out infinite', animationDelay: '1.2s' }}
+              />
+              <div
+                className="w-full h-full rounded-3xl flex items-center justify-center border border-white/20"
+                style={{ background: 'rgba(255,255,255,0.11)', backdropFilter: 'blur(8px)' }}
+              >
+                <Shield size={46} strokeWidth={1.5} />
+              </div>
+            </div>
+
+            <h1 className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-none mb-5 lg:mb-6">
+              <span className="block text-white/70">Guided interview.</span>
+              <span className="block text-white">Instant determination.</span>
+            </h1>
+
+            <p className="text-sm md:text-base text-white/55 max-w-xs lg:max-w-sm leading-relaxed mb-10">
+              Fast, evidence-based citizenship verification for Border Patrol officers —
+              one question at a time, every time.
+            </p>
+
+            <Link
+              to="/verify"
+              className="bg-white text-cbp-navy font-bold text-lg px-10 py-4 rounded-full shadow-xl
+                hover:bg-white/90 active:scale-95 transition-all duration-200
+                focus:outline-none focus:ring-4 focus:ring-white/50"
+            >
+              Begin Case
+            </Link>
           </div>
+
+          {/* ── Right: live demo preview card (desktop only) ── */}
+          <div className="hidden lg:block w-[400px] xl:w-[440px] flex-shrink-0">
+            <div
+              className="rounded-3xl p-6"
+              style={{
+                background: 'rgba(0,10,20,0.45)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.10)',
+              }}
+            >
+              {/* Card header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">
+                    Live Example
+                  </p>
+                  <p className="text-base font-extrabold text-white">Citizenship Intake</p>
+                </div>
+                <span
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0"
+                  style={{ background: 'rgba(0,160,0,0.2)', color: '#4ade80' }}
+                >
+                  <span className="text-[8px]" aria-hidden="true">●</span> Active
+                </span>
+              </div>
+
+              {/* Mini question preview — static, non-interactive */}
+              <div className="bg-white rounded-2xl p-4 mb-4" aria-hidden="true">
+                <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
+                  Question 1
+                </span>
+                <p className="text-sm font-extrabold text-[#111] leading-snug mt-1 mb-3">
+                  Are you a United States citizen?
+                </p>
+                <div className="space-y-2 pointer-events-none select-none">
+                  <div
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                    style={{ background: '#00416A' }}
+                  >
+                    <span className="text-xs font-semibold text-white flex-1">Yes, I am a U.S. Citizen</span>
+                    <ChevronRight size={13} className="text-white/40 flex-shrink-0" aria-hidden="true" />
+                  </div>
+                  <div
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                    style={{ background: '#F5F6F8', border: '1px solid #E4E8EC' }}
+                  >
+                    <span className="text-xs font-semibold text-[#333] flex-1">No, I am not a U.S. Citizen</span>
+                    <ChevronRight size={13} style={{ color: '#bbb' }} className="flex-shrink-0" aria-hidden="true" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">
+                    Guided Interview
+                  </span>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
+                    22% Complete
+                  </span>
+                </div>
+                <div
+                  className="w-full rounded-full overflow-hidden"
+                  style={{ height: 8, background: 'rgba(255,255,255,0.12)' }}
+                >
+                  <div
+                    style={{
+                      height: '100%',
+                      width: '22%',
+                      background: 'linear-gradient(90deg, #00416A, #1460AA)',
+                      borderRadius: 9999,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Feature chips */}
+              <div className="flex gap-2 flex-wrap">
+                {['Guided flow', 'Auto-routing', 'Instant result'].map(chip => (
+                  <span
+                    key={chip}
+                    className="text-[10px] font-semibold px-2.5 py-1 rounded-lg"
+                    style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)' }}
+                  >
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
-
-        <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tight text-center mb-4 leading-none">
-          VeriCase
-        </h1>
-
-        <p className="text-xl md:text-2xl text-white/75 text-center max-w-sm md:max-w-lg leading-relaxed mb-3">
-          Citizenship verification,<br className="hidden md:block" /> built for the field.
-        </p>
-        <p className="text-sm md:text-base text-white/45 text-center max-w-xs md:max-w-md leading-relaxed mb-12">
-          Fast, evidence-based determinations for Border Patrol officers.
-        </p>
-
-        <Link
-          to="/verify"
-          className="bg-white text-cbp-navy font-bold text-lg md:text-xl px-10 py-4 md:px-14 md:py-5 rounded-full shadow-xl
-            hover:bg-white/90 active:scale-95 transition-all duration-200
-            focus:outline-none focus:ring-4 focus:ring-white/50"
-        >
-          Begin Case
-        </Link>
 
         <div className="absolute bottom-8 flex flex-col items-center gap-1.5 text-white/25 select-none" aria-hidden="true">
           <span className="text-xs uppercase tracking-widest">Learn more</span>
@@ -133,7 +228,6 @@ export default function LandingPage() {
               <Shield size={14} className="text-cbp-navy" strokeWidth={2} />
               <span className="font-bold text-sm text-cbp-navy tracking-tight">VeriCase</span>
             </div>
-
             <p className="text-xs text-[#555555] leading-relaxed max-w-xs">
               A demonstration product by{' '}
               <a
@@ -177,9 +271,7 @@ export default function LandingPage() {
                   </a>
                 </li>
                 <li>
-                  <span className="text-sm text-[#AAAAAA]">
-                    Verification History — coming soon
-                  </span>
+                  <span className="text-sm text-[#AAAAAA]">Verification History — coming soon</span>
                 </li>
               </ul>
             </nav>
@@ -191,10 +283,7 @@ export default function LandingPage() {
 }
 
 function FeatureRow({
-  icon,
-  iconBg,
-  title,
-  description,
+  icon, iconBg, title, description,
 }: {
   icon: React.ReactNode
   iconBg: string
