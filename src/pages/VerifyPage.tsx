@@ -92,17 +92,29 @@ export default function VerifyPage() {
               style={{
                 height: '100%',
                 width: `${progress}%`,
-                background: 'linear-gradient(90deg, #00416A 0%, #1a7a40 45%, #2a9a50 55%, #1a5c30 100%)',
-                backgroundSize: '200% 100%',
-                animation: 'progress-shimmer 5s linear infinite',
+                background: 'linear-gradient(90deg, #00416A, #1a5c30)',
                 transition: 'width 750ms cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative',
+                overflow: 'hidden',
               }}
               role="progressbar"
               aria-valuenow={progress}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-label="Interview progress"
-            />
+            >
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  top: 0, bottom: 0,
+                  width: '40%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)',
+                  animation: 'progress-shimmer 3.5s linear infinite',
+                  animationDelay: '0.8s',
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
