@@ -1,14 +1,29 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Check } from 'lucide-react'
+import { CheckCircle2, XCircle, Shield, RotateCcw, Home } from 'lucide-react'
 
-const MAX_STEPS = 3
+const pageStyle: React.CSSProperties = {
+  background: 'linear-gradient(-45deg, #00416A, #1a5c30, #003456, #0f4a23)',
+  backgroundSize: '400% 400%',
+  animation: 'hero-gradient 14s ease infinite',
+}
+
+const shineStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 0, left: 0,
+  width: '140px', height: '100%',
+  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
+  animation: 'hero-shine 20s ease-in-out infinite',
+  animationDelay: '8s',
+  pointerEvents: 'none',
+}
+
+import React from 'react'
 
 export default function ResultPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const isCitizen: boolean | undefined = location.state?.isCitizen
-  const steps: number = location.state?.steps ?? 1
 
   useEffect(() => {
     if (isCitizen === undefined) {
@@ -19,48 +34,28 @@ export default function ResultPage() {
   if (isCitizen === undefined) return null
 
   return (
-    <div className="min-h-screen flex flex-col bg-cbp-tint">
-      {/* Header */}
-      <header className="bg-cbp-navy text-white px-4 py-4">
+    <div className="relative min-h-screen flex flex-col overflow-hidden" style={pageStyle}>
+      {/* Decorative layer */}
+      <div style={shineStyle} aria-hidden="true" />
+      <div className="absolute border border-white/8 rounded-full pointer-events-none" style={{ top: '10%', right: '6%', width: 100, height: 100, animation: 'float-slow 10s ease-in-out infinite' }} aria-hidden="true" />
+      <div className="absolute border border-white/6 rounded-full pointer-events-none" style={{ bottom: '20%', left: '5%', width: 70, height: 70, animation: 'float-med 7s ease-in-out infinite', animationDelay: '3s' }} aria-hidden="true" />
+      <div className="absolute border border-white/5 rounded-full pointer-events-none" style={{ top: '55%', right: '10%', width: 48, height: 48, animation: 'float-slow 9s ease-in-out infinite', animationDelay: '1s' }} aria-hidden="true" />
+
+      {/* Header — frosted glass */}
+      <header
+        className="relative z-10 px-4 py-4 text-white"
+        style={{ background: 'rgba(0,25,45,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+      >
         <div className="max-w-sm mx-auto flex items-center gap-2">
           <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
           <span className="font-bold tracking-tight">VeriCase</span>
         </div>
       </header>
 
-      {/* Completed progress bar */}
-      <div className="bg-white border-b border-[#EEEEEE] px-6 py-4">
-        <div className="max-w-sm mx-auto">
-          <div className="flex items-center">
-            {Array.from({ length: MAX_STEPS }, (_, i) => (
-              <React.Fragment key={i}>
-                {i > 0 && (
-                  <div
-                    className="flex-1 h-0.5 mx-2"
-                    style={{ background: i < steps ? '#008000' : '#EEEEEE' }}
-                  />
-                )}
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{
-                    background: i + 1 <= steps ? '#008000' : '#F6F6F6',
-                    color: i + 1 <= steps ? 'white' : '#AAAAAA',
-                    border: i + 1 > steps ? '1px solid #EEEEEE' : 'none',
-                  }}
-                >
-                  {i + 1 <= steps ? <Check size={14} aria-hidden="true" /> : i + 1}
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
-          <p className="text-xs text-[#AAAAAA] mt-2.5">Interview complete</p>
-        </div>
-      </div>
-
       {/* Main */}
-      <main className="flex-1 flex flex-col justify-center px-6 py-12">
+      <main className="relative z-10 flex-1 flex flex-col justify-center px-6 py-12">
         <div className="max-w-sm mx-auto w-full">
-          <div className="bg-white rounded-3xl p-8 shadow-sm">
+          <div className="bg-white rounded-3xl p-8 shadow-2xl">
             {/* Icon */}
             <div className="flex justify-center mb-6">
               {isCitizen ? (
@@ -136,7 +131,7 @@ export default function ResultPage() {
             </div>
           </div>
 
-          <p className="mt-6 text-xs text-[#AAAAAA] text-center leading-relaxed px-4">
+          <p className="mt-6 text-xs text-center leading-relaxed px-4" style={{ color: 'rgba(255,255,255,0.38)' }}>
             Demonstration mode — no case data has been collected or stored.
             Not affiliated with any U.S. government agency.
           </p>

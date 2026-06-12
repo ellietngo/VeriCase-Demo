@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Shield, ArrowLeft, ChevronRight, Check } from 'lucide-react'
+import { Shield, ArrowLeft, ChevronRight } from 'lucide-react'
 
 const QUESTIONS = {
   q1: {
@@ -32,37 +32,56 @@ const QUESTIONS = {
 type QuestionId = keyof typeof QUESTIONS
 type NextStep = QuestionId | 'citizen' | 'non-citizen'
 
-const QUESTION_ORDER: QuestionId[] = ['q1', 'q2', 'q3']
-const MAX_STEPS = QUESTION_ORDER.length
+const pageStyle: React.CSSProperties = {
+  background: 'linear-gradient(-45deg, #00416A, #1a5c30, #003456, #0f4a23)',
+  backgroundSize: '400% 400%',
+  animation: 'hero-gradient 14s ease infinite',
+}
+
+const shineStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 0, left: 0,
+  width: '140px', height: '100%',
+  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
+  animation: 'hero-shine 20s ease-in-out infinite',
+  animationDelay: '3s',
+  pointerEvents: 'none',
+}
 
 export default function VerifyPage() {
   const navigate = useNavigate()
   const [currentQ, setCurrentQ] = useState<QuestionId>('q1')
-  const [step, setStep] = useState(1)
+  const [questionNum, setQuestionNum] = useState(1)
 
   const question = QUESTIONS[currentQ]
 
   const handleChoice = (next: NextStep) => {
     if (next === 'citizen' || next === 'non-citizen') {
-      navigate('/result', { state: { isCitizen: next === 'citizen', steps: step } })
+      navigate('/result', { state: { isCitizen: next === 'citizen' } })
     } else {
       setCurrentQ(next as QuestionId)
-      setStep(s => s + 1)
+      setQuestionNum(n => n + 1)
     }
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ background: 'linear-gradient(160deg, #ECF1F4 0%, #e2ebe4 100%)' }}
-    >
-      {/* Header */}
-      <header className="bg-cbp-navy text-white px-4 py-4">
+    <div className="relative min-h-screen flex flex-col overflow-hidden" style={pageStyle}>
+      {/* Decorative layer */}
+      <div style={shineStyle} aria-hidden="true" />
+      <div className="absolute border border-white/8 rounded-full pointer-events-none" style={{ top: '8%', right: '5%', width: 110, height: 110, animation: 'float-slow 9s ease-in-out infinite' }} aria-hidden="true" />
+      <div className="absolute border border-white/6 rounded-full pointer-events-none" style={{ bottom: '18%', left: '4%', width: 78, height: 78, animation: 'float-med 7s ease-in-out infinite', animationDelay: '2s' }} aria-hidden="true" />
+      <div className="absolute rounded-full border border-white/6 pointer-events-none" style={{ top: '48%', left: '7%', width: 40, height: 40, animation: 'float-slow 11s ease-in-out infinite', animationDelay: '5s' }} aria-hidden="true" />
+      <div className="absolute border border-white/5 rounded-full pointer-events-none" style={{ top: '68%', right: '8%', width: 54, height: 54, animation: 'float-med 8s ease-in-out infinite', animationDelay: '3s' }} aria-hidden="true" />
+
+      {/* Header — frosted glass */}
+      <header
+        className="relative z-10 px-4 py-4 text-white"
+        style={{ background: 'rgba(0,25,45,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+      >
         <div className="max-w-sm mx-auto flex items-center gap-3">
           <Link
             to="/"
-            className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors
-              focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
             aria-label="Back to home"
           >
             <ArrowLeft size={20} aria-hidden="true" />
@@ -74,53 +93,16 @@ export default function VerifyPage() {
         </div>
       </header>
 
-      {/* Progress bar */}
-      <div className="bg-white border-b border-[#EEEEEE] px-6 py-4">
-        <div className="max-w-sm mx-auto">
-          <div className="flex items-center">
-            {QUESTION_ORDER.map((_, i) => (
-              <React.Fragment key={i}>
-                {i > 0 && (
-                  <div
-                    className="flex-1 h-0.5 mx-2 transition-colors duration-500"
-                    style={{ background: i < step ? '#00416A' : '#EEEEEE' }}
-                  />
-                )}
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition-all duration-300"
-                  style={{
-                    background: i + 1 < step ? '#008000' : i + 1 === step ? '#00416A' : '#F6F6F6',
-                    color: i + 1 <= step ? 'white' : '#AAAAAA',
-                    border: i + 1 > step ? '1px solid #EEEEEE' : 'none',
-                    boxShadow: i + 1 === step ? '0 0 0 3px rgba(0,65,106,0.15)' : 'none',
-                  }}
-                  aria-current={i + 1 === step ? 'step' : undefined}
-                >
-                  {i + 1 < step ? <Check size={14} aria-hidden="true" /> : i + 1}
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
-          <p className="text-xs text-[#AAAAAA] mt-2.5">
-            Subject interview · Step {step} of {MAX_STEPS}
-          </p>
-        </div>
-      </div>
-
       {/* Main */}
-      <main className="flex-1 flex flex-col justify-center px-6 py-10">
+      <main className="relative z-10 flex-1 flex flex-col justify-center px-6 py-10">
         <div className="max-w-sm mx-auto w-full">
-          <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#E8E8E8]">
+          <div className="bg-white rounded-3xl overflow-hidden shadow-2xl">
             {/* Gradient accent strip */}
-            <div
-              className="h-1.5"
-              style={{ background: 'linear-gradient(90deg, #00416A, #1a5c30)' }}
-              aria-hidden="true"
-            />
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg, #00416A, #1a5c30)' }} aria-hidden="true" />
 
             <div className="p-7">
               <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] text-cbp-blue mb-4">
-                Question {step}
+                Question {questionNum}
               </span>
 
               <h1 className="text-2xl font-extrabold text-[#222222] leading-tight mb-3">
@@ -144,28 +126,19 @@ export default function VerifyPage() {
                     }
                   >
                     <div className="flex-1">
-                      <div className="font-semibold text-base leading-snug">
-                        {opt.label}
-                      </div>
-                      <div
-                        className="text-sm font-normal mt-0.5"
-                        style={{ color: i === 0 ? 'rgba(255,255,255,0.58)' : '#808080' }}
-                      >
+                      <div className="font-semibold text-base leading-snug">{opt.label}</div>
+                      <div className="text-sm font-normal mt-0.5" style={{ color: i === 0 ? 'rgba(255,255,255,0.58)' : '#808080' }}>
                         {opt.sub}
                       </div>
                     </div>
-                    <ChevronRight
-                      size={18}
-                      aria-hidden="true"
-                      style={{ color: i === 0 ? 'rgba(255,255,255,0.5)' : '#AAAAAA', flexShrink: 0 }}
-                    />
+                    <ChevronRight size={18} aria-hidden="true" style={{ color: i === 0 ? 'rgba(255,255,255,0.5)' : '#AAAAAA', flexShrink: 0 }} />
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          <p className="mt-6 text-xs text-[#AAAAAA] text-center leading-relaxed">
+          <p className="mt-6 text-xs text-center leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
             Demonstration mode — no case data is collected or stored.
           </p>
         </div>
