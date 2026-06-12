@@ -106,29 +106,33 @@ export default function LandingPage() {
               {/* Mini question preview — static, non-interactive */}
               <div
                 className="rounded-2xl p-5 mb-5"
-                style={{ background: 'rgba(255,255,255,0.88)' }}
+                style={{
+                  background: 'rgba(0,30,60,0.5)',
+                  backdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
                 aria-hidden="true"
               >
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-white/40">
                   Question 1
                 </span>
-                <p className="text-base font-extrabold text-[#111] leading-snug mt-1.5 mb-4">
+                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4">
                   Are you a United States citizen?
                 </p>
                 <div className="space-y-2.5 pointer-events-none select-none">
                   <div
                     className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                    style={{ background: '#00416A' }}
+                    style={{ background: 'rgba(255,255,255,0.92)' }}
                   >
-                    <span className="text-sm font-semibold text-white flex-1">Yes, I am a U.S. Citizen</span>
-                    <ChevronRight size={15} className="text-white/40 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-[#00416A] flex-1">Yes, I am a U.S. Citizen</span>
+                    <ChevronRight size={15} style={{ color: '#00416A', opacity: 0.5 }} className="flex-shrink-0" aria-hidden="true" />
                   </div>
                   <div
                     className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                    style={{ background: '#F0F2F4', border: '1px solid #E0E4E8' }}
+                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
                   >
-                    <span className="text-sm font-semibold text-[#333] flex-1">No, I am not a U.S. Citizen</span>
-                    <ChevronRight size={15} style={{ color: '#bbb' }} className="flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-semibold text-white/65 flex-1">No, I am not a U.S. Citizen</span>
+                    <ChevronRight size={15} style={{ color: 'rgba(255,255,255,0.3)' }} className="flex-shrink-0" aria-hidden="true" />
                   </div>
                 </div>
               </div>
