@@ -61,26 +61,41 @@ export default function VerifyPage() {
       style={{ background: 'linear-gradient(160deg, #e8eef2 0%, #dfe9e2 100%)' }}
     >
       {/* Header */}
-      <header className="bg-cbp-navy text-white px-4 py-4">
-        <div className="max-w-sm mx-auto flex items-center gap-3">
-          <Link
-            to="/"
-            className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors
-              focus:outline-none focus:ring-2 focus:ring-white/50"
-            aria-label="Back to home"
-          >
-            <ArrowLeft size={20} aria-hidden="true" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
-            <span className="font-bold tracking-tight">VeriCase</span>
+      <header
+        className="text-white px-4 py-4"
+        style={{ background: 'linear-gradient(135deg, #001e30 0%, #00416A 55%, #0a2a14 100%)' }}
+      >
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors
+                focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Back to home"
+            >
+              <ArrowLeft size={20} aria-hidden="true" />
+            </Link>
+            <div>
+              <div className="flex items-center gap-2">
+                <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
+                <span className="font-bold tracking-tight">VeriCase</span>
+              </div>
+              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5 ml-0.5">
+                MetaPhase
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden sm:block text-right">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Session</p>
+            <p className="text-xs font-semibold text-white/65 tracking-wide">Guided Intake</p>
           </div>
         </div>
       </header>
 
-      {/* Progress bar — sits on page background, no card */}
-      <div className="px-4 pt-4 pb-3">
-        <div className="max-w-sm mx-auto">
+      {/* Progress bar — sits on page background */}
+      <div className="px-4 pt-5 pb-4 md:px-8">
+        <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
               Guided Interview
@@ -89,7 +104,7 @@ export default function VerifyPage() {
               {progress}% Complete
             </span>
           </div>
-          <div className="w-full rounded-full overflow-hidden" style={{ height: 8, background: '#cdd5dc' }}>
+          <div className="w-full rounded-full overflow-hidden" style={{ height: 12, background: '#cdd5dc' }}>
             <div
               style={{
                 height: '100%',
@@ -122,11 +137,11 @@ export default function VerifyPage() {
       </div>
 
       {/* Main */}
-      <main className="flex-1 flex flex-col justify-center px-4 py-4">
-        <div className="max-w-sm mx-auto w-full">
+      <main className="flex-1 flex flex-col justify-center px-4 py-4 md:px-8 md:py-8">
+        <div className="w-full max-w-5xl mx-auto">
           <div
             className="bg-white rounded-3xl overflow-hidden"
-            style={{ boxShadow: '0 4px 24px rgba(0,65,106,0.10)' }}
+            style={{ boxShadow: '0 4px 32px rgba(0,65,106,0.11)' }}
           >
             {/* Gradient accent strip */}
             <div
@@ -135,25 +150,31 @@ export default function VerifyPage() {
               aria-hidden="true"
             />
 
-            <div className="p-5">
-              <span className="inline-block text-[10px] font-bold uppercase tracking-[0.18em] text-[#7a8a96] mb-3">
-                Question {questionNum}
-              </span>
+            {/* Card content — single column on mobile, two-column on desktop */}
+            <div className="p-5 md:p-10 md:grid md:grid-cols-2 md:gap-12 md:items-start">
 
-              <h1 className="text-xl font-extrabold text-[#111111] leading-tight mb-2">
-                {question.text}
-              </h1>
+              {/* Question */}
+              <div>
+                <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96] mb-3">
+                  Question {questionNum}
+                </span>
 
-              <p className="text-sm text-[#555555] leading-relaxed mb-5">
-                {question.sub}
-              </p>
+                <h1 className="text-xl md:text-3xl font-extrabold text-[#111111] leading-tight mb-2 md:mb-4">
+                  {question.text}
+                </h1>
 
+                <p className="text-sm md:text-base text-[#555555] leading-relaxed mb-5 md:mb-0">
+                  {question.sub}
+                </p>
+              </div>
+
+              {/* Answer buttons */}
               <div className="space-y-3" role="group" aria-label="Answer options">
                 {question.options.map((opt, i) => (
                   <button
                     key={i}
                     onClick={() => handleChoice(opt.next as NextStep)}
-                    className="w-full py-4 px-4 rounded-2xl text-left flex items-center gap-3
+                    className="w-full py-4 px-4 md:py-5 md:px-5 rounded-2xl text-left flex items-center gap-3
                       active:scale-[0.98] transition-all duration-150
                       focus:outline-none focus:ring-4"
                     style={
@@ -179,6 +200,7 @@ export default function VerifyPage() {
                   </button>
                 ))}
               </div>
+
             </div>
           </div>
 
