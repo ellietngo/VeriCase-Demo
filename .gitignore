@@ -34,3 +34,5 @@ coverage
 
 # Vitest
 .vitest
+test-results/
+playwright-report/
