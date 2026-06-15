@@ -1,6 +1,8 @@
 import React from 'react'
-import { CheckCircle2, XCircle, Shield, RotateCcw, Home } from 'lucide-react'
+import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff } from 'lucide-react'
 import { type ResultState } from '../App'
+import { type GeoData } from '../geo'
+import { useOnlineStatus } from '../useOnlineStatus'
 
 const pageStyle: React.CSSProperties = {
   background: 'linear-gradient(-45deg, #064e3b, #052e16, #065f46, #14532d)',
@@ -18,16 +20,54 @@ const shineStyle: React.CSSProperties = {
   pointerEvents: 'none',
 }
 
+function GeoCard({
+  icon,
+  label,
+  name,
+  detail,
+  accentColor,
+}: {
+  icon: React.ReactNode
+  label: string
+  name: string
+  detail: string
+  accentColor: string
+}) {
+  return (
+    <div
+      className="flex items-start gap-3 rounded-2xl p-4"
+      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+    >
+      <div
+        className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center mt-0.5"
+        style={{ background: accentColor + '22' }}
+      >
+        <span style={{ color: accentColor }}>{icon}</span>
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40 mb-0.5">{label}</p>
+        <p className="text-sm font-semibold text-white leading-snug">{name}</p>
+        <p className="text-xs text-white/50 mt-0.5">{detail}</p>
+      </div>
+    </div>
+  )
+}
+
 export default function ResultPage({
   result,
+  geo,
   onNewCase,
   onHome,
 }: {
   result: ResultState
+  geo: GeoData | null
   onNewCase: () => void
   onHome: () => void
 }) {
   const isCitizen = result.outcome.outcome === 'CITIZEN'
+  const online = useOnlineStatus()
+  const activeGeo = online ? geo : null   // never show stale location data when offline
+  const hasGeoCards = activeGeo && (activeGeo.cbpPort || activeGeo.immigrationCourt || activeGeo.iceEro)
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden" style={pageStyle}>
@@ -46,51 +86,83 @@ export default function ResultPage({
               <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">MetaPhase</p>
             </div>
           </div>
-          <div className="hidden sm:block text-right">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Session</p>
-            <p className="text-xs font-semibold text-white/65 tracking-wide">Determination</p>
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={
+                online
+                  ? { background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }
+                  : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.35)' }
+              }
+            >
+              {online ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" style={{ animation: 'pulse-out 2.5s ease-out infinite' }} />
+              ) : (
+                <WifiOff size={10} aria-hidden="true" />
+              )}
+              {online ? 'Online' : 'Offline'}
+            </div>
+            <div className="hidden sm:block text-right">
+              <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Session</p>
+              <p className="text-xs font-semibold text-white/65 tracking-wide">Determination</p>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main */}
-      <main className="relative z-10 flex-1 flex flex-col justify-center px-4 py-12 md:px-8 md:py-16">
-        <div className="w-full max-w-sm mx-auto md:max-w-2xl">
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-            {/* Accent strip */}
+      <main className="relative z-10 flex-1 flex flex-col justify-center px-4 py-8 md:px-8">
+        <div className="w-full max-w-5xl mx-auto">
+
+          {/* Tribal trust land warning — full width above grid */}
+          {activeGeo?.inTribalTrustLand && (
             <div
-              className="h-1.5"
-              style={{
-                background: isCitizen ? '#065f46' : '#dc2626',
-              }}
-              aria-hidden="true"
-            />
+              className="mb-4 flex items-start gap-3 px-4 py-3 rounded-2xl text-sm font-medium"
+              style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', color: '#fde68a' }}
+            >
+              <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" style={{ color: '#fbbf24' }} />
+              <span>
+                Determination completed on {activeGeo.tribalName ? <strong>{activeGeo.tribalName}</strong> : 'tribal trust land'}.
+                Tribal enrollment and federal Indian law may create overlapping jurisdictional considerations.
+              </span>
+            </div>
+          )}
 
-            <div className="p-8 md:p-10 md:grid md:grid-cols-[auto_1fr] md:gap-10 md:items-start">
-              {/* Icon */}
-              <div className="flex justify-center mb-6 md:mb-0">
-                {isCitizen ? (
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: '#dcfce7' }}>
-                    <CheckCircle2 size={44} strokeWidth={1.5} style={{ color: '#065f46' }} aria-hidden="true" />
+          {/* Side-by-side layout on md+ — always two columns if online (even while geo is loading) */}
+          <div className={`flex flex-col ${hasGeoCards || online ? 'md:grid md:grid-cols-[1fr_300px] md:gap-5 md:items-start' : ''}`}>
+
+            {/* Left — result card */}
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+              <div
+                className="h-1.5"
+                style={{ background: isCitizen ? '#065f46' : '#dc2626' }}
+                aria-hidden="true"
+              />
+
+              <div className="p-7 md:p-9">
+                {/* Icon + headline */}
+                <div className="flex items-center gap-5 mb-5">
+                  {isCitizen ? (
+                    <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#dcfce7' }}>
+                      <CheckCircle2 size={36} strokeWidth={1.5} style={{ color: '#065f46' }} aria-hidden="true" />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#fee2e2' }}>
+                      <XCircle size={36} strokeWidth={1.5} style={{ color: '#dc2626' }} aria-hidden="true" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#808080] mb-1">
+                      Determination Complete
+                    </p>
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-[#222] leading-tight">
+                      {isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
+                    </h1>
                   </div>
-                ) : (
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: '#fee2e2' }}>
-                    <XCircle size={44} strokeWidth={1.5} style={{ color: '#dc2626' }} aria-hidden="true" />
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* Content */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#808080] text-center md:text-left mb-2">
-                  Determination Complete
-                </p>
-
-                <h1 className="text-2xl md:text-3xl font-extrabold text-[#222] text-center md:text-left mb-3">
-                  {isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
-                </h1>
-
-                <div className="flex justify-center md:justify-start mb-4">
+                {/* Badge */}
+                <div className="mb-4">
                   <span
                     className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full"
                     style={
@@ -104,18 +176,29 @@ export default function ResultPage({
                   </span>
                 </div>
 
-                <p className="text-xs text-[#999] italic text-center md:text-left mb-5">
-                  {result.outcome.citation}
-                </p>
+                <p className="text-xs text-[#999] italic mb-4">{result.outcome.citation}</p>
 
-                <p className="text-sm md:text-base text-[#555] text-center md:text-left leading-relaxed mb-5">
+                <p className="text-sm text-[#555] leading-relaxed mb-4">
                   {isCitizen
                     ? 'Based on the answers provided, this person appears to be a U.S. citizen. This determination is for demonstration purposes only and is not legal advice.'
                     : 'Based on the answers provided, this person does not appear to be a U.S. citizen. For information about citizenship and naturalization pathways, visit USCIS.gov.'}
                 </p>
 
+                {/* Congressional district chip — CITIZEN only */}
+                {isCitizen && activeGeo?.congressionalDistrict && (
+                  <div
+                    className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-xl"
+                    style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}
+                  >
+                    <Users size={12} style={{ color: '#16a34a' }} aria-hidden="true" />
+                    <span className="text-xs font-semibold" style={{ color: '#15803d' }}>
+                      Congressional District: {activeGeo.congressionalDistrict}
+                    </span>
+                  </div>
+                )}
+
                 {!isCitizen && (
-                  <div className="flex justify-center md:justify-start mb-5">
+                  <div className="mb-4">
                     <a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer"
                       className="text-sm font-medium hover:underline" style={{ color: '#dc2626' }}>
                       Learn about U.S. Citizenship →
@@ -147,17 +230,120 @@ export default function ResultPage({
                 </div>
               </div>
             </div>
+
+            {/* Right — geo context panel (cards when online + data, offline notice when not) */}
+            {(hasGeoCards || online) && (
+              <div className="mt-4 md:mt-0 flex flex-col gap-3">
+                {/* Header row */}
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin size={11} style={{ color: '#4ade80' }} />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">
+                      Location Context
+                    </p>
+                  </div>
+                  <a
+                    href="https://geoborder.metaphase.tech"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-semibold hover:underline"
+                    style={{ color: 'rgba(255,255,255,0.3)' }}
+                  >
+                    powered by <span style={{ color: '#4ade80' }}>GeoBorder</span>
+                  </a>
+                </div>
+
+                {/* Offline notice */}
+                {!online && (
+                  <div
+                    className="flex items-start gap-3 rounded-2xl p-4"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  >
+                    <WifiOff size={16} className="flex-shrink-0 mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>Location context unavailable</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        Connect to the internet to enable GeoBorder jurisdiction data, nearest CBP port, and immigration court.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Jurisdiction summary pill */}
+                {activeGeo && (activeGeo.county || activeGeo.state) && (
+                  <div
+                    className="flex items-center gap-2 px-4 py-3 rounded-2xl"
+                    style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  >
+                    <MapPin size={14} style={{ color: '#86efac' }} aria-hidden="true" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40 mb-0.5">Jurisdiction</p>
+                      <p className="text-sm font-semibold text-white">
+                        {[activeGeo.county, activeGeo.state].filter(Boolean).join(', ')}
+                      </p>
+                      {activeGeo.federalJudicialDistrict && (
+                        <p className="text-xs text-white/50 mt-0.5">{activeGeo.federalJudicialDistrict}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* CBP Port — both outcomes */}
+                {activeGeo?.cbpPort && (
+                  <GeoCard
+                    icon={<Anchor size={16} />}
+                    label="Nearest CBP Port of Entry"
+                    name={`${activeGeo.cbpPort.name}${activeGeo.cbpPort.portCode ? ` (Port ${activeGeo.cbpPort.portCode})` : ''}`}
+                    detail={`${activeGeo.cbpPort.distanceMiles} mi ${activeGeo.cbpPort.cardinal}`}
+                    accentColor="#86efac"
+                  />
+                )}
+
+                {/* Immigration Court + ICE ERO — NOT_CITIZEN only */}
+                {!isCitizen && activeGeo?.immigrationCourt && (
+                  <GeoCard
+                    icon={<Building2 size={16} />}
+                    label="Nearest Immigration Court"
+                    name={activeGeo.immigrationCourt.name}
+                    detail={`${activeGeo.immigrationCourt.distanceMiles} mi ${activeGeo.immigrationCourt.cardinal}`}
+                    accentColor="#fca5a5"
+                  />
+                )}
+
+                {!isCitizen && activeGeo?.iceEro && (
+                  <GeoCard
+                    icon={<Shield size={16} />}
+                    label="ICE ERO Field Office"
+                    name={activeGeo.iceEro.name}
+                    detail={`${activeGeo.iceEro.distanceMiles} mi ${activeGeo.iceEro.cardinal}`}
+                    accentColor="#fcd34d"
+                  />
+                )}
+
+                {/* Footer disclaimer */}
+                <p className="text-[10px] text-center leading-relaxed px-1 mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                  Built by{' '}
+                  <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
+                    className="font-semibold hover:underline" style={{ color: '#fb923c' }}>
+                    MetaPhase
+                  </a>
+                  . Not affiliated with any U.S. government agency.
+                </p>
+              </div>
+            )}
           </div>
 
-          <p className="mt-6 text-xs text-center leading-relaxed px-4" style={{ color: 'rgba(255,255,255,0.38)' }}>
-            Demonstration mode — no case data has been collected or stored.
-            built by{' '}
-            <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
-              className="font-semibold hover:underline" style={{ color: '#fb923c' }}>
-              MetaPhase
-            </a>
-            . Not affiliated with any U.S. government agency.
-          </p>
+          {/* Footer — only shown when no geo cards (otherwise footer is inside geo panel) */}
+          {!hasGeoCards && (
+            <p className="mt-6 text-xs text-center leading-relaxed px-4" style={{ color: 'rgba(255,255,255,0.38)' }}>
+              Demonstration mode — no case data collected or stored. Built by{' '}
+              <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
+                className="font-semibold hover:underline" style={{ color: '#fb923c' }}>
+                MetaPhase
+              </a>
+              . Not affiliated with any U.S. government agency.
+            </p>
+          )}
         </div>
       </main>
     </div>
