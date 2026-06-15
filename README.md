@@ -87,15 +87,12 @@ Planned scaffold areas for follow-on branches:
 
 ## Local Development
 
-Application code is not part of the current governance baseline. After the app
-scaffold lands, expected setup will be:
-
 ```bash
 npm install
 npm run dev
 ```
 
-Expected implementation verification gates:
+Verification gates:
 
 ```bash
 npm run typecheck
@@ -103,8 +100,42 @@ npm run lint
 npm run test:run
 npm run test:a11y
 npm run build
-npm run test:audit
 ```
+
+## E2E Testing (Playwright)
+
+End-to-end tests live in `tests/` and run against the Vite dev server. Playwright starts the server automatically.
+
+```bash
+# Run all e2e tests headlessly
+npm run test:e2e
+
+# Interactive UI mode — best for writing and debugging tests
+npm run test:e2e:ui
+
+# Run a specific file
+npx playwright test tests/citizenship-workflows.spec.ts
+
+# Debug a failing test (opens browser, pauses at each step)
+npx playwright test --debug
+
+# Record a new test by clicking through the app
+npx playwright codegen http://localhost:5173
+
+# View the last HTML test report
+npx playwright show-report
+```
+
+**Test files:**
+
+| File | Coverage |
+| --- | --- |
+| `tests/landing.spec.ts` | Landing page load and CTA navigation |
+| `tests/verify.spec.ts` | Question display, back navigation, progress bar |
+| `tests/citizenship-workflows.spec.ts` | 10 common legal paths + 10 rare edge cases (verified against statute) |
+| `tests/citizenship-edge-additional.spec.ts` | 16 high-risk paths: out-of-wedlock births, military naturalization, Child Citizenship Act abroad, expatriation intent, retention requirements |
+
+Browsers: Chromium only (headless shell). To add Firefox or WebKit, extend `playwright.config.ts`.
 
 ## Pull Request Readiness
 
