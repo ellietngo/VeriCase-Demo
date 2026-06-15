@@ -46,6 +46,7 @@ test.describe('Common workflows', () => {
     await answerSequence(page, [
       'In the 50 states or D.C.',
       'Yes (parent was not a full-immunity diplomat)',
+      'No expatriating act',
     ])
     await expectOutcome(page, 'U.S. Citizen')
   })
@@ -58,6 +59,7 @@ test.describe('Common workflows', () => {
       'In a U.S. territory or possession',
       'Puerto Rico',
       'Yes',
+      'No expatriating act',
     ])
     await expectOutcome(page, 'U.S. Citizen')
   })
@@ -69,6 +71,7 @@ test.describe('Common workflows', () => {
     await answerSequence(page, [
       'In a U.S. territory or possession',
       'Guam',
+      'No expatriating act',
     ])
     await expectOutcome(page, 'U.S. Citizen')
   })
@@ -108,6 +111,7 @@ test.describe('Common workflows', () => {
       'Found in the U.S., parentage unknown',
       'Yes (foundling)',
       'No (presumption stands)',
+      'No expatriating act',
     ])
     await expectOutcome(page, 'U.S. Citizen')
   })
@@ -137,6 +141,7 @@ test.describe('Common workflows', () => {
       'No',
       'Yes',
       'Yes (all conditions met)',
+      'No expatriating act',
     ])
     await expectOutcome(page, 'U.S. Citizen')
   })
@@ -149,6 +154,7 @@ test.describe('Common workflows', () => {
       'In a U.S. territory or possession',
       'American Samoa or Swains Island',
       'Yes, naturalized',
+      'No expatriating act',
     ])
     await expectOutcome(page, 'U.S. Citizen')
   })
@@ -161,6 +167,7 @@ test.describe('Common workflows', () => {
       'In a U.S. territory or possession',
       'Panama Canal Zone',
       'Yes',
+      'No expatriating act',
     ])
     await expectOutcome(page, 'U.S. Citizen')
   })
