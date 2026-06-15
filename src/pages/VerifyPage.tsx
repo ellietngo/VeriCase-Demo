@@ -8,7 +8,6 @@ const rules = rulesJson as unknown as Rules
 
 type Step = { nodeId: string; node: QuestionNode; chosenValue: AnswerValue; chosenLabel: string }
 
-// Rough depth estimate for progress (max path ~14 steps)
 const MAX_STEPS = 14
 
 export default function VerifyPage({
@@ -64,33 +63,27 @@ export default function VerifyPage({
         backgroundSize: '28px 28px, 100% 100%',
       }}
     >
-      {/* Header */}
+      {/* Header — logo only, clickable to go home */}
       <header
         className="text-white px-4 py-4"
         style={{ background: 'linear-gradient(135deg, #052e16 0%, #065f46 55%, #064e3b 100%)' }}
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-1.5 px-3 py-1.5 -ml-1 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 text-sm font-semibold text-white/80"
-              aria-label="Go back"
-            >
-              <ArrowLeft size={16} aria-hidden="true" />
-              Back
-            </button>
-            <div className="w-px h-5 bg-white/20" aria-hidden="true" />
-            <div>
-              <div className="flex items-center gap-2">
-                <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
-                <span className="font-bold tracking-tight">VeriCase</span>
-              </div>
-              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5 ml-0.5">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 rounded-xl hover:bg-white/10 px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label="Go to home"
+          >
+            <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
+            <div className="text-left">
+              <div className="font-bold tracking-tight text-sm">VeriCase</div>
+              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">
                 by{' '}
                 <a
                   href="https://metaphase.tech"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                   className="hover:text-white/70 transition-colors"
                   style={{ color: 'rgba(251,146,60,0.8)' }}
                 >
@@ -98,7 +91,7 @@ export default function VerifyPage({
                 </a>
               </p>
             </div>
-          </div>
+          </button>
           <div className="hidden sm:block text-right">
             <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Session</p>
             <p className="text-xs font-semibold text-white/65 tracking-wide">Guided Intake</p>
@@ -200,6 +193,18 @@ export default function VerifyPage({
                     )
                   })}
                 </div>
+
+                {/* Back button inside the card */}
+                <div className="mt-5 pt-4 border-t border-[#f0f0f0]">
+                  <button
+                    onClick={handleBack}
+                    className="flex items-center gap-1.5 text-sm font-medium text-[#888] hover:text-[#333] transition-colors focus:outline-none focus:ring-2 focus:ring-green-700/20 rounded-lg px-1 py-0.5"
+                    aria-label="Go back"
+                  >
+                    <ArrowLeft size={15} aria-hidden="true" />
+                    {history.length === 0 ? 'Back to home' : 'Previous question'}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -212,7 +217,6 @@ export default function VerifyPage({
                   <div className="absolute left-[8px] top-4 bottom-0 w-px bg-[#e4e8ec]" aria-hidden="true" />
                   <div className="space-y-5">
 
-                    {/* Case opened */}
                     <div className="flex gap-3 items-start">
                       <div className="relative z-10 w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ background: '#065f46' }}>
                         <div className="w-2 h-2 rounded-full bg-white" />
@@ -223,7 +227,6 @@ export default function VerifyPage({
                       </div>
                     </div>
 
-                    {/* Answered questions */}
                     {history.map((step, i) => (
                       <div key={i} className="flex gap-3 items-start">
                         <div className="relative z-10 w-[18px] h-[18px] rounded-full bg-cbp-slate flex-shrink-0 flex items-center justify-center mt-0.5">
@@ -236,7 +239,6 @@ export default function VerifyPage({
                       </div>
                     ))}
 
-                    {/* Current awaiting */}
                     <div className="flex gap-3 items-start">
                       <div className="relative z-10 w-[18px] h-[18px] rounded-full border-2 bg-white flex-shrink-0 flex items-center justify-center mt-0.5" style={{ borderColor: '#16a34a' }}>
                         <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#16a34a' }} />
@@ -255,7 +257,17 @@ export default function VerifyPage({
           </div>
 
           <p className="mt-4 text-xs text-[#6a8a76] text-center leading-relaxed">
-            Demonstration mode — no case data is collected or stored.
+            Demonstration mode — no case data is collected or stored. Built by{' '}
+            <a
+              href="https://metaphase.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline"
+              style={{ color: '#f97316' }}
+            >
+              MetaPhase
+            </a>
+            .
           </p>
         </div>
       </main>

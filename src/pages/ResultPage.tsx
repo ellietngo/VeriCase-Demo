@@ -63,7 +63,7 @@ export default function ResultPage({
               style={{
                 background: isCitizen
                   ? 'linear-gradient(90deg, #065f46, #16a34a)'
-                  : 'linear-gradient(90deg, #00416A, #1460AA)',
+                  : 'linear-gradient(90deg, #991b1b, #dc2626)',
               }}
               aria-hidden="true"
             />
@@ -76,8 +76,8 @@ export default function ResultPage({
                     <CheckCircle2 size={44} strokeWidth={1.5} style={{ color: '#065f46' }} aria-hidden="true" />
                   </div>
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-[#EDF3F9] flex items-center justify-center">
-                    <XCircle size={44} className="text-cbp-blue" strokeWidth={1.5} aria-hidden="true" />
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: '#fee2e2' }}>
+                    <XCircle size={44} strokeWidth={1.5} style={{ color: '#dc2626' }} aria-hidden="true" />
                   </div>
                 )}
               </div>
@@ -98,7 +98,7 @@ export default function ResultPage({
                     style={
                       isCitizen
                         ? { background: '#dcfce7', color: '#065f46' }
-                        : { background: '#EDF3F9', color: '#1460AA' }
+                        : { background: '#fee2e2', color: '#dc2626' }
                     }
                   >
                     <span className="text-[8px]" aria-hidden="true">●</span>
@@ -119,7 +119,7 @@ export default function ResultPage({
                 {!isCitizen && (
                   <div className="flex justify-center md:justify-start mb-5">
                     <a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer"
-                      className="text-sm font-medium hover:underline" style={{ color: '#065f46' }}>
+                      className="text-sm font-medium hover:underline" style={{ color: '#dc2626' }}>
                       Learn about U.S. Citizenship →
                     </a>
                   </div>

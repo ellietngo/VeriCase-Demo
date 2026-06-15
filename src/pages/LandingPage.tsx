@@ -1,8 +1,8 @@
 import React from 'react'
-import { Shield, ClipboardCheck, Zap, Users, GitBranch, Scale, FileSearch } from 'lucide-react'
+import { Shield, ClipboardCheck, Zap, Users, ChevronRight } from 'lucide-react'
 
 const heroStyle: React.CSSProperties = {
-  background: 'linear-gradient(-45deg, #064e3b, #065f46, #14532d, #052e16)',
+  background: 'linear-gradient(-45deg, #14532d, #0d4a24, #166534, #1a7a3e)',
   backgroundSize: '400% 400%',
   animation: 'hero-gradient 14s ease infinite',
 }
@@ -77,7 +77,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               className="bg-white font-bold text-lg px-10 py-4 rounded-full shadow-xl
                 hover:bg-white/90 active:scale-95 transition-all duration-200
                 focus:outline-none focus:ring-4 focus:ring-white/40"
-              style={{ color: '#065f46' }}
+              style={{ color: '#14532d' }}
             >
               Begin Determination
             </button>
@@ -94,7 +94,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                 boxShadow: '0 24px 48px rgba(0,0,0,0.22)',
               }}
             >
-              {/* Example badge */}
+              {/* Header row */}
               <div className="flex items-center justify-between mb-5">
                 <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40 select-none">
                   Example
@@ -108,36 +108,46 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                 </span>
               </div>
 
-              {/* Icon chips — the core idea, icon-forward */}
-              <div className="grid grid-cols-3 gap-3 mb-5" aria-hidden="true">
-                {[
-                  { icon: <FileSearch size={20} strokeWidth={1.5} />, label: 'Intake' },
-                  { icon: <GitBranch size={20} strokeWidth={1.5} />, label: '4,223 paths' },
-                  { icon: <Scale size={20} strokeWidth={1.5} />, label: 'Cited law' },
-                ].map(({ icon, label }) => (
+              {/* Example question */}
+              <div
+                className="rounded-2xl p-4 mb-4"
+                style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)' }}
+                aria-hidden="true"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Question 1</span>
+                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4">
+                  Was the person born in the United States or its territories?
+                </p>
+                <div className="space-y-2 pointer-events-none select-none">
                   <div
-                    key={label}
-                    className="flex flex-col items-center gap-2 py-4 rounded-2xl"
-                    style={{ background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    className="flex items-center justify-between px-4 py-3 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.92)' }}
                   >
-                    <div className="text-green-300">{icon}</div>
-                    <span className="text-[10px] font-semibold text-white/60 tracking-wide">{label}</span>
+                    <span className="text-sm font-semibold" style={{ color: '#14532d' }}>Yes</span>
+                    <ChevronRight size={14} style={{ color: '#14532d', opacity: 0.5 }} />
                   </div>
-                ))}
+                  <div
+                    className="flex items-center justify-between px-4 py-3 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+                  >
+                    <span className="text-sm font-semibold text-white/65">No</span>
+                    <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
+                  </div>
+                </div>
               </div>
 
               {/* Progress bar */}
               <div aria-hidden="true">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Progress</span>
-                  <span className="text-[10px] font-bold text-white/40">84%</span>
+                  <span className="text-[10px] font-bold text-white/40">7%</span>
                 </div>
-                <div className="w-full rounded-full overflow-hidden" style={{ height: 8, background: 'rgba(255,255,255,0.12)' }}>
+                <div className="w-full rounded-full overflow-hidden" style={{ height: 7, background: 'rgba(255,255,255,0.12)' }}>
                   <div
                     style={{
                       height: '100%',
-                      width: '84%',
-                      background: 'linear-gradient(90deg, #059669, #34d399)',
+                      width: '7%',
+                      background: 'linear-gradient(90deg, #166534, #4ade80)',
                       borderRadius: 9999,
                     }}
                   />
