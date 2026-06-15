@@ -1,6 +1,34 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
+
+const DEMO_QUESTIONS = [
+  {
+    label: 'Question 1',
+    text: 'Where was the person born?',
+    answers: ['In the 50 states or D.C.', 'In a U.S. territory or possession', 'Abroad'],
+  },
+  {
+    label: 'Question 2',
+    text: 'Were both parents U.S. citizens at the time of birth?',
+    answers: ['Yes', 'No, only one parent'],
+  },
+  {
+    label: 'Question 3',
+    text: 'Has the person served honorably in the U.S. armed forces?',
+    answers: ['Yes', 'No'],
+  },
+  {
+    label: 'Question 4',
+    text: 'Is the person a Lawful Permanent Resident (green card holder)?',
+    answers: ['Yes (LPR)', 'No'],
+  },
+  {
+    label: 'Question 5',
+    text: 'Has the person ever performed an expatriating act under 8 U.S.C. § 1481(a)?',
+    answers: ['No expatriating act', 'Foreign naturalization / oath / military', 'Formal renunciation or treason'],
+  },
+]
 
 const heroStyle: React.CSSProperties = {
   background: 'linear-gradient(-45deg, #14532d, #0d4a24, #166534, #1a7a3e)',
@@ -29,6 +57,18 @@ const gradientTextStyle: React.CSSProperties = {
 
 export default function LandingPage({ onStart }: { onStart: () => void }) {
   const online = useOnlineStatus()
+  const [demoIdx, setDemoIdx] = useState(0)
+  const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
+  const demo = DEMO_QUESTIONS[demoIdx]
+
+  // Rotate question every 4 seconds
+  useEffect(() => {
+    const id = setInterval(() => {
+      setDemoIdx(i => (i + 1) % DEMO_QUESTIONS.length)
+      setHoveredAnswer(null)
+    }, 4000)
+    return () => clearInterval(id)
+  }, [])
 
   return (
     <div>
@@ -140,32 +180,60 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                 </span>
               </div>
 
-              {/* Example question */}
+              {/* Example question — rotates every 4s */}
               <div
                 className="rounded-2xl p-4 mb-4"
                 style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)' }}
-                aria-hidden="true"
               >
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Question 1</span>
-                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4">
-                  Was the person born in the United States or its territories?
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">{demo.label}</span>
+                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4" style={{ minHeight: '3rem' }}>
+                  {demo.text}
                 </p>
-                <div className="space-y-2 pointer-events-none select-none">
-                  <div
-                    className="flex items-center justify-between px-4 py-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.92)' }}
-                  >
-                    <span className="text-sm font-semibold" style={{ color: '#14532d' }}>Yes</span>
-                    <ChevronRight size={14} style={{ color: '#14532d', opacity: 0.5 }} />
-                  </div>
-                  <div
-                    className="flex items-center justify-between px-4 py-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
-                  >
-                    <span className="text-sm font-semibold text-white/65">No</span>
-                    <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
-                  </div>
+                <div className="space-y-2">
+                  {demo.answers.map((answer, i) => (
+                    <div
+                      key={answer}
+                      className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all duration-150"
+                      style={
+                        hoveredAnswer === i
+                          ? { background: 'rgba(255,255,255,0.98)', transform: 'scale(1.01)' }
+                          : i === 0
+                          ? { background: 'rgba(255,255,255,0.92)' }
+                          : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }
+                      }
+                      onMouseEnter={() => setHoveredAnswer(i)}
+                      onMouseLeave={() => setHoveredAnswer(null)}
+                    >
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.65)' }}
+                      >
+                        {answer}
+                      </span>
+                      <ChevronRight
+                        size={14}
+                        style={{ color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.3)', opacity: hoveredAnswer === i || i === 0 ? 0.6 : 0.4 }}
+                      />
+                    </div>
+                  ))}
                 </div>
+              </div>
+
+              {/* Question dots */}
+              <div className="flex items-center justify-center gap-1.5 mb-4">
+                {DEMO_QUESTIONS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setDemoIdx(i); setHoveredAnswer(null) }}
+                    className="rounded-full transition-all duration-300"
+                    style={{
+                      width: i === demoIdx ? 16 : 6,
+                      height: 6,
+                      background: i === demoIdx ? '#4ade80' : 'rgba(255,255,255,0.2)',
+                    }}
+                    aria-label={`Show question ${i + 1}`}
+                  />
+                ))}
               </div>
 
               {/* Progress bar */}

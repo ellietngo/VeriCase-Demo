@@ -214,11 +214,10 @@ export default function VerifyPage({
             <div className="bg-white rounded-3xl overflow-hidden" style={{ boxShadow: '0 4px 32px rgba(6,95,70,0.10)' }}>
               <div className="h-1.5" style={{ background: 'linear-gradient(90deg, #065f46, #16a34a)' }} aria-hidden="true" />
               <div className="p-5 md:p-8">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center mb-3">
                   <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
                     Question {questionNum}
                   </span>
-                  <span className="font-mono text-[10px] text-[#bbb]">{current.nodeId}</span>
                 </div>
 
                 <h1 className="text-xl md:text-2xl font-extrabold text-[#111] leading-tight mb-2">
