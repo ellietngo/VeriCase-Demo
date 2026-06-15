@@ -36,7 +36,8 @@
         { "value": "abroad_both_citizens", "label": "Abroad, both parents were U.S. citizens", "next": "Q10" },
         { "value": "abroad_one_citizen", "label": "Abroad, one parent was a U.S. citizen", "next": "Q20" },
         { "value": "abroad_no_citizen", "label": "Abroad, neither parent a citizen (or unknown)", "next": "GO_NAT" },
-        { "value": "foundling", "label": "Found in the U.S., parentage unknown", "next": "Q8" }
+        { "value": "foundling", "label": "Found in the U.S., parentage unknown", "next": "Q8" },
+        { "value": "internationally_adopted", "label": "Born abroad, internationally adopted by a U.S. citizen parent", "next": "QADOPT_VISA" }
       ]
     },
 
@@ -513,6 +514,149 @@
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_CCA" },
         { "value": false, "label": "No", "next": "NO_NAT" }
+      ]
+    },
+
+    "QADOPT_VISA": {
+      "kind": "question",
+      "prompt": "What type of immigrant visa was the child admitted on?",
+      "explanation": "IR-3/IH-3 visas are issued when a full and final adoption was completed abroad and at least one parent witnessed the child. IR-4/IH-4 visas are issued when the child is coming to the U.S. to be adopted (or one married parent did not witness the child). IR-2 visas are family-based and require the adoption to have occurred before the child's 16th birthday with 2 years of joint legal custody and residence.",
+      "citation": "8 U.S.C. §§ 1101(b)(1)(E)–(G), 1151(b)(2); 22 C.F.R. §§ 42.21, 42.22; USCIS Policy Manual Vol. 12, Part H, Ch. 2",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "ir3_ih3", "label": "IR-3 or IH-3 — full adoption completed abroad, at least one parent witnessed the child", "next": "QADOPT_IR3_UNDER18" },
+        { "value": "ir4_ih4", "label": "IR-4 or IH-4 — coming to U.S. to be adopted (or adoption abroad not witnessed by one parent)", "next": "QADOPT_IR4_UNDER18" },
+        { "value": "ir2", "label": "IR-2 — family-based petition (adopted before age 16, 2-year joint custody/residence with adoptive parent)", "next": "QADOPT_IR2_UNDER18" },
+        { "value": "unknown", "label": "Unknown / none of the above", "next": "GO_NAT" }
+      ]
+    },
+
+    "QADOPT_IR3_UNDER18": {
+      "kind": "question",
+      "prompt": "Was the child admitted to the United States as a Lawful Permanent Resident before their 18th birthday?",
+      "explanation": "Automatic citizenship under INA § 1431 requires admission as an LPR before age 18. USCIS automatically sends a Certificate of Citizenship to the U.S. address for children under 14 admitted on IR-3 or IH-3 visas who meet all conditions.",
+      "citation": "8 U.S.C. § 1431(a)(1); Child Citizenship Act of 2000; USCIS Policy Manual Vol. 12, Part H, Ch. 3",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (admitted before age 18)", "next": "QADOPT_IR3_PARENT_CIT" },
+        { "value": false, "label": "No (admitted at 18 or older — LPR only)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR3_PARENT_CIT": {
+      "kind": "question",
+      "prompt": "Was the adoptive parent a U.S. citizen at the time of the child's admission to the United States?",
+      "explanation": "§ 1431 requires that the citizen parent hold U.S. citizenship at the moment citizenship transfers to the child. For IR-3/IH-3 cases that moment is admission. If the parent naturalized after the child's admission, automatic citizenship did not attach at that time.",
+      "citation": "8 U.S.C. § 1431(a)(2); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (parent was a U.S. citizen at time of admission)", "next": "QADOPT_IR3_CUSTODY" },
+        { "value": false, "label": "No (parent was not yet a citizen at admission)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR3_CUSTODY": {
+      "kind": "question",
+      "prompt": "Does the child reside in the United States in the legal and physical custody of the U.S. citizen adoptive parent?",
+      "citation": "8 U.S.C. § 1431(a)(3); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes", "next": "CIT_CCA" },
+        { "value": false, "label": "No (custody not established)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR4_UNDER18": {
+      "kind": "question",
+      "prompt": "Was the child admitted to the United States as a Lawful Permanent Resident before their 18th birthday?",
+      "explanation": "Children admitted on IR-4 or IH-4 visas enter as LPRs. If admitted at 18 or older, automatic citizenship under § 1431 is unavailable regardless of whether the U.S. adoption is later finalized; the standard naturalization pathway applies instead.",
+      "citation": "8 U.S.C. § 1431(a)(1); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (admitted before age 18)", "next": "QADOPT_IR4_FINAL" },
+        { "value": false, "label": "No (admitted at 18 or older — LPR only)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR4_FINAL": {
+      "kind": "question",
+      "prompt": "Has the adoption been finalized in a U.S. state court before the child's 18th birthday?",
+      "explanation": "Children admitted on IR-4 or IH-4 visas enter as LPRs but do NOT automatically acquire citizenship on admission. Citizenship under § 1431 attaches automatically on the date the U.S. adoption is finalized — provided all other § 1431 conditions (LPR, under 18, legal and physical custody) are satisfied at that moment.",
+      "citation": "8 U.S.C. § 1431; 8 C.F.R. § 320.2; USCIS Policy Manual Vol. 12, Part H, Ch. 2",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (U.S. adoption finalized before age 18)", "next": "QADOPT_IR4_PARENT_CIT" },
+        { "value": false, "label": "No (not yet finalized, or finalized at or after age 18)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR4_PARENT_CIT": {
+      "kind": "question",
+      "prompt": "Was the adoptive parent a U.S. citizen at the time the adoption was finalized in the United States?",
+      "explanation": "For IR-4/IH-4 cases, citizenship under § 1431 attaches on the date of U.S. finalization. The parent must hold U.S. citizenship at that moment, not merely at some later date.",
+      "citation": "8 U.S.C. § 1431(a)(2); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (parent was a U.S. citizen at time of U.S. finalization)", "next": "QADOPT_IR4_CUSTODY" },
+        { "value": false, "label": "No (parent was not yet a citizen when the adoption was finalized)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR4_CUSTODY": {
+      "kind": "question",
+      "prompt": "At the time the U.S. adoption was finalized, did the child reside in the legal and physical custody of the U.S. citizen adoptive parent?",
+      "citation": "8 U.S.C. § 1431(a)(3); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes", "next": "CIT_CCA" },
+        { "value": false, "label": "No (custody not established at time of finalization)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR2_UNDER18": {
+      "kind": "question",
+      "prompt": "Was the child under 18 years old at the time of admission to the United States as an LPR?",
+      "explanation": "IR-2 children admitted before their 18th birthday who reside in the U.S. in the legal and physical custody of their U.S. citizen parent(s) automatically acquire citizenship. Those admitted at 18 or older become LPRs and must pursue naturalization.",
+      "citation": "8 U.S.C. § 1431(a); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (under 18 at admission)", "next": "QADOPT_IR2_ADOPT_AGE" },
+        { "value": false, "label": "No (18 or older at admission — LPR only)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR2_ADOPT_AGE": {
+      "kind": "question",
+      "prompt": "Was the adoption finalized before the child's 16th birthday — or before the 18th birthday if a sibling was also adopted by the same parent(s)?",
+      "explanation": "INA § 101(b)(1)(E) defines an adopted child for immigration purposes as one adopted before age 16 (or age 18 under the sibling exception of § 101(b)(1)(F)). If the adoption occurred after these cutoffs the person does not qualify as a 'child' under the INA and automatic citizenship under § 1431 does not apply.",
+      "citation": "8 U.S.C. §§ 101(b)(1)(E)–(F); USCIS Policy Manual Vol. 12, Part H",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (adoption finalized within the applicable age cutoff)", "next": "QADOPT_IR2_PARENT_CIT" },
+        { "value": false, "label": "No (adoption occurred after the applicable age cutoff)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR2_PARENT_CIT": {
+      "kind": "question",
+      "prompt": "Was the adoptive parent a U.S. citizen at the time of the child's admission to the United States?",
+      "explanation": "§ 1431 requires citizen-parent status at the moment citizenship would transfer. For IR-2 cases, that is the date of U.S. admission (provided the child is under 18 and all other conditions are met).",
+      "citation": "8 U.S.C. § 1431(a)(2); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (parent was a U.S. citizen at time of admission)", "next": "QADOPT_IR2_CUSTODY" },
+        { "value": false, "label": "No (parent was not yet a citizen at admission)", "next": "Q48" }
+      ]
+    },
+
+    "QADOPT_IR2_CUSTODY": {
+      "kind": "question",
+      "prompt": "Does the child reside in the United States in the legal and physical custody of the U.S. citizen parent(s)?",
+      "citation": "8 U.S.C. § 1431(a)(3); Child Citizenship Act of 2000",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes", "next": "CIT_CCA" },
+        { "value": false, "label": "No", "next": "Q48" }
       ]
     },
 
