@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 const API_BASE = 'https://api.geoborder.metaphase.tech/v1'
 const API_KEY = import.meta.env.VITE_GEOBORDER_KEY as string
 
