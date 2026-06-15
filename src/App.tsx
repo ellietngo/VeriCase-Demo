@@ -1,14 +1,38 @@
+import { useState } from 'react'
+import { type OutcomeNode } from './engine/engine'
+import LandingPage from './pages/LandingPage'
+import VerifyPage from './pages/VerifyPage'
+import ResultPage from './pages/ResultPage'
+
+export type ResultState = {
+  outcome: OutcomeNode
+  nodeId: string
+}
+
+type Page = 'landing' | 'verify' | 'result'
+
 export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          VeriCase Demo
-        </h1>
-        <p className="text-lg text-gray-600">
-          Citizenship verification demonstration workspace
-        </p>
-      </div>
-    </div>
-  )
+  const [page, setPage] = useState<Page>('landing')
+  const [result, setResult] = useState<ResultState | null>(null)
+
+  if (page === 'verify') {
+    return (
+      <VerifyPage
+        onResult={(r) => { setResult(r); setPage('result') }}
+        onBack={() => setPage('landing')}
+      />
+    )
+  }
+
+  if (page === 'result' && result) {
+    return (
+      <ResultPage
+        result={result}
+        onNewCase={() => setPage('verify')}
+        onHome={() => setPage('landing')}
+      />
+    )
+  }
+
+  return <LandingPage onStart={() => setPage('verify')} />
 }
