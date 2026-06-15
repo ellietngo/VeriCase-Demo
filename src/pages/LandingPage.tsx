@@ -55,6 +55,107 @@ const gradientTextStyle: React.CSSProperties = {
   animation: 'gradient-text 6s linear infinite',
 }
 
+// Decorative diagonal flowchart-inspired background
+function BranchingBackground() {
+  type Pt = [number, number]
+
+  const root: Pt = [700, 50]
+  const l1: Pt[] = [[200, 195], [700, 195], [1200, 195]]
+  const l2: Pt[] = [[80, 345], [320, 345], [580, 345], [820, 345], [1080, 345], [1320, 345]]
+  const l3: Pt[] = [
+    [30, 490], [130, 490], [260, 490], [380, 490],
+    [520, 490], [640, 490], [760, 490], [880, 490],
+    [1020, 490], [1140, 490], [1260, 490], [1380, 490],
+  ]
+  const l4: Pt[] = [
+    [30, 630], [170, 630], [300, 630], [440, 630],
+    [560, 630], [680, 630], [800, 630],
+    [1000, 630], [1140, 630], [1300, 630],
+  ]
+  const l5: Pt[] = [[100, 770], [370, 770], [620, 770], [900, 770], [1220, 770]]
+
+  const edges: [Pt, Pt][] = [
+    [root, l1[0]], [root, l1[1]], [root, l1[2]],
+    [l1[0], l2[0]], [l1[0], l2[1]],
+    [l1[1], l2[2]], [l1[1], l2[3]],
+    [l1[2], l2[4]], [l1[2], l2[5]],
+    [l2[0], l3[0]], [l2[0], l3[1]],
+    [l2[1], l3[2]], [l2[1], l3[3]],
+    [l2[2], l3[4]], [l2[2], l3[5]],
+    [l2[3], l3[6]], [l2[3], l3[7]],
+    [l2[4], l3[8]], [l2[4], l3[9]],
+    [l2[5], l3[10]], [l2[5], l3[11]],
+    [l3[0], l4[0]],
+    [l3[1], l4[0]], [l3[1], l4[1]],
+    [l3[2], l4[1]], [l3[2], l4[2]],
+    [l3[3], l4[2]], [l3[3], l4[3]],
+    [l3[4], l4[3]], [l3[4], l4[4]],
+    [l3[5], l4[4]], [l3[5], l4[5]],
+    [l3[6], l4[5]], [l3[6], l4[6]],
+    [l3[7], l4[6]],
+    [l3[8], l4[7]],
+    [l3[9], l4[7]], [l3[9], l4[8]],
+    [l3[10], l4[8]], [l3[10], l4[9]],
+    [l3[11], l4[9]],
+    [l4[0], l5[0]], [l4[1], l5[0]],
+    [l4[2], l5[1]], [l4[3], l5[1]],
+    [l4[4], l5[2]], [l4[5], l5[2]],
+    [l4[6], l5[3]], [l4[7], l5[3]],
+    [l4[8], l5[4]], [l4[9], l5[4]],
+  ]
+
+  function diamond(cx: number, cy: number, w: number, h: number) {
+    return `${cx},${cy - h} ${cx + w},${cy} ${cx},${cy + h} ${cx - w},${cy}`
+  }
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 1400 870"
+      preserveAspectRatio="xMidYMid slice"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        opacity: 0.05,
+        transform: 'rotate(-20deg) scale(1.45)',
+        transformOrigin: '60% 32%',
+        overflow: 'visible',
+      }}
+    >
+      <g stroke="white" strokeWidth="0.9" strokeLinecap="round" fill="white">
+        {edges.map(([a, b], i) => (
+          <line key={`e${i}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} fill="none" />
+        ))}
+        {/* Root — diamond */}
+        <polygon points={diamond(root[0], root[1], 22, 15)} fillOpacity="0.8" />
+        {/* L1 — rectangles */}
+        {l1.map(([x, y], i) => (
+          <rect key={`l1${i}`} x={x - 22} y={y - 13} width="44" height="26" rx="4" fillOpacity="0.6" />
+        ))}
+        {/* L2 — diamonds */}
+        {l2.map(([x, y], i) => (
+          <polygon key={`l2${i}`} points={diamond(x, y, 16, 11)} fillOpacity="0.5" />
+        ))}
+        {/* L3 — circles */}
+        {l3.map(([x, y], i) => (
+          <circle key={`l3${i}`} cx={x} cy={y} r="7" fillOpacity="0.45" />
+        ))}
+        {/* L4 — circles */}
+        {l4.map(([x, y], i) => (
+          <circle key={`l4${i}`} cx={x} cy={y} r="6" fillOpacity="0.38" />
+        ))}
+        {/* L5 — circles */}
+        {l5.map(([x, y], i) => (
+          <circle key={`l5${i}`} cx={x} cy={y} r="5" fillOpacity="0.3" />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
 export default function LandingPage({ onStart }: { onStart: () => void }) {
   const online = useOnlineStatus()
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
@@ -70,6 +171,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
         aria-label="Hero"
       >
         <div style={shineStyle} aria-hidden="true" />
+        <BranchingBackground />
 
         {/* Top bar */}
         <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between mb-16">
