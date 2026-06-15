@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react'
-import { Shield, ArrowLeft, ChevronRight, Check } from 'lucide-react'
+import { Shield, ArrowLeft, ChevronRight, Check, MapPin, AlertTriangle, WifiOff } from 'lucide-react'
+import { useOnlineStatus } from '../useOnlineStatus'
 import rulesJson from '../engine/citizenship_rules.json'
 import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode } from '../engine/engine'
 import { type ResultState } from '../App'
+import { type GeoData } from '../geo'
 
 const rules = rulesJson as unknown as Rules
 
@@ -13,9 +15,11 @@ const MAX_STEPS = 14
 export default function VerifyPage({
   onResult,
   onBack,
+  geo,
 }: {
   onResult: (r: ResultState) => void
   onBack: () => void
+  geo: GeoData | null
 }) {
   const [history, setHistory] = useState<Step[]>([])
   const [current, setCurrent] = useState<{ nodeId: string; node: QuestionNode }>(() => {
@@ -51,6 +55,19 @@ export default function VerifyPage({
   }, [history, onBack])
 
   const isBoolean = current.node.answer_type === 'boolean'
+  const online = useOnlineStatus()
+
+  // Only show geo context when online — never show stale cached location
+  const activeGeo = online ? geo : null
+
+  // Build jurisdiction label from geo
+  const jurisdictionLabel = activeGeo
+    ? [activeGeo.county, activeGeo.state].filter(Boolean).join(', ') ||
+      activeGeo.state ||
+      null
+    : null
+
+  const districtLabel = activeGeo?.federalJudicialDistrict ?? null
 
   return (
     <div
@@ -80,11 +97,73 @@ export default function VerifyPage({
               <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
             </div>
           </button>
-          <div className="hidden sm:block text-right">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Session</p>
-            <p className="text-xs font-semibold text-white/65 tracking-wide">Guided Intake</p>
+
+          <div className="flex items-center gap-3">
+            {/* Jurisdiction chip — shows once geo resolves */}
+            {jurisdictionLabel && (
+              <div
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.75)' }}
+                title={districtLabel ? `Federal District: ${districtLabel}` : undefined}
+              >
+                <MapPin size={11} aria-hidden="true" style={{ color: '#86efac' }} />
+                {jurisdictionLabel}
+                {districtLabel && (
+                  <span className="text-white/40 font-normal ml-1">· {districtLabel}</span>
+                )}
+              </div>
+            )}
+
+            {/* Offline indicator — replaces geo chip when offline */}
+            {!online && !jurisdictionLabel && (
+              <div
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)' }}
+              >
+                <WifiOff size={10} aria-hidden="true" />
+                Offline — location unavailable
+              </div>
+            )}
+
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={
+                online
+                  ? { background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }
+                  : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.35)' }
+              }
+            >
+              {online ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" style={{ animation: 'pulse-out 2.5s ease-out infinite' }} />
+              ) : (
+                <WifiOff size={10} aria-hidden="true" />
+              )}
+              {online ? 'Online' : 'Offline'}
+            </div>
           </div>
         </div>
+
+        {/* Roosevelt Reservation warning */}
+        {activeGeo?.inRooseveltReservation && (
+          <div
+            className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
+            style={{ background: 'rgba(251,146,60,0.18)', border: '1px solid rgba(251,146,60,0.35)', color: '#fed7aa' }}
+          >
+            <AlertTriangle size={13} className="flex-shrink-0" style={{ color: '#fb923c' }} />
+            Completing this determination within the Roosevelt Reservation (federal border zone) — enhanced CBP enforcement authority applies.
+          </div>
+        )}
+
+        {/* Tribal trust land notice */}
+        {activeGeo?.inTribalTrustLand && (
+          <div
+            className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
+            style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', color: '#fde68a' }}
+          >
+            <AlertTriangle size={13} className="flex-shrink-0" style={{ color: '#fbbf24' }} />
+            Completing this determination on {activeGeo.tribalName ? `${activeGeo.tribalName} trust land` : 'tribal trust land'} — tribal enrollment may affect jurisdictional considerations.
+          </div>
+        )}
       </header>
 
       {/* Progress bar */}
@@ -211,7 +290,9 @@ export default function VerifyPage({
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[#222]">Case opened</p>
-                        <p className="text-xs text-[#999] mt-0.5">Interview in progress</p>
+                        <p className="text-xs text-[#999] mt-0.5">
+                          {jurisdictionLabel ? jurisdictionLabel : 'Interview in progress'}
+                        </p>
                       </div>
                     </div>
 
@@ -255,6 +336,20 @@ export default function VerifyPage({
             >
               MetaPhase
             </a>
+            {activeGeo && (
+              <>
+                {' '}· location data by{' '}
+                <a
+                  href="https://geoborder.metaphase.tech"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold hover:underline"
+                  style={{ color: '#16a34a' }}
+                >
+                  GeoBorder
+                </a>
+              </>
+            )}
             .
           </p>
         </div>

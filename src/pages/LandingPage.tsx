@@ -1,5 +1,6 @@
 import React from 'react'
-import { Shield, ClipboardCheck, Zap, Users, ChevronRight } from 'lucide-react'
+import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff } from 'lucide-react'
+import { useOnlineStatus } from '../useOnlineStatus'
 
 const heroStyle: React.CSSProperties = {
   background: 'linear-gradient(-45deg, #14532d, #0d4a24, #166534, #1a7a3e)',
@@ -27,6 +28,8 @@ const gradientTextStyle: React.CSSProperties = {
 }
 
 export default function LandingPage({ onStart }: { onStart: () => void }) {
+  const online = useOnlineStatus()
+
   return (
     <div>
       {/* Hero */}
@@ -43,9 +46,27 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
             <Shield size={18} strokeWidth={1.5} className="text-green-300" aria-hidden="true" />
             <span className="font-bold tracking-tight text-white text-base">VeriCase</span>
           </div>
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 select-none">
-            A MetaPhase Demo
-          </span>
+          <div className="flex items-center gap-3">
+            {/* Online status indicator */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={
+                online
+                  ? { background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }
+                  : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)' }
+              }
+            >
+              {online ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" style={{ animation: 'pulse-out 2.5s ease-out infinite' }} />
+              ) : (
+                <WifiOff size={10} aria-hidden="true" />
+              )}
+              {online ? 'Online' : 'Offline'}
+            </div>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 select-none">
+              A MetaPhase Demo
+            </span>
+          </div>
         </div>
 
         {/* Hero content */}
@@ -81,6 +102,17 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
             >
               Begin Determination
             </button>
+
+            {/* Offline notice — only shown when offline */}
+            {!online && (
+              <div
+                className="flex items-center gap-2 mt-3 px-4 py-2 rounded-full text-xs font-semibold"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}
+              >
+                <WifiOff size={12} aria-hidden="true" />
+                Offline — determination available, location context unavailable
+              </div>
+            )}
           </div>
 
           {/* Right: demo card — desktop only */}
@@ -203,6 +235,11 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
                 className="font-semibold hover:underline" style={{ color: '#f97316' }}>
                 MetaPhase
+              </a>
+              . Location context powered by{' '}
+              <a href="https://geoborder.metaphase.tech" target="_blank" rel="noopener noreferrer"
+                className="font-semibold hover:underline" style={{ color: '#16a34a' }}>
+                GeoBorder
               </a>
               . Not affiliated with or endorsed by DHS, CBP, USCIS, or any U.S. government agency.
               Educational use only — not legal advice. No data is collected or stored.

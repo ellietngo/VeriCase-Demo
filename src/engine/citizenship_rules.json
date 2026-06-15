@@ -167,7 +167,7 @@
     },
     "Q4b": {
       "kind": "question",
-      "prompt": "Did the pre-1941 person acquire U.S. citizen status under the Jones Act, or reside in the U.S. on or after Jan 13, 1941?",
+      "prompt": "Did the person acquire U.S. citizenship under the Jones Act, or reside in the U.S. on or after January 13, 1941?",
       "citation": "8 U.S.C. \u00a7 1402; Jones Act of 1917, \u00a7 5",
       "answer_type": "boolean",
       "answers": [
@@ -203,7 +203,7 @@
     },
     "Q6": {
       "kind": "question",
-      "prompt": "Has the person (born in American Samoa/Swains Island) since become a naturalized U.S. citizen?",
+      "prompt": "Has the person since become a naturalized U.S. citizen?",
       "explanation": "Persons born in American Samoa are U.S. nationals but not citizens by birth. They may naturalize.",
       "citation": "8 U.S.C. \u00a7 1408; Tuaua v. United States, 788 F.3d 300 (D.C. Cir. 2015)",
       "answer_type": "boolean",
@@ -222,7 +222,7 @@
     },
     "Q7": {
       "kind": "question",
-      "prompt": "Has the person (born in an outlying possession) since become a naturalized U.S. citizen?",
+      "prompt": "Has the person since become a naturalized U.S. citizen?",
       "citation": "8 U.S.C. \u00a7 1408",
       "answer_type": "boolean",
       "answers": [
@@ -347,7 +347,7 @@
     },
     "Q25": {
       "kind": "question",
-      "prompt": "For this pre-1934 birth, which parent is the U.S. citizen?",
+      "prompt": "Which parent is the U.S. citizen?",
       "explanation": "Pre-1934 law transmitted citizenship only through the father. The 1994 Technical Amendments added \u00a7 1401(h), retroactively allowing transmission through a citizen mother who had U.S. residence.",
       "citation": "Act of Feb. 10, 1855; 8 U.S.C. \u00a7 1401(h) (added 1994)",
       "answer_type": "enum",
@@ -505,7 +505,7 @@
     },
     "Q30": {
       "kind": "question",
-      "prompt": "For this out-of-wedlock birth, which parent is the U.S. citizen?",
+      "prompt": "Which parent is the U.S. citizen?",
       "citation": "8 U.S.C. \u00a7 1409; Nguyen v. INS, 533 U.S. 53 (2001); Morales-Santana",
       "answer_type": "enum",
       "answers": [
@@ -600,8 +600,8 @@
     },
     "GO_NAT": {
       "kind": "question",
-      "prompt": "The person did not acquire citizenship at birth. Begin the naturalization test. Is the person a Lawful Permanent Resident (green card holder)?",
-      "explanation": "Bridge node: all 'no acquisition at birth' paths converge here to test naturalization.",
+      "prompt": "Is the person a Lawful Permanent Resident (green card holder)?",
+      "explanation": "Citizenship was not acquired at birth. Naturalization is a separate pathway available to eligible Lawful Permanent Residents and certain military service members.",
       "citation": "8 U.S.C. \u00a7 1429; 8 C.F.R. \u00a7 316.2",
       "answer_type": "boolean",
       "answers": [
@@ -934,7 +934,7 @@
     },
     "Q80reacq": {
       "kind": "question",
-      "prompt": "Will the former citizen (who lost status for failing the retention requirement) take the oath to regain citizenship under \u00a7 1435(d)?",
+      "prompt": "Is the person willing to take the Oath of Allegiance to regain citizenship under \u00a7 1435(d)?",
       "citation": "8 U.S.C. \u00a7 1435(d)(1)",
       "answer_type": "boolean",
       "answers": [
