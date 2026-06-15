@@ -61,9 +61,7 @@ export default function ResultPage({
             <div
               className="h-1.5"
               style={{
-                background: isCitizen
-                  ? 'linear-gradient(90deg, #065f46, #16a34a)'
-                  : 'linear-gradient(90deg, #991b1b, #dc2626)',
+                background: isCitizen ? '#dcfce7' : '#fee2e2',
               }}
               aria-hidden="true"
             />

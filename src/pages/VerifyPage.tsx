@@ -77,19 +77,7 @@ export default function VerifyPage({
             <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
             <div className="text-left">
               <div className="font-bold tracking-tight text-sm">VeriCase</div>
-              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">
-                by{' '}
-                <a
-                  href="https://metaphase.tech"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="hover:text-white/70 transition-colors"
-                  style={{ color: 'rgba(251,146,60,0.8)' }}
-                >
-                  MetaPhase
-                </a>
-              </p>
+              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
             </div>
           </button>
           <div className="hidden sm:block text-right">
