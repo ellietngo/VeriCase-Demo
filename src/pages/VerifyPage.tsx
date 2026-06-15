@@ -54,6 +54,7 @@ export default function VerifyPage({
     setCurrent({ nodeId: prev.nodeId, node: prev.node })
   }, [history, onBack])
 
+  const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
   const isBoolean = current.node.answer_type === 'boolean'
   const online = useOnlineStatus()
 
@@ -72,13 +73,7 @@ export default function VerifyPage({
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{
-        backgroundImage: [
-          'radial-gradient(circle, rgba(6,95,70,0.06) 1px, transparent 1px)',
-          'linear-gradient(160deg, #e8f5f0 0%, #d4e8e0 100%)',
-        ].join(', '),
-        backgroundSize: '28px 28px, 100% 100%',
-      }}
+      style={{ background: 'linear-gradient(160deg, #eef5f1 0%, #e4ede8 60%, #dce8e2 100%)' }}
     >
       {/* Header — logo only, clickable to go home */}
       <header
@@ -211,9 +206,16 @@ export default function VerifyPage({
           <div className="md:grid md:grid-cols-[1fr_260px] md:gap-5 md:items-start">
 
             {/* Question card */}
+            <style>{`
+              @keyframes question-in {
+                from { opacity: 0; transform: translateY(14px); }
+                to   { opacity: 1; transform: translateY(0); }
+              }
+              .question-in { animation: question-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+            `}</style>
             <div className="bg-white rounded-3xl overflow-hidden" style={{ boxShadow: '0 4px 32px rgba(6,95,70,0.10)' }}>
               <div className="h-1.5" style={{ background: 'linear-gradient(90deg, #065f46, #16a34a)' }} aria-hidden="true" />
-              <div className="p-5 md:p-8">
+              <div key={current.nodeId} className="question-in p-5 md:p-8">
                 <div className="flex items-center mb-3">
                   <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
                     Question {questionNum}
@@ -235,17 +237,24 @@ export default function VerifyPage({
                 <div className="space-y-3" role="group" aria-label="Answer options">
                   {current.node.answers.map((opt, i) => {
                     const isPrimary = isBoolean && i === 0
+                    const isHovered = hoveredAnswer === i
                     return (
                       <button
                         key={String(opt.value)}
                         onClick={() => handleAnswer(opt.value, opt.label)}
+                        onMouseEnter={() => setHoveredAnswer(i)}
+                        onMouseLeave={() => setHoveredAnswer(null)}
                         className="w-full py-4 px-4 md:py-5 md:px-5 rounded-2xl text-left flex items-center gap-3
-                          active:scale-[0.98] transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-green-800/20"
-                        style={
-                          isPrimary
-                            ? { background: '#065f46', color: 'white' }
-                            : { background: '#F5F6F8', border: '1.5px solid #E4E8EC', color: '#222' }
-                        }
+                          active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-800/20"
+                        style={{
+                          background: isPrimary
+                            ? (isHovered ? '#054f3a' : '#065f46')
+                            : (isHovered ? '#ECEEF1' : '#F5F6F8'),
+                          border: isPrimary ? 'none' : '1.5px solid #E4E8EC',
+                          color: isPrimary ? 'white' : '#222',
+                          transform: isHovered ? 'translateX(3px)' : 'translateX(0)',
+                          transition: 'background 220ms ease, transform 180ms ease, border-color 220ms ease',
+                        }}
                       >
                         <div className="flex-1">
                           <div className="font-semibold text-base leading-snug">{opt.label}</div>
@@ -253,7 +262,12 @@ export default function VerifyPage({
                         <ChevronRight
                           size={18}
                           aria-hidden="true"
-                          style={{ color: isPrimary ? 'rgba(255,255,255,0.5)' : '#AAAAAA', flexShrink: 0 }}
+                          style={{
+                            color: isPrimary ? 'rgba(255,255,255,0.5)' : '#AAAAAA',
+                            flexShrink: 0,
+                            transform: isHovered ? 'translateX(2px)' : 'translateX(0)',
+                            transition: 'transform 180ms ease',
+                          }}
                         />
                       </button>
                     )

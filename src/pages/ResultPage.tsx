@@ -132,33 +132,43 @@ export default function ResultPage({
           <div className={`flex flex-col ${hasGeoCards || online ? 'md:grid md:grid-cols-[1fr_300px] md:gap-5 md:items-start' : ''}`}>
 
             {/* Left — result card */}
-            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <style>{`
+              @keyframes card-in {
+                from { opacity: 0; transform: translateY(20px) scale(0.98); }
+                to   { opacity: 1; transform: translateY(0) scale(1); }
+              }
+              .card-in { animation: card-in 400ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+            `}</style>
+            <div className="card-in bg-white rounded-3xl shadow-2xl overflow-hidden">
               <div
-                className="h-1.5"
-                style={{ background: isCitizen ? '#065f46' : '#dc2626' }}
+                className="h-2"
+                style={{ background: isCitizen ? 'linear-gradient(90deg, #065f46, #16a34a)' : 'linear-gradient(90deg, #b91c1c, #dc2626)' }}
                 aria-hidden="true"
               />
 
               <div className="p-7 md:p-9">
                 {/* Icon + headline */}
-                <div className="flex items-center gap-5 mb-5">
-                  {isCitizen ? (
-                    <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#dcfce7' }}>
-                      <CheckCircle2 size={36} strokeWidth={1.5} style={{ color: '#065f46' }} aria-hidden="true" />
-                    </div>
-                  ) : (
-                    <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#fee2e2' }}>
-                      <XCircle size={36} strokeWidth={1.5} style={{ color: '#dc2626' }} aria-hidden="true" />
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#808080] mb-1">
+                <div className="flex flex-col gap-4 mb-6">
+                  <div className="flex items-center gap-4">
+                    {isCitizen ? (
+                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#dcfce7' }}>
+                        <CheckCircle2 size={30} strokeWidth={1.5} style={{ color: '#065f46' }} aria-hidden="true" />
+                      </div>
+                    ) : (
+                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#fee2e2' }}>
+                        <XCircle size={30} strokeWidth={1.5} style={{ color: '#dc2626' }} aria-hidden="true" />
+                      </div>
+                    )}
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#999]">
                       Determination Complete
                     </p>
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-[#222] leading-tight">
-                      {isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
-                    </h1>
                   </div>
+                  <h1
+                    className="text-4xl md:text-5xl font-extrabold leading-tight"
+                    style={{ color: isCitizen ? '#065f46' : '#b91c1c' }}
+                  >
+                    {isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
+                  </h1>
                 </div>
 
                 {/* Badge */}

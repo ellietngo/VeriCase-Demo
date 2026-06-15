@@ -129,25 +129,19 @@ function BranchingBackground() {
         {edges.map(([a, b], i) => (
           <line key={`e${i}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} fill="none" />
         ))}
-        {/* Root — diamond */}
         <polygon points={diamond(root[0], root[1], 22, 15)} fillOpacity="0.8" />
-        {/* L1 — rectangles */}
         {l1.map(([x, y], i) => (
           <rect key={`l1${i}`} x={x - 22} y={y - 13} width="44" height="26" rx="4" fillOpacity="0.6" />
         ))}
-        {/* L2 — diamonds */}
         {l2.map(([x, y], i) => (
           <polygon key={`l2${i}`} points={diamond(x, y, 16, 11)} fillOpacity="0.5" />
         ))}
-        {/* L3 — circles */}
         {l3.map(([x, y], i) => (
           <circle key={`l3${i}`} cx={x} cy={y} r="7" fillOpacity="0.45" />
         ))}
-        {/* L4 — circles */}
         {l4.map(([x, y], i) => (
           <circle key={`l4${i}`} cx={x} cy={y} r="6" fillOpacity="0.38" />
         ))}
-        {/* L5 — circles */}
         {l5.map(([x, y], i) => (
           <circle key={`l5${i}`} cx={x} cy={y} r="5" fillOpacity="0.3" />
         ))}
@@ -345,7 +339,11 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
       </section>
 
       {/* Features */}
-      <section className="bg-white px-6 py-16 md:py-24" aria-labelledby="features-heading">
+      <section
+        className="px-6 py-16 md:py-24"
+        style={{ background: 'linear-gradient(180deg, #f0f7f4 0%, #ffffff 100%)' }}
+        aria-labelledby="features-heading"
+      >
         <div className="max-w-5xl mx-auto">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cbp-emerald text-center mb-3">
             Built for Operations
@@ -353,22 +351,22 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
           <h2 id="features-heading" className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-12 md:mb-16">
             How It Works
           </h2>
-          <div className="grid gap-10 md:grid-cols-3 md:gap-8 lg:gap-12">
-            <FeatureRow
-              icon={<ClipboardCheck size={22} strokeWidth={2} style={{ color: '#065f46' }} />}
-              iconBg="#dcfce7"
+          <div className="grid gap-6 md:grid-cols-3">
+            <FeatureCard
+              icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
+              accent="#065f46"
               title="Guided Case Review"
               description="47 questions across every citizenship pathway — birth, territory, naturalization, derivation, loss, and re-acquisition."
             />
-            <FeatureRow
-              icon={<Zap size={22} strokeWidth={2} style={{ color: '#14532d' }} />}
-              iconBg="#dcfce7"
+            <FeatureCard
+              icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#16a34a' }} />}
+              accent="#16a34a"
               title="4,223 Legal Paths"
               description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
             />
-            <FeatureRow
-              icon={<Users size={22} strokeWidth={2} style={{ color: '#334155' }} />}
-              iconBg="#f1f5f9"
+            <FeatureCard
+              icon={<Users size={24} strokeWidth={1.8} style={{ color: '#334155' }} />}
+              accent="#334155"
               title="Full Audit Trail"
               description="Every answer is recorded in sequence, giving a defensible step-by-step record of the determination."
             />
@@ -414,13 +412,18 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
   )
 }
 
-function FeatureRow({ icon, iconBg, title, description }: { icon: React.ReactNode; iconBg: string; title: string; description: string }) {
+function FeatureCard({ icon, accent, title, description }: { icon: React.ReactNode; accent: string; title: string; description: string }) {
   return (
-    <div className="flex gap-5">
-      <div className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: iconBg }}>{icon}</div>
+    <div className="flex flex-col gap-4">
+      <div
+        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: accent + '14' }}
+      >
+        {icon}
+      </div>
       <div>
-        <h3 className="font-bold text-[#222] mb-1">{title}</h3>
-        <p className="text-sm text-[#444] leading-relaxed">{description}</p>
+        <h3 className="font-bold text-[#111] mb-2 text-base">{title}</h3>
+        <p className="text-sm text-[#555] leading-relaxed">{description}</p>
       </div>
     </div>
   )
