@@ -61,7 +61,7 @@ export default function ResultPage({
             <div
               className="h-1.5"
               style={{
-                background: isCitizen ? '#dcfce7' : '#fee2e2',
+                background: isCitizen ? '#065f46' : '#dc2626',
               }}
               aria-hidden="true"
             />
