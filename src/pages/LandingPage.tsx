@@ -64,7 +64,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               {online ? 'Online' : 'Offline'}
             </div>
             <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 select-none">
-              A MetaPhase Demo
+              by MetaPhase
             </span>
           </div>
         </div>
