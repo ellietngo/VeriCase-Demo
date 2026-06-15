@@ -1,5 +1,34 @@
-import React from 'react'
-import { Shield, ClipboardCheck, Zap, Users, ChevronRight } from 'lucide-react'
+import React, { useState } from 'react'
+import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff } from 'lucide-react'
+import { useOnlineStatus } from '../useOnlineStatus'
+
+const DEMO_QUESTIONS = [
+  {
+    label: 'Question 1',
+    text: 'Where was the person born?',
+    answers: ['In the 50 states or D.C.', 'In a U.S. territory or possession', 'Abroad'],
+  },
+  {
+    label: 'Question 2',
+    text: 'Were both parents U.S. citizens at the time of birth?',
+    answers: ['Yes', 'No, only one parent'],
+  },
+  {
+    label: 'Question 3',
+    text: 'Has the person served honorably in the U.S. armed forces?',
+    answers: ['Yes', 'No'],
+  },
+  {
+    label: 'Question 4',
+    text: 'Is the person a Lawful Permanent Resident (green card holder)?',
+    answers: ['Yes (LPR)', 'No'],
+  },
+  {
+    label: 'Question 5',
+    text: 'Has the person ever performed an expatriating act under 8 U.S.C. § 1481(a)?',
+    answers: ['No expatriating act', 'Foreign naturalization / oath / military', 'Formal renunciation or treason'],
+  },
+]
 
 const heroStyle: React.CSSProperties = {
   background: 'linear-gradient(-45deg, #14532d, #0d4a24, #166534, #1a7a3e)',
@@ -26,7 +55,113 @@ const gradientTextStyle: React.CSSProperties = {
   animation: 'gradient-text 6s linear infinite',
 }
 
+// Decorative diagonal flowchart-inspired background
+function BranchingBackground() {
+  type Pt = [number, number]
+
+  const root: Pt = [700, 50]
+  const l1: Pt[] = [[200, 195], [700, 195], [1200, 195]]
+  const l2: Pt[] = [[80, 345], [320, 345], [580, 345], [820, 345], [1080, 345], [1320, 345]]
+  const l3: Pt[] = [
+    [30, 490], [130, 490], [260, 490], [380, 490],
+    [520, 490], [640, 490], [760, 490], [880, 490],
+    [1020, 490], [1140, 490], [1260, 490], [1380, 490],
+  ]
+  const l4: Pt[] = [
+    [30, 630], [170, 630], [300, 630], [440, 630],
+    [560, 630], [680, 630], [800, 630],
+    [1000, 630], [1140, 630], [1300, 630],
+  ]
+  const l5: Pt[] = [[100, 770], [370, 770], [620, 770], [900, 770], [1220, 770]]
+
+  const edges: [Pt, Pt][] = [
+    [root, l1[0]], [root, l1[1]], [root, l1[2]],
+    [l1[0], l2[0]], [l1[0], l2[1]],
+    [l1[1], l2[2]], [l1[1], l2[3]],
+    [l1[2], l2[4]], [l1[2], l2[5]],
+    [l2[0], l3[0]], [l2[0], l3[1]],
+    [l2[1], l3[2]], [l2[1], l3[3]],
+    [l2[2], l3[4]], [l2[2], l3[5]],
+    [l2[3], l3[6]], [l2[3], l3[7]],
+    [l2[4], l3[8]], [l2[4], l3[9]],
+    [l2[5], l3[10]], [l2[5], l3[11]],
+    [l3[0], l4[0]],
+    [l3[1], l4[0]], [l3[1], l4[1]],
+    [l3[2], l4[1]], [l3[2], l4[2]],
+    [l3[3], l4[2]], [l3[3], l4[3]],
+    [l3[4], l4[3]], [l3[4], l4[4]],
+    [l3[5], l4[4]], [l3[5], l4[5]],
+    [l3[6], l4[5]], [l3[6], l4[6]],
+    [l3[7], l4[6]],
+    [l3[8], l4[7]],
+    [l3[9], l4[7]], [l3[9], l4[8]],
+    [l3[10], l4[8]], [l3[10], l4[9]],
+    [l3[11], l4[9]],
+    [l4[0], l5[0]], [l4[1], l5[0]],
+    [l4[2], l5[1]], [l4[3], l5[1]],
+    [l4[4], l5[2]], [l4[5], l5[2]],
+    [l4[6], l5[3]], [l4[7], l5[3]],
+    [l4[8], l5[4]], [l4[9], l5[4]],
+  ]
+
+  function diamond(cx: number, cy: number, w: number, h: number) {
+    return `${cx},${cy - h} ${cx + w},${cy} ${cx},${cy + h} ${cx - w},${cy}`
+  }
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 1400 870"
+      preserveAspectRatio="xMidYMid slice"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        opacity: 0.05,
+        transform: 'rotate(-20deg) scale(1.45)',
+        transformOrigin: '60% 32%',
+        overflow: 'visible',
+      }}
+    >
+      <g stroke="white" strokeWidth="0.9" strokeLinecap="round" fill="white">
+        {edges.map(([a, b], i) => (
+          <line key={`e${i}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} fill="none" />
+        ))}
+        {/* Root — diamond */}
+        <polygon points={diamond(root[0], root[1], 22, 15)} fillOpacity="0.8" />
+        {/* L1 — rectangles */}
+        {l1.map(([x, y], i) => (
+          <rect key={`l1${i}`} x={x - 22} y={y - 13} width="44" height="26" rx="4" fillOpacity="0.6" />
+        ))}
+        {/* L2 — diamonds */}
+        {l2.map(([x, y], i) => (
+          <polygon key={`l2${i}`} points={diamond(x, y, 16, 11)} fillOpacity="0.5" />
+        ))}
+        {/* L3 — circles */}
+        {l3.map(([x, y], i) => (
+          <circle key={`l3${i}`} cx={x} cy={y} r="7" fillOpacity="0.45" />
+        ))}
+        {/* L4 — circles */}
+        {l4.map(([x, y], i) => (
+          <circle key={`l4${i}`} cx={x} cy={y} r="6" fillOpacity="0.38" />
+        ))}
+        {/* L5 — circles */}
+        {l5.map(([x, y], i) => (
+          <circle key={`l5${i}`} cx={x} cy={y} r="5" fillOpacity="0.3" />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
 export default function LandingPage({ onStart }: { onStart: () => void }) {
+  const online = useOnlineStatus()
+  const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
+  // Pick a random question once on mount — changes each page refresh
+  const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
+
   return (
     <div>
       {/* Hero */}
@@ -36,6 +171,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
         aria-label="Hero"
       >
         <div style={shineStyle} aria-hidden="true" />
+        <BranchingBackground />
 
         {/* Top bar */}
         <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between mb-16">
@@ -43,9 +179,27 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
             <Shield size={18} strokeWidth={1.5} className="text-green-300" aria-hidden="true" />
             <span className="font-bold tracking-tight text-white text-base">VeriCase</span>
           </div>
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 select-none">
-            A MetaPhase Demo
-          </span>
+          <div className="flex items-center gap-3">
+            {/* Online status indicator */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={
+                online
+                  ? { background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }
+                  : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)' }
+              }
+            >
+              {online ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" style={{ animation: 'pulse-out 2.5s ease-out infinite' }} />
+              ) : (
+                <WifiOff size={10} aria-hidden="true" />
+              )}
+              {online ? 'Online' : 'Offline'}
+            </div>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 select-none">
+              by MetaPhase
+            </span>
+          </div>
         </div>
 
         {/* Hero content */}
@@ -81,6 +235,17 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
             >
               Begin Determination
             </button>
+
+            {/* Offline notice — only shown when offline */}
+            {!online && (
+              <div
+                className="flex items-center gap-2 mt-3 px-4 py-2 rounded-full text-xs font-semibold"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}
+              >
+                <WifiOff size={12} aria-hidden="true" />
+                Offline — determination available, location context unavailable
+              </div>
+            )}
           </div>
 
           {/* Right: demo card — desktop only */}
@@ -108,31 +273,52 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                 </span>
               </div>
 
-              {/* Example question */}
+              {/* Example question — rotates every 4s */}
               <div
                 className="rounded-2xl p-4 mb-4"
                 style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)' }}
-                aria-hidden="true"
               >
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Question 1</span>
-                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4">
-                  Was the person born in the United States or its territories?
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">{demo.label}</span>
+                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4" style={{ minHeight: '3rem' }}>
+                  {demo.text}
                 </p>
-                <div className="space-y-2 pointer-events-none select-none">
-                  <div
-                    className="flex items-center justify-between px-4 py-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.92)' }}
-                  >
-                    <span className="text-sm font-semibold" style={{ color: '#14532d' }}>Yes</span>
-                    <ChevronRight size={14} style={{ color: '#14532d', opacity: 0.5 }} />
-                  </div>
-                  <div
-                    className="flex items-center justify-between px-4 py-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
-                  >
-                    <span className="text-sm font-semibold text-white/65">No</span>
-                    <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
-                  </div>
+                <div className="space-y-2">
+                  {demo.answers.map((answer, i) => (
+                    <div
+                      key={answer}
+                      className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer"
+                      style={{
+                        background: hoveredAnswer === i
+                          ? 'rgba(255,255,255,0.96)'
+                          : i === 0
+                          ? 'rgba(255,255,255,0.88)'
+                          : 'rgba(255,255,255,0.07)',
+                        border: i !== 0 ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                        transform: hoveredAnswer === i ? 'translateX(3px)' : 'translateX(0)',
+                        transition: 'background 300ms ease, transform 200ms ease',
+                      }}
+                      onMouseEnter={() => setHoveredAnswer(i)}
+                      onMouseLeave={() => setHoveredAnswer(null)}
+                    >
+                      <span
+                        className="text-sm font-semibold"
+                        style={{
+                          color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.6)',
+                          transition: 'color 300ms ease',
+                        }}
+                      >
+                        {answer}
+                      </span>
+                      <ChevronRight
+                        size={14}
+                        style={{
+                          color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.25)',
+                          opacity: hoveredAnswer === i ? 0.7 : 0.4,
+                          transition: 'color 300ms ease, opacity 300ms ease',
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -203,6 +389,11 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
                 className="font-semibold hover:underline" style={{ color: '#f97316' }}>
                 MetaPhase
+              </a>
+              . Location context powered by{' '}
+              <a href="https://geoborder.metaphase.tech" target="_blank" rel="noopener noreferrer"
+                className="font-semibold hover:underline" style={{ color: '#16a34a' }}>
+                GeoBorder
               </a>
               . Not affiliated with or endorsed by DHS, CBP, USCIS, or any U.S. government agency.
               Educational use only — not legal advice. No data is collected or stored.
