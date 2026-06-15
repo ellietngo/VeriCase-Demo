@@ -134,6 +134,7 @@ npx playwright show-report
 | `tests/verify.spec.ts` | Question display, back navigation, progress bar |
 | `tests/citizenship-workflows.spec.ts` | 10 common legal paths + 10 rare edge cases (verified against statute) |
 | `tests/citizenship-edge-additional.spec.ts` | 16 high-risk paths: out-of-wedlock births, military naturalization, Child Citizenship Act abroad, expatriation intent, retention requirements |
+| `tests/citizenship-coverage-gap.spec.ts` | 24 branch-coverage tests closing the remaining untested answer paths: diplomatic immunity variants, foundling non-qualifier, outlying possessions, Jones Act pre-1941 Puerto Rico, broken residence/presence, peacetime military failure, era variants (1934–1941, 1941–1952), citizen-mother/both-parents routing, out-of-wedlock father-presence failure, legitimation failure, pre-1934 father and mother paths, retention re-acquisition (oath, marriage, CLN) |
 
 Browsers: Chromium only (headless shell). To add Firefox or WebKit, extend `playwright.config.ts`.
 
