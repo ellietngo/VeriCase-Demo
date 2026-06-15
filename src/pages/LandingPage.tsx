@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
 
@@ -57,18 +57,9 @@ const gradientTextStyle: React.CSSProperties = {
 
 export default function LandingPage({ onStart }: { onStart: () => void }) {
   const online = useOnlineStatus()
-  const [demoIdx, setDemoIdx] = useState(0)
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
-  const demo = DEMO_QUESTIONS[demoIdx]
-
-  // Rotate question every 4 seconds
-  useEffect(() => {
-    const id = setInterval(() => {
-      setDemoIdx(i => (i + 1) % DEMO_QUESTIONS.length)
-      setHoveredAnswer(null)
-    }, 4000)
-    return () => clearInterval(id)
-  }, [])
+  // Pick a random question once on mount — changes each page refresh
+  const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
 
   return (
     <div>
@@ -193,47 +184,40 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                   {demo.answers.map((answer, i) => (
                     <div
                       key={answer}
-                      className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all duration-150"
-                      style={
-                        hoveredAnswer === i
-                          ? { background: 'rgba(255,255,255,0.98)', transform: 'scale(1.01)' }
+                      className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer"
+                      style={{
+                        background: hoveredAnswer === i
+                          ? 'rgba(255,255,255,0.96)'
                           : i === 0
-                          ? { background: 'rgba(255,255,255,0.92)' }
-                          : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }
-                      }
+                          ? 'rgba(255,255,255,0.88)'
+                          : 'rgba(255,255,255,0.07)',
+                        border: i !== 0 ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                        transform: hoveredAnswer === i ? 'translateX(3px)' : 'translateX(0)',
+                        transition: 'background 300ms ease, transform 200ms ease',
+                      }}
                       onMouseEnter={() => setHoveredAnswer(i)}
                       onMouseLeave={() => setHoveredAnswer(null)}
                     >
                       <span
                         className="text-sm font-semibold"
-                        style={{ color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.65)' }}
+                        style={{
+                          color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.6)',
+                          transition: 'color 300ms ease',
+                        }}
                       >
                         {answer}
                       </span>
                       <ChevronRight
                         size={14}
-                        style={{ color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.3)', opacity: hoveredAnswer === i || i === 0 ? 0.6 : 0.4 }}
+                        style={{
+                          color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.25)',
+                          opacity: hoveredAnswer === i ? 0.7 : 0.4,
+                          transition: 'color 300ms ease, opacity 300ms ease',
+                        }}
                       />
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Question dots */}
-              <div className="flex items-center justify-center gap-1.5 mb-4">
-                {DEMO_QUESTIONS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => { setDemoIdx(i); setHoveredAnswer(null) }}
-                    className="rounded-full transition-all duration-300"
-                    style={{
-                      width: i === demoIdx ? 16 : 6,
-                      height: 6,
-                      background: i === demoIdx ? '#4ade80' : 'rgba(255,255,255,0.2)',
-                    }}
-                    aria-label={`Show question ${i + 1}`}
-                  />
-                ))}
               </div>
 
               {/* Progress bar */}
