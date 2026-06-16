@@ -124,8 +124,8 @@
       "answer_type": "enum",
       "answers": [
         { "value": "both_citizens",  "label": "Both parents were U.S. citizens at the time of birth", "next": "Q6A" },
-        { "value": "cit_national",   "label": "One parent was a U.S. citizen; the other was a U.S. national (not a citizen)", "next": "Q6B" },
-        { "value": "cit_foreign",    "label": "One parent was a U.S. citizen; the other was a foreign national", "next": "Q6B" },
+        { "value": "cit_national",   "label": "One parent was a U.S. citizen; the other was a U.S. national (not a citizen)", "next": "Q6_ERA" },
+        { "value": "cit_foreign",    "label": "One parent was a U.S. citizen; the other was a foreign national", "next": "Q6_ERA" },
         { "value": "neither_citizen","label": "Neither parent was a U.S. citizen at birth (both nationals, or both foreign nationals)", "next": "Q6_NAT" }
       ]
     },
@@ -142,15 +142,145 @@
       ]
     },
 
-    "Q6B": {
+    "Q6_ERA": {
       "kind": "question",
-      "prompt": "Did the U.S. citizen parent meet the applicable physical-presence requirement for transmitting citizenship at the birth date era?",
-      "explanation": "The same statutory physical-presence rules that apply to children born abroad govern American Samoa/Swains Island births where one parent is a citizen and the other is a U.S. national or a foreign national. Era standards: post-Nov 14, 1986 \u2014 5 years total, 2 after age 14; Dec 24, 1952\u2013Nov 13, 1986 \u2014 10 years total, 5 after age 14; 1934\u20131952 \u2014 Nationality Act of 1940 rules. For out-of-wedlock births, the additional \u00a7 1409 requirements (acknowledgment, support agreement, blood relationship) also apply.",
-      "citation": "8 U.S.C. \u00a7 1401(g); 8 U.S.C. \u00a7 1409; 7 FAM 1131.4; IRCA 1986 (Pub. L. 99-653)",
+      "prompt": "What is the person's date-of-birth era? (Controls which physical-presence transmission requirement applies.)",
+      "explanation": "The law in force at the date of birth controls how much physical presence the citizen parent needed to transmit citizenship. This mirrors the era analysis for children born abroad under \u00a7 1401.",
+      "citation": "7 FAM 1130 era chart; Act of May 24, 1934; Nationality Act of 1940; INA 1952; IRCA 1986",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "pre_1934",   "label": "Before May 24, 1934",           "next": "Q6_PRE34" },
+        { "value": "1934_1941", "label": "May 24, 1934 \u2013 Jan 12, 1941",   "next": "Q6_WED" },
+        { "value": "1941_1952", "label": "Jan 13, 1941 \u2013 Dec 23, 1952",   "next": "Q6_WED" },
+        { "value": "1952_1986", "label": "Dec 24, 1952 \u2013 Nov 13, 1986",   "next": "Q6_WED" },
+        { "value": "post_1986", "label": "Nov 14, 1986 onward",           "next": "Q6_WED" }
+      ]
+    },
+
+    "Q6_PRE34": {
+      "kind": "question",
+      "prompt": "For this pre-1934 birth in American Samoa or Swains Island, which parent is the U.S. citizen?",
+      "explanation": "Pre-1934 law transmitted citizenship only through the father. The 1994 Technical Amendments added \u00a7 1401(h), retroactively allowing transmission through a citizen mother who had U.S. residence before the birth.",
+      "citation": "Act of Feb. 10, 1855; 8 U.S.C. \u00a7 1401(h) (added 1994)",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "father", "label": "Father", "next": "Q6_PRE34F" },
+        { "value": "mother", "label": "Mother", "next": "Q6_PRE34M" }
+      ]
+    },
+
+    "Q6_PRE34F": {
+      "kind": "question",
+      "prompt": "Did the citizen father have prior U.S. residence before the birth?",
+      "citation": "Act of Feb. 10, 1855",
       "answer_type": "boolean",
       "answers": [
-        { "value": true,  "label": "Yes (citizen parent met the applicable physical-presence requirement)", "next": "Q70" },
-        { "value": false, "label": "No (citizen parent did not meet the requirement)", "next": "Q6_NAT" }
+        { "value": true,  "label": "Yes", "next": "Q70" },
+        { "value": false, "label": "No",  "next": "Q6_NAT" }
+      ]
+    },
+
+    "Q6_PRE34M": {
+      "kind": "question",
+      "prompt": "Did the citizen mother have prior U.S. residence before the birth?",
+      "citation": "8 U.S.C. \u00a7 1401(h) (1994 Technical Amendments)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes", "next": "Q70" },
+        { "value": false, "label": "No",  "next": "Q6_NAT" }
+      ]
+    },
+
+    "Q6_WED": {
+      "kind": "question",
+      "prompt": "Were the parents married to each other at the time of birth?",
+      "explanation": "Marital status determines whether the in-wedlock (\u00a7 1401(g)) or out-of-wedlock (\u00a7 1409) transmission rule applies. The \u00a7 1409 rules impose additional requirements \u2014 including acknowledgment and support \u2014 when the citizen parent is the father.",
+      "citation": "8 U.S.C. \u00a7 1401(g); 8 U.S.C. \u00a7 1409",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "married",       "label": "Yes, married at birth",      "next": "Q6_WHICH" },
+        { "value": "not_married",   "label": "No, not married",            "next": "Q6_OOW" },
+        { "value": "married_after", "label": "Married after the birth",    "next": "Q6_LEG" }
+      ]
+    },
+
+    "Q6_WHICH": {
+      "kind": "question",
+      "prompt": "Which parent is the U.S. citizen?",
+      "citation": "8 U.S.C. \u00a7 1401(g); Sessions v. Morales-Santana, 582 U.S. 47 (2017)",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "father", "label": "Father", "next": "Q6_PP" },
+        { "value": "mother", "label": "Mother", "next": "Q6_PP" },
+        { "value": "both",   "label": "Both",   "next": "Q6A" }
+      ]
+    },
+
+    "Q6_PP": {
+      "kind": "question",
+      "prompt": "Did the citizen parent meet the physical-presence transmission requirement for the applicable era?",
+      "explanation": "Era standards: post-Nov 14, 1986 = 5 years total, 2 after age 14; Dec 24, 1952\u2013Nov 13, 1986 = 10 years total, 5 after age 14; 1934\u20131952 = Nationality Act of 1940 rules. Count all days physically present in the U.S.",
+      "citation": "8 U.S.C. \u00a7 1401(g); IRCA 1986 (Pub. L. 99-653); 7 FAM 1131.4",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes (era requirement met)", "next": "Q24ret" },
+        { "value": false, "label": "No",                        "next": "Q6_NAT" }
+      ]
+    },
+
+    "Q6_OOW": {
+      "kind": "question",
+      "prompt": "For this out-of-wedlock birth in American Samoa or Swains Island, which parent is the U.S. citizen?",
+      "citation": "8 U.S.C. \u00a7 1409; Nguyen v. INS, 533 U.S. 53 (2001); Sessions v. Morales-Santana, 582 U.S. 47 (2017)",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "mother", "label": "Mother", "next": "Q6_MOM_PP" },
+        { "value": "father", "label": "Father", "next": "Q6_DAD_409" },
+        { "value": "both",   "label": "Both",   "next": "Q6A" }
+      ]
+    },
+
+    "Q6_MOM_PP": {
+      "kind": "question",
+      "prompt": "Was the citizen mother physically present in the U.S. for 1 continuous year before the birth?",
+      "citation": "8 U.S.C. \u00a7 1409(c)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes", "next": "Q24ret" },
+        { "value": false, "label": "No",  "next": "Q6_NAT" }
+      ]
+    },
+
+    "Q6_DAD_409": {
+      "kind": "question",
+      "prompt": "For the citizen father, are ALL four \u00a7 1409(a) requirements met? (1) blood relationship established by clear and convincing evidence; (2) father was a U.S. citizen at the time of birth; (3) father agreed in writing to financially support the child until age 18; (4) legitimation, written acknowledgment, or court adjudication of paternity before the child turned 18.",
+      "citation": "8 U.S.C. \u00a7 1409(a); Nguyen v. INS, 533 U.S. 53 (2001)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes, all four requirements met", "next": "Q6_DAD_PP" },
+        { "value": false, "label": "No, one or more missing",        "next": "Q6_NAT" }
+      ]
+    },
+
+    "Q6_DAD_PP": {
+      "kind": "question",
+      "prompt": "Did the citizen father meet the physical-presence requirement (5 years total, 2 after age 14)?",
+      "citation": "8 U.S.C. \u00a7 1409(a) (incorporating \u00a7 1401(g)); Sessions v. Morales-Santana, 582 U.S. 47 (2017)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes", "next": "Q24ret" },
+        { "value": false, "label": "No",  "next": "Q6_NAT" }
+      ]
+    },
+
+    "Q6_LEG": {
+      "kind": "question",
+      "prompt": "Were the parents married after the birth AND was the child legitimated under the law of their residence or domicile before age 18?",
+      "citation": "8 U.S.C. \u00a7 1409(a)(4)(A); Miller v. Albright, 523 U.S. 420 (1998)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes (treat as in-wedlock)", "next": "Q6_WHICH" },
+        { "value": false, "label": "No (apply out-of-wedlock rules)", "next": "Q6_OOW" }
       ]
     },
 
