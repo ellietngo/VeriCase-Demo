@@ -20,6 +20,29 @@ const shineStyle: React.CSSProperties = {
   pointerEvents: 'none',
 }
 
+// Outcomes reached via the immigration-status classifier (Q_STATUS) describe a
+// *current status*, not a citizenship verdict in the adversarial sense — so they
+// get their own headline/icon/copy instead of the generic "Not a U.S. Citizen" framing.
+// The underlying engine still resolves every one of these to outcome: 'NOT_CITIZEN';
+// this is presentation-only differentiation, no change to the rules engine.
+const STATUS_OUTCOME_COPY: Record<string, { eyebrow: string; headline: string; body: string }> = {
+  NO_NONIMM: {
+    eyebrow: 'Status Check Complete',
+    headline: 'Nonimmigrant Status',
+    body: 'This person currently holds nonimmigrant status (such as a tourist, student, or work visa). On its own, nonimmigrant status does not lead toward lawful permanent residence or citizenship — a separate basis (such as employer sponsorship, family petition, or marriage to a U.S. citizen) would be needed to start that process.',
+  },
+  NO_UNDOC: {
+    eyebrow: 'Status Check Complete',
+    headline: 'No Current Lawful Status',
+    body: 'This person does not currently hold any lawful immigration status. There is no direct path to citizenship without first obtaining a lawful basis to remain, such as an approved visa petition, asylum, or another form of relief. An immigration attorney can help identify what options, if any, may be available.',
+  },
+  NO_NAT_MARRIAGE: {
+    eyebrow: 'Status Check Complete',
+    headline: 'Marriage-Based Status Pending',
+    body: 'This person is married to (or holds a marriage/fiancé-based visa tied to) a U.S. citizen, but has not yet been approved for lawful permanent residence. The marriage itself does not confer citizenship — naturalization eligibility begins only after the green card is approved.',
+  },
+}
+
 function GeoCard({
   icon,
   label,
@@ -67,6 +90,8 @@ export default function ResultPage({
   onStatusCheck: () => void
 }) {
   const isCitizen = result.outcome.outcome === 'CITIZEN'
+  const statusCopy = STATUS_OUTCOME_COPY[result.nodeId]
+  const isStatusCheck = !!statusCopy
   const [showAudit, setShowAudit] = useState(false)
   const online = useOnlineStatus()
   const activeGeo = online ? geo : null   // never show stale location data when offline
@@ -145,7 +170,13 @@ export default function ResultPage({
             <div className="card-in bg-white rounded-3xl shadow-2xl overflow-hidden">
               <div
                 className="h-2"
-                style={{ background: isCitizen ? 'linear-gradient(90deg, #065f46, #16a34a)' : 'linear-gradient(90deg, #b91c1c, #dc2626)' }}
+                style={{
+                  background: isStatusCheck
+                    ? 'linear-gradient(90deg, #1d4ed8, #2563eb)'
+                    : isCitizen
+                      ? 'linear-gradient(90deg, #065f46, #16a34a)'
+                      : 'linear-gradient(90deg, #b91c1c, #dc2626)',
+                }}
                 aria-hidden="true"
               />
 
@@ -153,7 +184,11 @@ export default function ResultPage({
                 {/* Icon + headline */}
                 <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-4">
-                    {isCitizen ? (
+                    {isStatusCheck ? (
+                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#dbeafe' }}>
+                        <Compass size={30} strokeWidth={1.5} style={{ color: '#1d4ed8' }} aria-hidden="true" />
+                      </div>
+                    ) : isCitizen ? (
                       <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#dcfce7' }}>
                         <CheckCircle2 size={30} strokeWidth={1.5} style={{ color: '#065f46' }} aria-hidden="true" />
                       </div>
@@ -163,14 +198,14 @@ export default function ResultPage({
                       </div>
                     )}
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#999]">
-                      Determination Complete
+                      {isStatusCheck ? statusCopy.eyebrow : 'Determination Complete'}
                     </p>
                   </div>
                   <h1
                     className="text-4xl md:text-5xl font-extrabold leading-tight"
-                    style={{ color: isCitizen ? '#065f46' : '#b91c1c' }}
+                    style={{ color: isStatusCheck ? '#1d4ed8' : isCitizen ? '#065f46' : '#b91c1c' }}
                   >
-                    {isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
+                    {isStatusCheck ? statusCopy.headline : isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
                   </h1>
                 </div>
 
@@ -179,9 +214,11 @@ export default function ResultPage({
                   <span
                     className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full"
                     style={
-                      isCitizen
-                        ? { background: '#dcfce7', color: '#065f46' }
-                        : { background: '#fee2e2', color: '#dc2626' }
+                      isStatusCheck
+                        ? { background: '#dbeafe', color: '#1d4ed8' }
+                        : isCitizen
+                          ? { background: '#dcfce7', color: '#065f46' }
+                          : { background: '#fee2e2', color: '#dc2626' }
                     }
                   >
                     <span className="text-[8px]" aria-hidden="true">●</span>
@@ -192,9 +229,11 @@ export default function ResultPage({
                 <p className="text-xs text-[#999] italic mb-4">{result.outcome.citation}</p>
 
                 <p className="text-sm text-[#555] leading-relaxed mb-4">
-                  {isCitizen
-                    ? 'Based on the answers provided, this person appears to be a U.S. citizen. This determination is for demonstration purposes only and is not legal advice.'
-                    : 'Based on the answers provided, this person does not appear to be a U.S. citizen. For information about citizenship and naturalization pathways, visit USCIS.gov.'}
+                  {isStatusCheck
+                    ? statusCopy.body
+                    : isCitizen
+                      ? 'Based on the answers provided, this person appears to be a U.S. citizen. This determination is for demonstration purposes only and is not legal advice.'
+                      : 'Based on the answers provided, this person does not appear to be a U.S. citizen. For information about citizenship and naturalization pathways, visit USCIS.gov.'}
                 </p>
 
                 {/* Congressional district chip — CITIZEN only */}
@@ -213,7 +252,7 @@ export default function ResultPage({
                 {!isCitizen && (
                   <div className="mb-4">
                     <a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer"
-                      className="text-sm font-medium hover:underline" style={{ color: '#dc2626' }}>
+                      className="text-sm font-medium hover:underline" style={{ color: isStatusCheck ? '#1d4ed8' : '#dc2626' }}>
                       Learn about U.S. Citizenship →
                     </a>
                   </div>
@@ -222,8 +261,9 @@ export default function ResultPage({
                 {/* Immigration status check — secondary wizard entry, NOT_CITIZEN only.
                     Distinct from citizenship: classifies current status (tourist, student,
                     work visa, marriage, undocumented) and what — if anything — leads toward
-                    LPR status and eventual naturalization. */}
-                {!isCitizen && (
+                    LPR status and eventual naturalization. Hidden when the result IS already
+                    a status-check outcome, since re-offering the same wizard is circular. */}
+                {!isCitizen && !isStatusCheck && (
                   <div
                     className="mb-4 flex items-start gap-3 rounded-2xl p-4"
                     style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}
