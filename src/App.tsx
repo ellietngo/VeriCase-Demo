@@ -2,11 +2,11 @@ import { useState, useCallback } from 'react'
 import LandingPage from './pages/LandingPage'
 import VerifyPage from './pages/VerifyPage'
 import ResultPage from './pages/ResultPage'
-import { type OutcomeNode } from './engine/engine'
+import { type OutcomeNode, type Step } from './engine/engine'
 import { type GeoData, fetchGeoData, getLocation } from './geo'
 
 export type Page = 'landing' | 'verify' | 'result'
-export type ResultState = { outcome: OutcomeNode; nodeId: string }
+export type ResultState = { outcome: OutcomeNode; nodeId: string; history: Step[] }
 
 export default function App() {
   const [page, setPage] = useState<Page>('landing')

@@ -48,6 +48,15 @@ export interface TraceStep {
   title?: string;
 }
 
+// One answered question in a completed interview — used to render the audit
+// trail on the result page (UI-facing, distinct from TraceStep above).
+export interface Step {
+  nodeId: string;
+  node: QuestionNode;
+  chosenValue: AnswerValue;
+  chosenLabel: string;
+}
+
 // ── Core engine ──────────────────────────────────────────────────────────────
 /**
  * Walk the rules graph. `getAnswer` returns the chosen answer's `value` for a

@@ -2,13 +2,11 @@ import { useState, useCallback } from 'react'
 import { Shield, ArrowLeft, ChevronRight, Check, MapPin, AlertTriangle, WifiOff } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
 import rulesJson from '../engine/citizenship_rules.json'
-import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode } from '../engine/engine'
+import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode, type Step } from '../engine/engine'
 import { type ResultState } from '../App'
 import { type GeoData } from '../geo'
 
 const rules = rulesJson as unknown as Rules
-
-type Step = { nodeId: string; node: QuestionNode; chosenValue: AnswerValue; chosenLabel: string }
 
 const MAX_STEPS = 14
 
@@ -39,12 +37,13 @@ export default function VerifyPage({
 
       const next = rules.nodes[match.next]
       if (next.kind === 'outcome') {
-        onResult({ outcome: next as OutcomeNode, nodeId: match.next })
+        const fullHistory = [...history, { nodeId: current.nodeId, node: current.node, chosenValue: value, chosenLabel: label }]
+        onResult({ outcome: next as OutcomeNode, nodeId: match.next, history: fullHistory })
       } else {
         setCurrent({ nodeId: match.next, node: next as QuestionNode })
       }
     },
-    [current, onResult]
+    [current, history, onResult]
   )
 
   const handleBack = useCallback(() => {

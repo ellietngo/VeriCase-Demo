@@ -1,5 +1,5 @@
-import React from 'react'
-import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff } from 'lucide-react'
+import React, { useState } from 'react'
+import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff, ListChecks, ChevronDown } from 'lucide-react'
 import { type ResultState } from '../App'
 import { type GeoData } from '../geo'
 import { useOnlineStatus } from '../useOnlineStatus'
@@ -65,6 +65,7 @@ export default function ResultPage({
   onHome: () => void
 }) {
   const isCitizen = result.outcome.outcome === 'CITIZEN'
+  const [showAudit, setShowAudit] = useState(false)
   const online = useOnlineStatus()
   const activeGeo = online ? geo : null   // never show stale location data when offline
   const hasGeoCards = activeGeo && (activeGeo.cbpPort || activeGeo.immigrationCourt || activeGeo.iceEro)
@@ -213,6 +214,74 @@ export default function ResultPage({
                       className="text-sm font-medium hover:underline" style={{ color: '#dc2626' }}>
                       Learn about U.S. Citizenship →
                     </a>
+                  </div>
+                )}
+
+                {/* Audit trail toggle */}
+                {result.history.length > 0 && (
+                  <div className="mb-4">
+                    <button
+                      onClick={() => setShowAudit((v) => !v)}
+                      className="flex items-center gap-2 text-sm font-semibold rounded-xl px-3 py-2 transition-colors
+                        focus:outline-none focus:ring-4 focus:ring-green-700/15"
+                      style={{ background: '#f0fdf4', color: '#065f46', border: '1px solid #bbf7d0' }}
+                      aria-expanded={showAudit}
+                    >
+                      <ListChecks size={15} aria-hidden="true" />
+                      {showAudit
+                        ? 'Hide Audit Trail'
+                        : `View Audit Trail (${result.history.length} question${result.history.length === 1 ? '' : 's'})`}
+                      <ChevronDown
+                        size={14}
+                        aria-hidden="true"
+                        style={{ transform: showAudit ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}
+                      />
+                    </button>
+
+                    {showAudit && (
+                      <div className="mt-3 rounded-2xl p-4" style={{ background: '#fafafa', border: '1px solid #eee' }}>
+                        <div className="relative">
+                          <div className="absolute left-[8px] top-2 bottom-2 w-px bg-[#e4e8ec]" aria-hidden="true" />
+                          <div className="space-y-4">
+                            {result.history.map((step, i) => (
+                              <div key={i} className="flex gap-3 items-start relative z-10">
+                                <div
+                                  className="w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                                  style={{ background: '#065f46' }}
+                                >
+                                  <span className="text-white text-[10px] font-bold">{i + 1}</span>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs text-[#999] leading-snug">{step.node.prompt}</p>
+                                  <p className="text-sm font-semibold text-[#222] mt-0.5">{step.chosenLabel}</p>
+                                  <p className="text-[11px] text-[#bbb] italic mt-0.5">{step.node.citation}</p>
+                                </div>
+                              </div>
+                            ))}
+
+                            <div className="flex gap-3 items-start relative z-10">
+                              <div
+                                className="w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                                style={{ background: isCitizen ? '#16a34a' : '#dc2626' }}
+                              >
+                                {isCitizen ? (
+                                  <CheckCircle2 size={11} className="text-white" aria-hidden="true" />
+                                ) : (
+                                  <XCircle size={11} className="text-white" aria-hidden="true" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs text-[#999]">Final determination</p>
+                                <p className="text-sm font-semibold mt-0.5" style={{ color: isCitizen ? '#065f46' : '#b91c1c' }}>
+                                  {result.outcome.title}
+                                </p>
+                                <p className="text-[11px] text-[#bbb] italic mt-0.5">{result.outcome.citation}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
