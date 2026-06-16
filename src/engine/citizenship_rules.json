@@ -37,31 +37,44 @@
         { "value": "abroad_one_citizen", "label": "Abroad, one parent was a U.S. citizen", "next": "Q20" },
         { "value": "abroad_no_citizen", "label": "Abroad, neither parent a citizen (or unknown)", "next": "GO_NAT" },
         { "value": "foundling", "label": "Found in the U.S., parentage unknown", "next": "Q8" },
-        { "value": "internationally_adopted", "label": "Born abroad, internationally adopted by a U.S. citizen parent", "next": "QADOPT_VISA" }
+        { "value": "internationally_adopted", "label": "Born abroad, internationally adopted by a U.S. citizen parent", "next": "QADOPT_VISA" },
+        { "value": "surrogacy", "label": "Born via surrogacy or assisted reproduction", "next": "QSURR" }
       ]
     },
 
     "Q1": {
       "kind": "question",
-      "prompt": "At the time of birth, was at least one parent NOT a foreign diplomat with full diplomatic immunity?",
-      "explanation": "The 14th Amendment 'subject to the jurisdiction' clause excludes only children of diplomats with full immunity. It does NOT exclude children of undocumented immigrants, tourists, visa holders, or LPRs.",
-      "citation": "14th Amendment; 8 U.S.C. § 1401(a); 7 FAM 1110; Wong Kim Ark; Plyler v. Doe, 457 U.S. 202 (1982)",
+      "prompt": "Did either parent hold full diplomatic immunity under the VCDR at the time of the birth?",
+      "explanation": "The 14th Amendment 'subject to the jurisdiction' clause excludes children of diplomatic agents with full immunity (VCDR Art. 31). It does NOT exclude children of undocumented immigrants, tourists, visa holders, LPRs, or consular staff with only functional immunity.",
+      "citation": "14th Amendment; 8 U.S.C. § 1401(a); 7 FAM 1110; VCDR Art. 31; Wong Kim Ark; Plyler v. Doe, 457 U.S. 202 (1982)",
       "answer_type": "boolean",
       "answers": [
-        { "value": true, "label": "Yes (parent was not a full-immunity diplomat)", "next": "CIT_14" },
-        { "value": false, "label": "No (both parents were full-immunity diplomats)", "next": "Q1b" }
+        { "value": false, "label": "No (neither parent held full diplomatic immunity)", "next": "CIT_14" },
+        { "value": true, "label": "Yes (at least one parent held full diplomatic immunity)", "next": "Q1b" }
       ]
     },
 
     "Q1b": {
       "kind": "question",
-      "prompt": "Did a parent hold only less-than-full immunity (e.g., consular officer or administrative/technical staff)?",
-      "explanation": "Full diplomatic immunity is reserved for diplomatic agents under the Vienna Convention. Consular staff have only functional immunity, which does not break jurisdiction.",
-      "citation": "7 FAM 1112.1; Wong Kim Ark, 169 U.S. at 682",
+      "prompt": "Was the other parent (the one without full diplomatic immunity) a U.S. citizen?",
+      "explanation": "A U.S. citizen parent is by definition subject to U.S. jurisdiction. A child born in the U.S. to a citizen parent and a diplomat parent inherits jurisdiction from the citizen parent and acquires 14th Amendment citizenship.",
+      "citation": "14th Amendment; 7 FAM 1116.1-3; Wong Kim Ark, 169 U.S. at 682",
       "answer_type": "boolean",
       "answers": [
-        { "value": true, "label": "Yes (only limited immunity)", "next": "CIT_14" },
-        { "value": false, "label": "No (both fully immune)", "next": "GO_NAT" }
+        { "value": true, "label": "Yes (the non-diplomat parent is a U.S. citizen)", "next": "CIT_14" },
+        { "value": false, "label": "No (the non-diplomat parent is a foreign national)", "next": "Q1c" }
+      ]
+    },
+
+    "Q1c": {
+      "kind": "question",
+      "prompt": "Did the diplomatic parent hold only less-than-full immunity (e.g., consular officer or administrative/technical staff)?",
+      "explanation": "Full diplomatic immunity under VCDR Art. 31 is reserved for diplomatic agents. Consular officers have only functional/official-acts immunity (VCCR Art. 43). Limited immunity does not break 14th Amendment jurisdiction.",
+      "citation": "7 FAM 1112.1; VCDR Art. 31; VCCR Art. 43; Wong Kim Ark, 169 U.S. at 682",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (only limited / consular immunity)", "next": "CIT_14" },
+        { "value": false, "label": "No (both parents effectively fully immune)", "next": "GO_NAT" }
       ]
     },
 
@@ -123,7 +136,7 @@
       "citation": "8 U.S.C. § 1408; Tuaua v. United States, 788 F.3d 300 (D.C. Cir. 2015)",
       "answer_type": "boolean",
       "answers": [
-        { "value": true, "label": "Yes, naturalized", "next": "CIT_NAT" },
+        { "value": true, "label": "Yes, naturalized", "next": "Q_DENAT" },
         { "value": false, "label": "No (remains a U.S. national)", "next": "NO_NATL" }
       ]
     },
@@ -134,7 +147,7 @@
       "citation": "8 U.S.C. § 1408",
       "answer_type": "boolean",
       "answers": [
-        { "value": true, "label": "Yes", "next": "CIT_NAT" },
+        { "value": true, "label": "Yes", "next": "Q_DENAT" },
         { "value": false, "label": "No (remains a U.S. national)", "next": "NO_NATL" }
       ]
     },
@@ -471,7 +484,7 @@
       "citation": "8 U.S.C. § 1448; 8 C.F.R. § 337.1",
       "answer_type": "boolean",
       "answers": [
-        { "value": true, "label": "Yes", "next": "CIT_NAT" },
+        { "value": true, "label": "Yes", "next": "Q_DENAT" },
         { "value": false, "label": "No (refuses)", "next": "NO_NAT" }
       ]
     },
@@ -516,7 +529,7 @@
       "citation": "8 U.S.C. § 1431; Child Citizenship Act of 2000",
       "answer_type": "boolean",
       "answers": [
-        { "value": true, "label": "Yes", "next": "Q61" },
+        { "value": true, "label": "Yes", "next": "Q_DER_ERA" },
         { "value": false, "label": "No", "next": "NO_NAT" }
       ]
     },
@@ -535,11 +548,35 @@
 
     "Q63": {
       "kind": "question",
-      "prompt": "If the child is abroad, did the citizen parent apply under § 1433 and was it approved?",
-      "citation": "8 U.S.C. § 1433; Form N-600K",
+      "prompt": "Is the child currently under 18, abroad, and in the legal and physical custody of the U.S. citizen parent?",
+      "explanation": "§ 1433 (Form N-600K) allows a citizen parent to apply for a certificate of citizenship for a child residing abroad. All three conditions — under 18, abroad, in parent's custody — must be satisfied when the application is filed.",
+      "citation": "8 U.S.C. § 1433; Form N-600K; 8 C.F.R. § 322",
       "answer_type": "boolean",
       "answers": [
-        { "value": true, "label": "Yes", "next": "CIT_CCA" },
+        { "value": true, "label": "Yes (under 18, abroad, in citizen parent's custody)", "next": "Q63_PP" },
+        { "value": false, "label": "No", "next": "NO_NAT" }
+      ]
+    },
+
+    "Q63_PP": {
+      "kind": "question",
+      "prompt": "Does the citizen parent meet the physical-presence requirement of § 1401(g) — 5 years in the U.S. before the child's birth, at least 2 of which were after the parent turned 14?",
+      "citation": "8 U.S.C. § 1433(a)(2); 8 U.S.C. § 1401(g); 7 FAM 1131.4",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (§ 1401(g) physical-presence met)", "next": "Q63_PRES" },
+        { "value": false, "label": "No", "next": "NO_NAT" }
+      ]
+    },
+
+    "Q63_PRES": {
+      "kind": "question",
+      "prompt": "Was the child lawfully present in the United States at the time of the § 1433 interview?",
+      "explanation": "USCIS requires the child to be physically and lawfully present in the U.S. at the time of the adjudication interview for a § 1433 / N-600K application to be approved.",
+      "citation": "8 U.S.C. § 1433(b); 8 C.F.R. § 322.3(a); USCIS Policy Manual Vol. 12, Part L",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (lawfully present at interview)", "next": "CIT_CCA" },
         { "value": false, "label": "No", "next": "NO_NAT" }
       ]
     },
@@ -696,7 +733,7 @@
       "answers": [
         { "value": "none", "label": "No expatriating act", "next": "CIT_CONF" },
         { "value": "act_with_intent_question", "label": "Foreign naturalization / oath / military / government post", "next": "Q77" },
-        { "value": "renunciation_or_treason", "label": "Formal renunciation or treason conviction", "next": "Q78" }
+        { "value": "renunciation_or_treason", "label": "Formal renunciation or treason conviction", "next": "Q_REN_FORM" }
       ]
     },
 
@@ -723,6 +760,115 @@
       ]
     },
 
+    "QSURR": {
+      "kind": "question",
+      "prompt": "Does the child have a genetic (biological) connection to a U.S. citizen parent?",
+      "explanation": "For children conceived via assisted reproductive technology (ART) and born via surrogacy, the State Department applies 7 FAM 1131.4-3: citizenship at birth requires a genetic link to a citizen parent. A child with no genetic connection to any citizen parent does not acquire citizenship at birth through transmission — an adoption-based path may still be available.",
+      "citation": "7 FAM 1131.4-3; 8 U.S.C. § 1401(c)(g); 8 U.S.C. § 1409",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "yes_both", "label": "Yes — genetically connected to BOTH citizen parents", "next": "Q11" },
+        { "value": "yes_one",  "label": "Yes — genetically connected to ONE citizen parent", "next": "Q20" },
+        { "value": "no",       "label": "No genetic connection to any citizen parent", "next": "QSURR_ADOPT" }
+      ]
+    },
+
+    "QSURR_ADOPT": {
+      "kind": "question",
+      "prompt": "Has the child been legally adopted by a U.S. citizen parent?",
+      "explanation": "Where no genetic connection exists, citizenship at birth through transmission is unavailable. However, a legal adoption may still open derivative citizenship or naturalization paths.",
+      "citation": "7 FAM 1131.4-3; 8 U.S.C. §§ 1431, 1433; USCIS Policy Manual Vol. 12, Part H",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes (legally adopted by a U.S. citizen parent)", "next": "QADOPT_VISA" },
+        { "value": false, "label": "No legal adoption", "next": "GO_NAT" }
+      ]
+    },
+
+    "Q_DENAT": {
+      "kind": "question",
+      "prompt": "Has the person's naturalization been revoked by a federal court under § 1451 (denaturalization)?",
+      "explanation": "Denaturalization is a civil or criminal court proceeding to revoke a certificate of naturalization obtained by fraud, willful misrepresentation, concealment of a material fact, or illegal procurement. A revocation strips citizenship retroactively.",
+      "citation": "8 U.S.C. § 1451; Luria v. United States, 231 U.S. 9 (1913); United States v. Maslenjak, 582 U.S. 357 (2017)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": false, "label": "No — naturalization stands", "next": "CIT_NAT" },
+        { "value": true,  "label": "Yes — court has revoked naturalization", "next": "NO_DENAT" }
+      ]
+    },
+
+    "Q_REN_FORM": {
+      "kind": "question",
+      "prompt": "Was the renunciation executed before a U.S. diplomatic or consular officer abroad (§ 1481(a)(5)), or before a designated official during a declared state of war (§ 1481(a)(6))?",
+      "explanation": "A purported renunciation of U.S. citizenship is legally effective only if performed in the prescribed form. § 1481(a)(5) requires an oath before a U.S. diplomatic or consular officer outside the United States. § 1481(a)(6) allows renunciation before a designated official in wartime, in the U.S., with prior AG approval. An informal statement or oath before a foreign official has no legal effect.",
+      "citation": "8 U.S.C. § 1481(a)(5)–(6); 7 FAM 1260; Matter of Nolan, 19 I. & N. Dec. 674 (BIA 1988)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes — proper statutory form satisfied", "next": "Q78" },
+        { "value": false, "label": "No — form not satisfied (no valid renunciation)", "next": "CIT_CONF" }
+      ]
+    },
+
+    "Q_DER_ERA": {
+      "kind": "question",
+      "prompt": "Did the qualifying event (parent's naturalization, or child's admission as LPR) occur on or after February 27, 2001?",
+      "explanation": "The Child Citizenship Act of 2000 (CCA) took effect February 27, 2001 and replaced former INA § 321 / 8 U.S.C. § 1432. For events on or after that date, § 1431 (CCA) governs. For events before that date, the repealed § 1432 may still apply — a child who met all § 1432 conditions before Feb 27, 2001 acquired citizenship under that law even though it has since been repealed.",
+      "citation": "Child Citizenship Act of 2000, Pub. L. 106-395; former 8 U.S.C. § 1432 (repealed Feb. 27, 2001); 8 U.S.C. § 1431",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "on_or_after", "label": "On or after February 27, 2001 (CCA / § 1431 governs)", "next": "Q61" },
+        { "value": "before",      "label": "Before February 27, 2001 (former § 321 / § 1432 may apply)", "next": "Q_321" }
+      ]
+    },
+
+    "Q_321": {
+      "kind": "question",
+      "prompt": "At the time of the parent's naturalization, were the child's parents married to each other?",
+      "explanation": "Under former INA § 321 (8 U.S.C. § 1432, repealed 2001), a child's derivative citizenship depended on whether both parents naturalized (if married) or whether the single surviving or legally sole-custody parent naturalized.",
+      "citation": "Former 8 U.S.C. § 1432(a); Matter of Cross, 26 I. & N. Dec. 485 (BIA 2015)",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "married",     "label": "Yes — parents were married to each other", "next": "Q_321_BOTH" },
+        { "value": "not_married", "label": "No — parents were divorced, separated, or one had died", "next": "Q_321_SINGLE" }
+      ]
+    },
+
+    "Q_321_BOTH": {
+      "kind": "question",
+      "prompt": "Did BOTH parents naturalize as U.S. citizens?",
+      "explanation": "Under former § 1432(a)(1), derivative citizenship attached when BOTH parents naturalized. If only one parent naturalized while the parents remained married, derivative citizenship did not attach under § 1432(a)(1).",
+      "citation": "Former 8 U.S.C. § 1432(a)(1); 7 FAM 1153.3",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes — both parents naturalized", "next": "Q_321_LPR" },
+        { "value": false, "label": "No — only one parent naturalized while both alive and married", "next": "Q_321_SINGLE" }
+      ]
+    },
+
+    "Q_321_SINGLE": {
+      "kind": "question",
+      "prompt": "Did the custodial parent (or the surviving parent, if one had died) naturalize as a U.S. citizen while the child was under 18?",
+      "explanation": "Under former § 1432(a)(2)–(3), a child could derive citizenship through one naturalizing parent if: (a) the other parent was deceased; or (b) the naturalizing parent was the sole legal and physical custodian after a legal separation.",
+      "citation": "Former 8 U.S.C. § 1432(a)(2)–(3); Wedgewood v. INS, 217 F.3d 1278 (10th Cir. 2000)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes — qualifying single parent naturalized while child was under 18", "next": "Q_321_LPR" },
+        { "value": false, "label": "No", "next": "NO_NAT" }
+      ]
+    },
+
+    "Q_321_LPR": {
+      "kind": "question",
+      "prompt": "Was the child a lawful permanent resident (LPR) residing in the United States at the time of the parent's naturalization?",
+      "explanation": "Under former § 1432(a), the child had to be an LPR residing in the U.S. when the parent(s) naturalized. Temporary admission was insufficient. Residence after the parent's naturalization did not cure the defect.",
+      "citation": "Former 8 U.S.C. § 1432(a); Matter of Nzomo, 25 I. & N. Dec. 285 (BIA 2010)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true,  "label": "Yes — child was an LPR residing in the U.S. at time of naturalization", "next": "CIT_DER321" },
+        { "value": false, "label": "No", "next": "NO_NAT" }
+      ]
+    },
+
     "Q80reacq": {
       "kind": "question",
       "prompt": "Will the former citizen (who lost status for failing the retention requirement) take the oath to regain citizenship under § 1435(d)?",
@@ -745,6 +891,7 @@
       ]
     },
 
+    "CIT_DER321": { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — derivative citizenship under former INA § 321 / § 1432", "citation": "Former 8 U.S.C. § 1432 (repealed Feb. 27, 2001); Child Citizenship Act of 2000" },
     "CIT_14":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — 14th Amendment / § 1401(a)", "citation": "14th Amendment; 8 U.S.C. § 1401(a); Wong Kim Ark" },
     "CIT_PR":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — Puerto Rico § 1402", "citation": "8 U.S.C. § 1402" },
     "CIT_TERR":  { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — Guam / USVI / CNMI / AK / HI", "citation": "8 U.S.C. §§ 1404-1407" },
@@ -764,7 +911,8 @@
 
     "NO_NONIMM":      { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — nonimmigrant status, no current path to citizenship", "citation": "8 U.S.C. § 1101(a)(15); 8 U.S.C. § 1429" },
     "NO_UNDOC":       { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — no current lawful immigration status", "citation": "8 U.S.C. § 1182; 8 U.S.C. § 1429" },
-    "NO_NAT_MARRIAGE":{ "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — marriage-based green card not yet obtained", "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1430(a)" }
+    "NO_NAT_MARRIAGE":{ "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — marriage-based green card not yet obtained", "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1430(a)" },
+    "NO_DENAT": { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — naturalization revoked (denaturalized)", "citation": "8 U.S.C. § 1451; Luria v. United States, 231 U.S. 9 (1913)" }
 
   }
 }
