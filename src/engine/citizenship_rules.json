@@ -28,7 +28,7 @@
       "kind": "question",
       "prompt": "Where was the person born?",
       "explanation": "Threshold routing question. U.S. citizenship can arise by birth in U.S. territory, birth abroad to a citizen parent, naturalization, or derivation through a parent.",
-      "citation": "14th Amendment; 8 U.S.C. \u00a7 1401; United States v. Wong Kim Ark, 169 U.S. 649 (1898)",
+      "citation": "14th Amendment; 8 U.S.C. § 1401; United States v. Wong Kim Ark, 169 U.S. 649 (1898)",
       "answer_type": "enum",
       "answers": [
         { "value": "us_states_dc", "label": "In the 50 states or D.C.", "next": "Q1" },
@@ -45,7 +45,7 @@
       "kind": "question",
       "prompt": "At the time of birth, was at least one parent NOT a foreign diplomat with full diplomatic immunity?",
       "explanation": "The 14th Amendment 'subject to the jurisdiction' clause excludes only children of diplomats with full immunity. It does NOT exclude children of undocumented immigrants, tourists, visa holders, or LPRs.",
-      "citation": "14th Amendment; 8 U.S.C. \u00a7 1401(a); 7 FAM 1110; Wong Kim Ark; Plyler v. Doe, 457 U.S. 202 (1982)",
+      "citation": "14th Amendment; 8 U.S.C. § 1401(a); 7 FAM 1110; Wong Kim Ark; Plyler v. Doe, 457 U.S. 202 (1982)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (parent was not a full-immunity diplomat)", "next": "CIT_14" },
@@ -69,7 +69,7 @@
       "kind": "question",
       "prompt": "Which U.S. territory or possession was the person born in?",
       "explanation": "Each territory has its own statutory rule. American Samoa and outlying possessions produce U.S. nationals, not citizens.",
-      "citation": "8 U.S.C. \u00a7\u00a7 1402-1408; 7 FAM 1120",
+      "citation": "8 U.S.C. §§ 1402-1408; 7 FAM 1120",
       "answer_type": "enum",
       "answers": [
         { "value": "puerto_rico", "label": "Puerto Rico", "next": "Q4" },
@@ -86,7 +86,7 @@
     "Q4": {
       "kind": "question",
       "prompt": "Was the person born in Puerto Rico on or after January 13, 1941?",
-      "citation": "8 U.S.C. \u00a7 1402; Jones Act of 1917",
+      "citation": "8 U.S.C. § 1402; Jones Act of 1917",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_PR" },
@@ -97,7 +97,7 @@
     "Q4b": {
       "kind": "question",
       "prompt": "Did the pre-1941 person acquire U.S. citizen status under the Jones Act, or reside in the U.S. on or after Jan 13, 1941?",
-      "citation": "8 U.S.C. \u00a7 1402; Jones Act of 1917, \u00a7 5",
+      "citation": "8 U.S.C. § 1402; Jones Act of 1917, § 5",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_PR" },
@@ -108,7 +108,7 @@
     "Q5": {
       "kind": "question",
       "prompt": "Was at least one parent a U.S. citizen at the time of the Canal Zone birth?",
-      "citation": "8 U.S.C. \u00a7 1403",
+      "citation": "8 U.S.C. § 1403",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_CZ" },
@@ -120,7 +120,7 @@
       "kind": "question",
       "prompt": "Has the person (born in American Samoa/Swains Island) since become a naturalized U.S. citizen?",
       "explanation": "Persons born in American Samoa are U.S. nationals but not citizens by birth. They may naturalize.",
-      "citation": "8 U.S.C. \u00a7 1408; Tuaua v. United States, 788 F.3d 300 (D.C. Cir. 2015)",
+      "citation": "8 U.S.C. § 1408; Tuaua v. United States, 788 F.3d 300 (D.C. Cir. 2015)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes, naturalized", "next": "CIT_NAT" },
@@ -131,7 +131,7 @@
     "Q7": {
       "kind": "question",
       "prompt": "Has the person (born in an outlying possession) since become a naturalized U.S. citizen?",
-      "citation": "8 U.S.C. \u00a7 1408",
+      "citation": "8 U.S.C. § 1408",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_NAT" },
@@ -142,7 +142,7 @@
     "Q8": {
       "kind": "question",
       "prompt": "Was the person found in the U.S. while under age 5, with unknown parentage?",
-      "citation": "8 U.S.C. \u00a7 1401(f)",
+      "citation": "8 U.S.C. § 1401(f)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (foundling)", "next": "Q8b" },
@@ -154,7 +154,7 @@
       "kind": "question",
       "prompt": "Was it shown before the person turned 21 that they were NOT born in the United States?",
       "explanation": "The foundling citizenship presumption is rebuttable before age 21.",
-      "citation": "8 U.S.C. \u00a7 1401(f)",
+      "citation": "8 U.S.C. § 1401(f)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (presumption rebutted)", "next": "NO_FOUND" },
@@ -165,7 +165,7 @@
     "Q10": {
       "kind": "question",
       "prompt": "Were BOTH parents U.S. citizens at the time of birth?",
-      "citation": "8 U.S.C. \u00a7 1401(c); 7 FAM 1131",
+      "citation": "8 U.S.C. § 1401(c); 7 FAM 1131",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q11" },
@@ -176,7 +176,7 @@
     "Q11": {
       "kind": "question",
       "prompt": "Had at least one citizen parent ever resided in the U.S. or a possession before the birth (any duration)?",
-      "citation": "8 U.S.C. \u00a7 1401(c); 7 FAM 1131.2",
+      "citation": "8 U.S.C. § 1401(c); 7 FAM 1131.2",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q70" },
@@ -202,8 +202,8 @@
     "Q25": {
       "kind": "question",
       "prompt": "For this pre-1934 birth, which parent is the U.S. citizen?",
-      "explanation": "Pre-1934 law transmitted citizenship only through the father. The 1994 Technical Amendments added \u00a7 1401(h), retroactively allowing transmission through a citizen mother who had U.S. residence.",
-      "citation": "Act of Feb. 10, 1855; 8 U.S.C. \u00a7 1401(h) (added 1994)",
+      "explanation": "Pre-1934 law transmitted citizenship only through the father. The 1994 Technical Amendments added § 1401(h), retroactively allowing transmission through a citizen mother who had U.S. residence.",
+      "citation": "Act of Feb. 10, 1855; 8 U.S.C. § 1401(h) (added 1994)",
       "answer_type": "enum",
       "answers": [
         { "value": "father", "label": "Father", "next": "Q25f" },
@@ -225,7 +225,7 @@
     "Q25m": {
       "kind": "question",
       "prompt": "Did the citizen mother have prior U.S. residence before the birth?",
-      "citation": "8 U.S.C. \u00a7 1401(h) (1994 Technical Amendments)",
+      "citation": "8 U.S.C. § 1401(h) (1994 Technical Amendments)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q70" },
@@ -236,8 +236,8 @@
     "Q21": {
       "kind": "question",
       "prompt": "Were the parents married to each other at the time of birth?",
-      "explanation": "Marriage determines whether \u00a7 1401(g) (wedlock) or \u00a7 1409 (out-of-wedlock) applies.",
-      "citation": "8 U.S.C. \u00a7 1401(g); 8 U.S.C. \u00a7 1409",
+      "explanation": "Marriage determines whether § 1401(g) (wedlock) or § 1409 (out-of-wedlock) applies.",
+      "citation": "8 U.S.C. § 1401(g); 8 U.S.C. § 1409",
       "answer_type": "enum",
       "answers": [
         { "value": "married", "label": "Yes, married at birth", "next": "Q22" },
@@ -249,7 +249,7 @@
     "Q22": {
       "kind": "question",
       "prompt": "Which parent is the U.S. citizen?",
-      "citation": "8 U.S.C. \u00a7 1401(g); Sessions v. Morales-Santana, 582 U.S. 47 (2017)",
+      "citation": "8 U.S.C. § 1401(g); Sessions v. Morales-Santana, 582 U.S. 47 (2017)",
       "answer_type": "enum",
       "answers": [
         { "value": "father", "label": "Father", "next": "Q23" },
@@ -262,7 +262,7 @@
       "kind": "question",
       "prompt": "Did the citizen parent meet the physical-presence transmission requirement for the applicable era?",
       "explanation": "Era standards: post-Nov 14, 1986 = 5 years total, 2 after age 14; Dec 24, 1952 - Nov 13, 1986 = 10 years total, 5 after age 14; 1934-1952 = Nationality Act of 1940 rules. Count all days physically in the U.S.",
-      "citation": "8 U.S.C. \u00a7 1401(g); IRCA 1986 (Pub. L. 99-653); 7 FAM 1131.4",
+      "citation": "8 U.S.C. § 1401(g); IRCA 1986 (Pub. L. 99-653); 7 FAM 1131.4",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (era requirement met)", "next": "Q24ret" },
@@ -274,7 +274,7 @@
       "kind": "question",
       "prompt": "Was the person born before Oct 10, 1978 AND subject to a citizenship-retention requirement?",
       "explanation": "Pre-1978 law required the child to reside in the U.S. for 2 years between ages 14 and 28 to RETAIN citizenship. Pub. L. 95-432 repealed this prospectively (did not restore those already lost).",
-      "citation": "Former 8 U.S.C. \u00a7 1401(b); Pub. L. 95-432 (1978)",
+      "citation": "Former 8 U.S.C. § 1401(b); Pub. L. 95-432 (1978)",
       "answer_type": "boolean",
       "answers": [
         { "value": false, "label": "No (born 1978+ or not subject)", "next": "Q70" },
@@ -285,7 +285,7 @@
     "Q24r2": {
       "kind": "question",
       "prompt": "Did the person MEET the retention requirement (2 years U.S. residence between ages 14 and 28)?",
-      "citation": "Former 8 U.S.C. \u00a7 1401(b)",
+      "citation": "Former 8 U.S.C. § 1401(b)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (retained)", "next": "Q70" },
@@ -296,7 +296,7 @@
     "Q30": {
       "kind": "question",
       "prompt": "For this out-of-wedlock birth, which parent is the U.S. citizen?",
-      "citation": "8 U.S.C. \u00a7 1409; Nguyen v. INS, 533 U.S. 53 (2001); Morales-Santana",
+      "citation": "8 U.S.C. § 1409; Nguyen v. INS, 533 U.S. 53 (2001); Morales-Santana",
       "answer_type": "enum",
       "answers": [
         { "value": "mother", "label": "Mother", "next": "Q31" },
@@ -308,7 +308,7 @@
     "Q31": {
       "kind": "question",
       "prompt": "Was the citizen mother physically present in the U.S. for 1 continuous year before the birth?",
-      "citation": "8 U.S.C. \u00a7 1409(c)",
+      "citation": "8 U.S.C. § 1409(c)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q24ret" },
@@ -318,8 +318,8 @@
 
     "Q32": {
       "kind": "question",
-      "prompt": "For the citizen father, are ALL four \u00a7 1409(a) requirements met? (1) blood relationship by clear and convincing evidence; (2) father was a citizen at birth; (3) father agreed in writing to support until age 18; (4) legitimation/written acknowledgment/adjudication before the child turned 18.",
-      "citation": "8 U.S.C. \u00a7 1409(a); Nguyen v. INS, 533 U.S. 53 (2001)",
+      "prompt": "For the citizen father, are ALL four § 1409(a) requirements met? (1) blood relationship by clear and convincing evidence; (2) father was a citizen at birth; (3) father agreed in writing to support until age 18; (4) legitimation/written acknowledgment/adjudication before the child turned 18.",
+      "citation": "8 U.S.C. § 1409(a); Nguyen v. INS, 533 U.S. 53 (2001)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes, all four met", "next": "Q33" },
@@ -330,7 +330,7 @@
     "Q33": {
       "kind": "question",
       "prompt": "Did the citizen father meet the physical-presence requirement (5 years total, 2 after age 14)?",
-      "citation": "8 U.S.C. \u00a7 1409(a) (incorporating \u00a7 1401(g)); Sessions v. Morales-Santana, 582 U.S. 47 (2017)",
+      "citation": "8 U.S.C. § 1409(a) (incorporating § 1401(g)); Sessions v. Morales-Santana, 582 U.S. 47 (2017)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q24ret" },
@@ -341,7 +341,7 @@
     "Q34": {
       "kind": "question",
       "prompt": "Were the parents married after the birth AND was the child legitimated under the law of their residence/domicile before age 18?",
-      "citation": "8 U.S.C. \u00a7 1409(a)(4)(A); Miller v. Albright, 523 U.S. 420 (1998)",
+      "citation": "8 U.S.C. § 1409(a)(4)(A); Miller v. Albright, 523 U.S. 420 (1998)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (treat as in-wedlock)", "next": "Q22" },
@@ -353,18 +353,45 @@
       "kind": "question",
       "prompt": "The person did not acquire citizenship at birth. Begin the naturalization test. Is the person a Lawful Permanent Resident (green card holder)?",
       "explanation": "Bridge node: all 'no acquisition at birth' paths converge here to test naturalization.",
-      "citation": "8 U.S.C. \u00a7 1429; 8 C.F.R. \u00a7 316.2",
+      "citation": "8 U.S.C. § 1429; 8 C.F.R. § 316.2",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (LPR)", "next": "Q48" },
-        { "value": false, "label": "No", "next": "Q49" }
+        { "value": false, "label": "No", "next": "Q_STATUS" }
+      ]
+    },
+
+    "Q_STATUS": {
+      "kind": "question",
+      "prompt": "What best describes the person's current immigration status?",
+      "explanation": "Naturalization requires first holding the right underlying basis. Nonimmigrant status (tourist, student, work visa) and undocumented presence do not themselves lead toward citizenship — lawful permanent residence is the necessary first step on every route except certain military-service provisions.",
+      "citation": "8 U.S.C. § 1101(a)(15); 8 U.S.C. § 1429",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "military", "label": "Active duty or veteran of the U.S. armed forces", "next": "Q49" },
+        { "value": "marriage", "label": "Married to (or holds a fiancé/marriage-based visa for) a U.S. citizen, not yet a green card holder", "next": "Q_MARR" },
+        { "value": "nonimmigrant", "label": "Tourist, student, or work-visa holder (e.g., B-1/B-2, F-1, H-1B, L-1)", "next": "NO_NONIMM" },
+        { "value": "undocumented", "label": "No current lawful immigration status", "next": "NO_UNDOC" },
+        { "value": "other", "label": "None of these / check for a citizen parent", "next": "Q60br" }
+      ]
+    },
+
+    "Q_MARR": {
+      "kind": "question",
+      "prompt": "Has the marriage-based adjustment of status or immigrant visa already been approved, making the person a lawful permanent resident?",
+      "explanation": "Marriage to a U.S. citizen does not itself confer citizenship or even lawful permanent residence — it only opens an immigrant-visa or adjustment-of-status pathway. The person must first become an LPR (conditional or full) before the marriage-based 3-year naturalization timeline under 8 U.S.C. § 1430(a) can begin.",
+      "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1186a; 8 U.S.C. § 1430(a)",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (now an LPR)", "next": "Q48" },
+        { "value": false, "label": "No (still pending / not yet filed)", "next": "NO_NAT_MARRIAGE" }
       ]
     },
 
     "Q48": {
       "kind": "question",
       "prompt": "Is the person married to and living in marital union with a U.S. citizen (3-year pathway), versus the standard 5-year pathway?",
-      "citation": "8 U.S.C. \u00a7 1430(a)",
+      "citation": "8 U.S.C. § 1430(a)",
       "answer_type": "enum",
       "answers": [
         { "value": "spousal_3yr", "label": "Yes, spouse of citizen (3-year)", "next": "Q42" },
@@ -375,7 +402,7 @@
     "Q42": {
       "kind": "question",
       "prompt": "Has the person met the required continuous residence as an LPR (5 years, or 3 years for the spousal pathway)?",
-      "citation": "8 U.S.C. \u00a7 1427(a)(1); 8 U.S.C. \u00a7 1430(a)",
+      "citation": "8 U.S.C. § 1427(a)(1); 8 U.S.C. § 1430(a)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q43" },
@@ -386,7 +413,7 @@
     "Q43": {
       "kind": "question",
       "prompt": "Is continuous residence unbroken (no single absence over 1 year without an approved N-470)?",
-      "citation": "8 U.S.C. \u00a7 1427(b); 8 C.F.R. \u00a7 316.5",
+      "citation": "8 U.S.C. § 1427(b); 8 C.F.R. § 316.5",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (unbroken)", "next": "Q44" },
@@ -397,7 +424,7 @@
     "Q44": {
       "kind": "question",
       "prompt": "Was the person physically present in the U.S. for at least half the required period (30 months of 5 years, or 18 months of 3 years)?",
-      "citation": "8 U.S.C. \u00a7 1427(a)(2)",
+      "citation": "8 U.S.C. § 1427(a)(2)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q45" },
@@ -408,7 +435,7 @@
     "Q45": {
       "kind": "question",
       "prompt": "Does the person have good moral character for the statutory period?",
-      "citation": "8 U.S.C. \u00a7 1427(a)(3); 8 U.S.C. \u00a7 1101(f); 8 C.F.R. \u00a7 316.10",
+      "citation": "8 U.S.C. § 1427(a)(3); 8 U.S.C. § 1101(f); 8 C.F.R. § 316.10",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q46" },
@@ -419,7 +446,7 @@
     "Q45b": {
       "kind": "question",
       "prompt": "Is the good-moral-character bar PERMANENT (murder, or an aggravated felony committed after Nov 29, 1990)?",
-      "citation": "8 U.S.C. \u00a7 1101(f)(8); 8 C.F.R. \u00a7 316.10(b)",
+      "citation": "8 U.S.C. § 1101(f)(8); 8 C.F.R. § 316.10(b)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (permanent bar)", "next": "NO_PERM" },
@@ -430,7 +457,7 @@
     "Q46": {
       "kind": "question",
       "prompt": "Can the person meet the English and civics requirements, or qualify for a waiver (50/20, 55/15, or N-648 disability)?",
-      "citation": "8 U.S.C. \u00a7 1423; 8 C.F.R. \u00a7 312",
+      "citation": "8 U.S.C. § 1423; 8 C.F.R. § 312",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes or exempt", "next": "Q47" },
@@ -441,7 +468,7 @@
     "Q47": {
       "kind": "question",
       "prompt": "Is the person willing to take the Oath of Allegiance (or an eligible modified oath)?",
-      "citation": "8 U.S.C. \u00a7 1448; 8 C.F.R. \u00a7 337.1",
+      "citation": "8 U.S.C. § 1448; 8 C.F.R. § 337.1",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_NAT" },
@@ -453,7 +480,7 @@
       "kind": "question",
       "prompt": "Has the person served honorably in the U.S. armed forces?",
       "explanation": "Military service is an alternate naturalization route that can waive the LPR requirement.",
-      "citation": "8 U.S.C. \u00a7 1440; 8 C.F.R. Part 328",
+      "citation": "8 U.S.C. § 1440; 8 C.F.R. Part 328",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q50" },
@@ -464,7 +491,7 @@
     "Q50": {
       "kind": "question",
       "prompt": "Was the service during a designated period of hostilities?",
-      "citation": "8 U.S.C. \u00a7 1440(a); Executive Order 13269 (2002)",
+      "citation": "8 U.S.C. § 1440(a); Executive Order 13269 (2002)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (no LPR/residence needed)", "next": "Q47" },
@@ -475,7 +502,7 @@
     "Q42m": {
       "kind": "question",
       "prompt": "Does the person hold LPR status and have at least 1 year of honorable service?",
-      "citation": "8 U.S.C. \u00a7 1440; 8 C.F.R. Part 328",
+      "citation": "8 U.S.C. § 1440; 8 C.F.R. Part 328",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q47" },
@@ -486,7 +513,7 @@
     "Q60br": {
       "kind": "question",
       "prompt": "Is the person a child of a U.S.-citizen parent (potential derivative citizenship)?",
-      "citation": "8 U.S.C. \u00a7 1431; Child Citizenship Act of 2000",
+      "citation": "8 U.S.C. § 1431; Child Citizenship Act of 2000",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "Q61" },
@@ -497,8 +524,8 @@
     "Q61": {
       "kind": "question",
       "prompt": "Is the child under 18, an LPR, residing in the U.S. in the legal and physical custody of the citizen parent?",
-      "explanation": "All conditions of \u00a7 1431 must be met simultaneously for automatic citizenship.",
-      "citation": "8 U.S.C. \u00a7 1431(a); Child Citizenship Act of 2000",
+      "explanation": "All conditions of § 1431 must be met simultaneously for automatic citizenship.",
+      "citation": "8 U.S.C. § 1431(a); Child Citizenship Act of 2000",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (all conditions met)", "next": "CIT_CCA" },
@@ -508,8 +535,8 @@
 
     "Q63": {
       "kind": "question",
-      "prompt": "If the child is abroad, did the citizen parent apply under \u00a7 1433 and was it approved?",
-      "citation": "8 U.S.C. \u00a7 1433; Form N-600K",
+      "prompt": "If the child is abroad, did the citizen parent apply under § 1433 and was it approved?",
+      "citation": "8 U.S.C. § 1433; Form N-600K",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_CCA" },
@@ -662,9 +689,9 @@
 
     "Q70": {
       "kind": "question",
-      "prompt": "Did the person perform any expatriating act under 8 U.S.C. \u00a7 1481(a)?",
+      "prompt": "Did the person perform any expatriating act under 8 U.S.C. § 1481(a)?",
       "explanation": "Acquired citizenship can be lost only by a voluntary expatriating act performed with specific intent to relinquish. The seven acts: foreign naturalization, foreign oath of allegiance, foreign military service, foreign government employment, formal renunciation, wartime renunciation, and treason/bearing arms.",
-      "citation": "8 U.S.C. \u00a7 1481(a); Afroyim v. Rusk, 387 U.S. 253 (1967); Vance v. Terrazas, 444 U.S. 252 (1980)",
+      "citation": "8 U.S.C. § 1481(a); Afroyim v. Rusk, 387 U.S. 253 (1967); Vance v. Terrazas, 444 U.S. 252 (1980)",
       "answer_type": "enum",
       "answers": [
         { "value": "none", "label": "No expatriating act", "next": "CIT_CONF" },
@@ -677,7 +704,7 @@
       "kind": "question",
       "prompt": "Can the government prove the person performed the act with the SPECIFIC INTENT to relinquish U.S. citizenship?",
       "explanation": "Post-Afroyim/Vance, the burden is on the government, by preponderance of evidence. State Dept policy presumes retention absent an affirmative relinquishment statement.",
-      "citation": "Vance v. Terrazas, 444 U.S. 252 (1980); 22 C.F.R. \u00a7 50.40; 7 FAM 1211",
+      "citation": "Vance v. Terrazas, 444 U.S. 252 (1980); 22 C.F.R. § 50.40; 7 FAM 1211",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (intent shown)", "next": "Q78" },
@@ -688,7 +715,7 @@
     "Q78": {
       "kind": "question",
       "prompt": "Was the act voluntary, free of duress, with the citizenship consequences understood?",
-      "citation": "7 FAM 1211; 22 C.F.R. \u00a7 50.40",
+      "citation": "7 FAM 1211; 22 C.F.R. § 50.40",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (voluntary)", "next": "NO_LOST" },
@@ -698,8 +725,8 @@
 
     "Q80reacq": {
       "kind": "question",
-      "prompt": "Will the former citizen (who lost status for failing the retention requirement) take the oath to regain citizenship under \u00a7 1435(d)?",
-      "citation": "8 U.S.C. \u00a7 1435(d)(1)",
+      "prompt": "Will the former citizen (who lost status for failing the retention requirement) take the oath to regain citizenship under § 1435(d)?",
+      "citation": "8 U.S.C. § 1435(d)(1)",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes (oath taken)", "next": "CIT_REACQ" },
@@ -709,8 +736,8 @@
 
     "Q81marr": {
       "kind": "question",
-      "prompt": "If citizenship was lost by marriage to an alien before Sept 22, 1922, does the person apply to re-acquire under \u00a7 1435?",
-      "citation": "Cable Act of 1922; 8 U.S.C. \u00a7 1435",
+      "prompt": "If citizenship was lost by marriage to an alien before Sept 22, 1922, does the person apply to re-acquire under § 1435?",
+      "citation": "Cable Act of 1922; 8 U.S.C. § 1435",
       "answer_type": "boolean",
       "answers": [
         { "value": true, "label": "Yes", "next": "CIT_REACQ" },
@@ -718,22 +745,26 @@
       ]
     },
 
-    "CIT_14":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 14th Amendment / \u00a7 1401(a)", "citation": "14th Amendment; 8 U.S.C. \u00a7 1401(a); Wong Kim Ark" },
-    "CIT_PR":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 Puerto Rico \u00a7 1402", "citation": "8 U.S.C. \u00a7 1402" },
-    "CIT_TERR":  { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 Guam / USVI / CNMI / AK / HI", "citation": "8 U.S.C. \u00a7\u00a7 1404-1407" },
-    "CIT_CZ":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 Canal Zone \u00a7 1403", "citation": "8 U.S.C. \u00a7 1403" },
-    "CIT_FOUND": { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 Foundling \u00a7 1401(f)", "citation": "8 U.S.C. \u00a7 1401(f)" },
-    "CIT_NAT":   { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 by Naturalization", "citation": "8 U.S.C. \u00a7\u00a7 1421-1448" },
-    "CIT_CCA":   { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 Child Citizenship Act \u00a7 1431/\u00a7 1433", "citation": "8 U.S.C. \u00a7\u00a7 1431, 1433; CCA 2000" },
-    "CIT_CONF":  { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 confirmed, no valid loss", "citation": "Afroyim v. Rusk; Vance v. Terrazas" },
-    "CIT_REACQ": { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen \u2014 re-acquired under \u00a7 1435", "citation": "8 U.S.C. \u00a7 1435" },
+    "CIT_14":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — 14th Amendment / § 1401(a)", "citation": "14th Amendment; 8 U.S.C. § 1401(a); Wong Kim Ark" },
+    "CIT_PR":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — Puerto Rico § 1402", "citation": "8 U.S.C. § 1402" },
+    "CIT_TERR":  { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — Guam / USVI / CNMI / AK / HI", "citation": "8 U.S.C. §§ 1404-1407" },
+    "CIT_CZ":    { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — Canal Zone § 1403", "citation": "8 U.S.C. § 1403" },
+    "CIT_FOUND": { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — Foundling § 1401(f)", "citation": "8 U.S.C. § 1401(f)" },
+    "CIT_NAT":   { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — by Naturalization", "citation": "8 U.S.C. §§ 1421-1448" },
+    "CIT_CCA":   { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — Child Citizenship Act § 1431/§ 1433", "citation": "8 U.S.C. §§ 1431, 1433; CCA 2000" },
+    "CIT_CONF":  { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — confirmed, no valid loss", "citation": "Afroyim v. Rusk; Vance v. Terrazas" },
+    "CIT_REACQ": { "kind": "outcome", "outcome": "CITIZEN", "title": "U.S. Citizen — re-acquired under § 1435", "citation": "8 U.S.C. § 1435" },
 
-    "NO_NATL":  { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen \u2014 U.S. national only (\u00a7 1408)", "citation": "8 U.S.C. \u00a7 1408; Tuaua v. United States" },
-    "NO_NAT":   { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen \u2014 naturalization requirements not met", "citation": "8 U.S.C. \u00a7\u00a7 1421-1448" },
-    "NO_PERM":  { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen \u2014 permanently barred from naturalization", "citation": "8 U.S.C. \u00a7 1101(f)(8)" },
-    "NO_LOST":  { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen \u2014 citizenship lost (CLN)", "citation": "8 U.S.C. \u00a7 1481" },
-    "NO_FOUND": { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen \u2014 foundling presumption rebutted", "citation": "8 U.S.C. \u00a7 1401(f)" },
-    "NO_PR":    { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen \u2014 Puerto Rican citizen only (pre-1941)", "citation": "Jones Act of 1917" }
+    "NO_NATL":  { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — U.S. national only (§ 1408)", "citation": "8 U.S.C. § 1408; Tuaua v. United States" },
+    "NO_NAT":   { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — naturalization requirements not met", "citation": "8 U.S.C. §§ 1421-1448" },
+    "NO_PERM":  { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — permanently barred from naturalization", "citation": "8 U.S.C. § 1101(f)(8)" },
+    "NO_LOST":  { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — citizenship lost (CLN)", "citation": "8 U.S.C. § 1481" },
+    "NO_FOUND": { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — foundling presumption rebutted", "citation": "8 U.S.C. § 1401(f)" },
+    "NO_PR":    { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — Puerto Rican citizen only (pre-1941)", "citation": "Jones Act of 1917" },
+
+    "NO_NONIMM":      { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — nonimmigrant status, no current path to citizenship", "citation": "8 U.S.C. § 1101(a)(15); 8 U.S.C. § 1429" },
+    "NO_UNDOC":       { "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — no current lawful immigration status", "citation": "8 U.S.C. § 1182; 8 U.S.C. § 1429" },
+    "NO_NAT_MARRIAGE":{ "kind": "outcome", "outcome": "NOT_CITIZEN", "title": "Not a U.S. Citizen — marriage-based green card not yet obtained", "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1430(a)" }
 
   }
 }

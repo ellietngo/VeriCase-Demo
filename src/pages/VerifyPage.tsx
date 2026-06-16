@@ -14,15 +14,18 @@ export default function VerifyPage({
   onResult,
   onBack,
   geo,
+  startNodeId,
 }: {
   onResult: (r: ResultState) => void
   onBack: () => void
   geo: GeoData | null
+  startNodeId?: string
 }) {
   const [history, setHistory] = useState<Step[]>([])
   const [current, setCurrent] = useState<{ nodeId: string; node: QuestionNode }>(() => {
-    const n = rules.nodes[rules.start]
-    return { nodeId: rules.start, node: n as QuestionNode }
+    const id = startNodeId ?? rules.start
+    const n = rules.nodes[id]
+    return { nodeId: id, node: n as QuestionNode }
   })
 
   const progress = Math.min(Math.round((history.length / MAX_STEPS) * 100), 95)
@@ -164,7 +167,9 @@ export default function VerifyPage({
       <div className="px-4 pt-5 pb-4 md:px-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#5a7a6a]">Guided Interview</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#5a7a6a]">
+              {startNodeId ? 'Immigration Status Check' : 'Guided Interview'}
+            </span>
             <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#5a7a6a]">{progress}% Complete</span>
           </div>
           <div className="w-full rounded-full overflow-hidden" style={{ height: 12, background: '#b8d4c8' }}>
@@ -281,7 +286,7 @@ export default function VerifyPage({
                     aria-label="Go back"
                   >
                     <ArrowLeft size={15} aria-hidden="true" />
-                    {history.length === 0 ? 'Back to home' : 'Previous question'}
+                    {history.length === 0 ? (startNodeId ? 'Back to result' : 'Back to home') : 'Previous question'}
                   </button>
                 </div>
               </div>

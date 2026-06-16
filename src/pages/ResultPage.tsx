@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff, ListChecks, ChevronDown } from 'lucide-react'
+import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff, ListChecks, ChevronDown, Compass } from 'lucide-react'
 import { type ResultState } from '../App'
 import { type GeoData } from '../geo'
 import { useOnlineStatus } from '../useOnlineStatus'
@@ -58,11 +58,13 @@ export default function ResultPage({
   geo,
   onNewCase,
   onHome,
+  onStatusCheck,
 }: {
   result: ResultState
   geo: GeoData | null
   onNewCase: () => void
   onHome: () => void
+  onStatusCheck: () => void
 }) {
   const isCitizen = result.outcome.outcome === 'CITIZEN'
   const [showAudit, setShowAudit] = useState(false)
@@ -214,6 +216,39 @@ export default function ResultPage({
                       className="text-sm font-medium hover:underline" style={{ color: '#dc2626' }}>
                       Learn about U.S. Citizenship →
                     </a>
+                  </div>
+                )}
+
+                {/* Immigration status check — secondary wizard entry, NOT_CITIZEN only.
+                    Distinct from citizenship: classifies current status (tourist, student,
+                    work visa, marriage, undocumented) and what — if anything — leads toward
+                    LPR status and eventual naturalization. */}
+                {!isCitizen && (
+                  <div
+                    className="mb-4 flex items-start gap-3 rounded-2xl p-4"
+                    style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}
+                  >
+                    <Compass size={18} className="flex-shrink-0 mt-0.5" style={{ color: '#2563eb' }} aria-hidden="true" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold" style={{ color: '#1d4ed8' }}>
+                        Check current immigration status
+                      </p>
+                      <p className="text-xs mt-0.5 leading-relaxed" style={{ color: '#3b82f6' }}>
+                        Not a citizen yet doesn't mean no current status. Run a short follow-up to classify
+                        this person as a tourist, student, work-visa holder, marriage-based applicant, or
+                        undocumented — and see whether that status opens any path toward lawful permanent
+                        residence and, eventually, naturalization.
+                      </p>
+                      <button
+                        onClick={onStatusCheck}
+                        className="mt-3 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white transition-colors
+                          hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-700/20"
+                        style={{ background: '#2563eb' }}
+                      >
+                        <Compass size={14} aria-hidden="true" />
+                        Check Immigration Status
+                      </button>
+                    </div>
                   </div>
                 )}
 
