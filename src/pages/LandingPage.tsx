@@ -211,7 +211,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
   // One random question per page load — stays put for the session, changes on refresh
   const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
-  // Most determinations resolve in well under 59 questions (often ~7), so the demo
+  // Most determinations resolve in well under 62 questions (often ~7), so the demo
   // progress bar randomizes per page load within a "mostly there" range rather than
   // implying a long slog — picked once on mount, stays put for the session.
   const [demoProgress] = useState(() => Math.floor(Math.random() * (92 - 58 + 1)) + 58)
@@ -292,9 +292,9 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
 
             {/* Trust signals */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-2.5 gap-y-1 mt-5 text-[11px] font-semibold text-white/45">
-              <span>59 guided questions</span>
+              <span>62 guided questions</span>
               <span aria-hidden="true">·</span>
-              <span>4,427 legal pathways</span>
+              <span>4,451 legal pathways</span>
               <span aria-hidden="true">·</span>
               <span>100% cited determinations</span>
             </div>
