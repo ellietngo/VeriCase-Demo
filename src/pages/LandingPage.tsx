@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
 
@@ -157,6 +157,52 @@ function BranchingBackground() {
         ))}
       </g>
     </svg>
+  )
+}
+
+// Apple-style scroll reveal: fades + rises into place the first time it enters
+// the viewport, then leaves it alone. No scroll listeners — IntersectionObserver only.
+function Reveal({
+  children,
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -40px 0px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(32px)',
+        transition: `opacity 800ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 800ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+        willChange: 'opacity, transform',
+      }}
+    >
+      {children}
+    </div>
   )
 }
 
@@ -391,38 +437,46 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
         aria-labelledby="features-heading"
       >
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cbp-emerald text-center mb-3">
-            Built for Operations
-          </p>
-          <h2 id="features-heading" className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-12 md:mb-16">
-            How It Works
-          </h2>
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cbp-emerald text-center mb-3">
+              Built for Operations
+            </p>
+            <h2 id="features-heading" className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-12 md:mb-16">
+              How It Works
+            </h2>
+          </Reveal>
           <div className="grid gap-6 md:grid-cols-3">
-            <FeatureCard
-              icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
-              accent="#065f46"
-              title="Guided Case Review"
-              description="47 questions across every citizenship pathway — birth, territory, naturalization, derivation, loss, and re-acquisition."
-            />
-            <FeatureCard
-              icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
-              accent="#b45309"
-              title="4,223 Legal Paths"
-              description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
-            />
-            <FeatureCard
-              icon={<Users size={24} strokeWidth={1.8} style={{ color: '#334155' }} />}
-              accent="#334155"
-              title="Full Audit Trail"
-              description="Every answer is recorded in sequence, giving a defensible step-by-step record of the determination."
-            />
+            <Reveal delay={0}>
+              <FeatureCard
+                icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
+                accent="#065f46"
+                title="Guided Case Review"
+                description="47 questions across every citizenship pathway — birth, territory, naturalization, derivation, loss, and re-acquisition."
+              />
+            </Reveal>
+            <Reveal delay={120}>
+              <FeatureCard
+                icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
+                accent="#b45309"
+                title="4,223 Legal Paths"
+                description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
+              />
+            </Reveal>
+            <Reveal delay={240}>
+              <FeatureCard
+                icon={<Users size={24} strokeWidth={1.8} style={{ color: '#334155' }} />}
+                accent="#334155"
+                title="Full Audit Trail"
+                description="Every answer is recorded in sequence, giving a defensible step-by-step record of the determination."
+              />
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-[#F6F6F6] border-t border-[#EEE] px-6 py-12">
-        <div className="max-w-5xl mx-auto md:flex md:gap-16 md:items-start">
+        <Reveal className="max-w-5xl mx-auto md:flex md:gap-16 md:items-start">
           <div className="mb-8 md:mb-0 md:flex-1">
             <div className="flex items-center gap-2 mb-3">
               <Shield size={14} strokeWidth={2} style={{ color: '#065f46' }} />
@@ -452,7 +506,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               </ul>
             </nav>
           </div>
-        </div>
+        </Reveal>
       </footer>
     </div>
   )
