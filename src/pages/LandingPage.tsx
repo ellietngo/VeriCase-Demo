@@ -276,7 +276,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
             </h1>
 
             <p className="text-sm md:text-base text-white/80 max-w-xs lg:max-w-sm leading-relaxed mb-10">
-              A guided, one-question-at-a-time engine across 4,427 legal pathways —
+              A guided, one-question-at-a-time engine across 4,451 legal pathways —
               every determination cites controlling statute or case law.
             </p>
 
@@ -451,14 +451,14 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                 icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
                 accent="#065f46"
                 title="Guided Case Review"
-                description="59 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, and re-acquisition."
+                description="62 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, and re-acquisition."
               />
             </Reveal>
             <Reveal delay={120}>
               <FeatureCard
                 icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
                 accent="#b45309"
-                title="4,427 Legal Paths"
+                title="4,451 Legal Paths"
                 description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
               />
             </Reveal>
