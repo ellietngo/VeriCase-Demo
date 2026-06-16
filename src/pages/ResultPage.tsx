@@ -43,6 +43,55 @@ const STATUS_OUTCOME_COPY: Record<string, { eyebrow: string; headline: string; b
   },
 }
 
+// The "military" and "other" answers at Q_STATUS don't terminate immediately — they
+// continue into the shared naturalization / derivative-citizenship sub-tree that the
+// main Q0 citizenship flow also uses. So the same final outcome node (e.g. NO_NAT)
+// can be reached either from the main flow or from a status check, and means
+// something different in each case. This map is keyed first by the answer chosen at
+// Q_STATUS, then by the final outcome node reached, so those shared nodes still get
+// accurate, status-check-specific framing — this is what was missing before, and why
+// outcomes like "military" or "other" fell through to generic CITIZEN/NOT_CITIZEN copy.
+const STATUS_PATH_OUTCOME_COPY: Record<string, Record<string, { eyebrow: string; headline: string; body: string }>> = {
+  military: {
+    CIT_NAT: {
+      eyebrow: 'Status Check Complete',
+      headline: 'Naturalized Through Military Service',
+      body: 'This person became a U.S. citizen through the military naturalization pathway, which can waive the usual lawful-permanent-residence requirement for honorable service during a designated period of hostilities.',
+    },
+    NO_NAT: {
+      eyebrow: 'Status Check Complete',
+      headline: 'Military Naturalization Requirements Not Yet Met',
+      body: "This person's military service does not currently satisfy the requirements for naturalization through service. Depending on the specifics, this may be because the service was not during a designated period of hostilities and lawful permanent residence or one year of qualifying service was missing, or because another naturalization requirement (residence, presence, moral character, or testing) was not met.",
+    },
+    NO_PERM: {
+      eyebrow: 'Status Check Complete',
+      headline: 'Permanently Barred From Naturalization',
+      body: 'Despite military service, this person is permanently barred from naturalization due to a disqualifying criminal history (murder, or an aggravated felony committed after November 29, 1990).',
+    },
+  },
+  other: {
+    CIT_CCA: {
+      eyebrow: 'Status Check Complete',
+      headline: 'Citizen via Derivative Citizenship',
+      body: 'This person automatically acquired U.S. citizenship through a U.S.-citizen parent under the Child Citizenship Act of 2000 — a basis distinct from their own immigration status.',
+    },
+    NO_NAT: {
+      eyebrow: 'Status Check Complete',
+      headline: 'No Derivative Citizenship or Current Path Identified',
+      body: 'This person is not a child of a U.S. citizen in a way that qualifies for derivative citizenship, and no other current basis for citizenship or naturalization was identified.',
+    },
+  },
+}
+// Q49 ("served honorably?") answering "No" routes into Q60br — the same
+// derivative-citizenship check used by the "other" branch — so a military-entry
+// path can also terminate at CIT_CCA. Without this entry that edge case fell
+// through to generic copy, which is exactly the gap the user flagged.
+STATUS_PATH_OUTCOME_COPY.military.CIT_CCA = {
+  eyebrow: 'Status Check Complete',
+  headline: 'Citizen via Derivative Citizenship',
+  body: 'Although this person did not qualify for naturalization through military service, they automatically acquired U.S. citizenship through a U.S.-citizen parent under the Child Citizenship Act of 2000 — a basis distinct from their own immigration or military status.',
+}
+
 function GeoCard({
   icon,
   label,
@@ -90,8 +139,22 @@ export default function ResultPage({
   onStatusCheck: () => void
 }) {
   const isCitizen = result.outcome.outcome === 'CITIZEN'
-  const statusCopy = STATUS_OUTCOME_COPY[result.nodeId]
-  const isStatusCheck = !!statusCopy
+
+  // Did this result come from the Q_STATUS immigration-status classifier at all
+  // (whether it terminated immediately, or continued into the shared naturalization /
+  // derivative-citizenship sub-tree via the "military" or "other" answers)?
+  const statusStep = result.history.find((s) => s.nodeId === 'Q_STATUS')
+  const isFromStatusCheck = !!statusStep
+  const directStatusCopy = STATUS_OUTCOME_COPY[result.nodeId]
+  const pathStatusCopy =
+    isFromStatusCheck && statusStep ? STATUS_PATH_OUTCOME_COPY[String(statusStep.chosenValue)]?.[result.nodeId] : undefined
+  const statusCopy = directStatusCopy ?? pathStatusCopy
+  // Only the 3 nodes exclusive to Q_STATUS (nonimmigrant/undocumented/marriage-pending)
+  // get the distinct blue "current status, not a final verdict" treatment — outcomes
+  // reached via the military/other sub-tree (CIT_NAT, NO_NAT, NO_PERM, CIT_CCA) are
+  // genuine citizenship verdicts, so they keep the normal green/red styling, just with
+  // status-aware headline/body text layered on top.
+  const isPureStatusOutcome = !!directStatusCopy
   const [showAudit, setShowAudit] = useState(false)
   const online = useOnlineStatus()
   const activeGeo = online ? geo : null   // never show stale location data when offline
@@ -171,7 +234,7 @@ export default function ResultPage({
               <div
                 className="h-2"
                 style={{
-                  background: isStatusCheck
+                  background: isPureStatusOutcome
                     ? 'linear-gradient(90deg, #1d4ed8, #2563eb)'
                     : isCitizen
                       ? 'linear-gradient(90deg, #065f46, #16a34a)'
@@ -184,7 +247,7 @@ export default function ResultPage({
                 {/* Icon + headline */}
                 <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-4">
-                    {isStatusCheck ? (
+                    {isPureStatusOutcome ? (
                       <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#dbeafe' }}>
                         <Compass size={30} strokeWidth={1.5} style={{ color: '#1d4ed8' }} aria-hidden="true" />
                       </div>
@@ -198,14 +261,14 @@ export default function ResultPage({
                       </div>
                     )}
                     <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#999]">
-                      {isStatusCheck ? statusCopy.eyebrow : 'Determination Complete'}
+                      {statusCopy ? statusCopy.eyebrow : 'Determination Complete'}
                     </p>
                   </div>
                   <h1
                     className="text-4xl md:text-5xl font-extrabold leading-tight"
-                    style={{ color: isStatusCheck ? '#1d4ed8' : isCitizen ? '#065f46' : '#b91c1c' }}
+                    style={{ color: isPureStatusOutcome ? '#1d4ed8' : isCitizen ? '#065f46' : '#b91c1c' }}
                   >
-                    {isStatusCheck ? statusCopy.headline : isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
+                    {statusCopy ? statusCopy.headline : isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
                   </h1>
                 </div>
 
@@ -214,7 +277,7 @@ export default function ResultPage({
                   <span
                     className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full"
                     style={
-                      isStatusCheck
+                      isPureStatusOutcome
                         ? { background: '#dbeafe', color: '#1d4ed8' }
                         : isCitizen
                           ? { background: '#dcfce7', color: '#065f46' }
@@ -229,7 +292,7 @@ export default function ResultPage({
                 <p className="text-xs text-[#999] italic mb-4">{result.outcome.citation}</p>
 
                 <p className="text-sm text-[#555] leading-relaxed mb-4">
-                  {isStatusCheck
+                  {statusCopy
                     ? statusCopy.body
                     : isCitizen
                       ? 'Based on the answers provided, this person appears to be a U.S. citizen. This determination is for demonstration purposes only and is not legal advice.'
@@ -252,7 +315,7 @@ export default function ResultPage({
                 {!isCitizen && (
                   <div className="mb-4">
                     <a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer"
-                      className="text-sm font-medium hover:underline" style={{ color: isStatusCheck ? '#1d4ed8' : '#dc2626' }}>
+                      className="text-sm font-medium hover:underline" style={{ color: isPureStatusOutcome ? '#1d4ed8' : '#dc2626' }}>
                       Learn about U.S. Citizenship →
                     </a>
                   </div>
@@ -340,7 +403,7 @@ export default function ResultPage({
                   {/* Immigration status check — secondary wizard entry, only offered after
                       a NOT_CITIZEN determination, and hidden once already viewing a
                       status-check result (re-offering the same wizard is circular). */}
-                  {!isCitizen && !isStatusCheck && (
+                  {!isCitizen && !isFromStatusCheck && (
                     <button
                       onClick={onStatusCheck}
                       className="flex-1 flex items-center justify-center gap-2 border-2
