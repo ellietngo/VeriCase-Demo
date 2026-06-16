@@ -4,34 +4,44 @@ import { useOnlineStatus } from '../useOnlineStatus'
 
 const DEMO_QUESTIONS = [
   {
-    label: 'Question 1',
     text: 'Where was the person born?',
     answers: ['In the 50 states or D.C.', 'In a U.S. territory or possession', 'Abroad'],
+    result: 'Likely Citizen at Birth',
+    citation: '8 U.S.C. § 1401(a)',
+    reasoning: 'Birth within the United States generally confers citizenship at birth under the Fourteenth Amendment.',
   },
   {
-    label: 'Question 2',
     text: 'Were both parents U.S. citizens at the time of birth?',
     answers: ['Yes', 'No, only one parent'],
+    result: 'Citizen at Birth',
+    citation: '8 U.S.C. § 1401(c)',
+    reasoning: 'A child born abroad to two U.S.-citizen parents acquires citizenship at birth if either parent had a prior U.S. residence.',
   },
   {
-    label: 'Question 3',
     text: 'Has the person served honorably in the U.S. armed forces?',
     answers: ['Yes', 'No'],
+    result: 'Naturalization Eligible',
+    citation: '8 U.S.C. § 1439(a)',
+    reasoning: 'Honorable wartime or peacetime service can waive standard residency requirements for naturalization.',
   },
   {
-    label: 'Question 4',
     text: 'Is the person a Lawful Permanent Resident (green card holder)?',
     answers: ['Yes (LPR)', 'No'],
+    result: 'Naturalization Track',
+    citation: '8 U.S.C. § 1427(a)',
+    reasoning: 'Five years of continuous LPR residence is generally required before filing for naturalization.',
   },
   {
-    label: 'Question 5',
     text: 'Has the person ever performed an expatriating act under 8 U.S.C. § 1481(a)?',
     answers: ['No expatriating act', 'Foreign naturalization / oath / military', 'Formal renunciation or treason'],
+    result: 'Citizenship Retained',
+    citation: '8 U.S.C. § 1481(a)',
+    reasoning: 'Absent specific intent to relinquish nationality, citizenship is presumed retained.',
   },
 ]
 
 const heroStyle: React.CSSProperties = {
-  background: 'linear-gradient(-45deg, #14532d, #0d4a24, #166534, #1a7a3e)',
+  background: 'linear-gradient(-45deg, #04200f, #115c2c, #082c16, #0d4a24)',
   backgroundSize: '400% 400%',
   animation: 'hero-gradient 14s ease infinite',
 }
@@ -153,8 +163,12 @@ function BranchingBackground() {
 export default function LandingPage({ onStart }: { onStart: () => void }) {
   const online = useOnlineStatus()
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
-  // Pick a random question once on mount — changes each page refresh
+  // One random question per page load — stays put for the session, changes on refresh
   const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
+  // Most determinations resolve in well under 47 questions (often ~7), so the demo
+  // progress bar randomizes per page load within a "mostly there" range rather than
+  // implying a long slog — picked once on mount, stays put for the session.
+  const [demoProgress] = useState(() => Math.floor(Math.random() * (92 - 58 + 1)) + 58)
 
   return (
     <div>
@@ -215,9 +229,9 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               <span className="block" style={gradientTextStyle}>clarified.</span>
             </h1>
 
-            <p className="text-sm md:text-base text-white/65 max-w-xs lg:max-w-sm leading-relaxed mb-10">
-              A one-question-at-a-time flow across 4,223 legal paths. Every answer
-              cites controlling statute or case law.
+            <p className="text-sm md:text-base text-white/80 max-w-xs lg:max-w-sm leading-relaxed mb-10">
+              A guided, one-question-at-a-time engine across 4,223 legal pathways —
+              every determination cites controlling statute or case law.
             </p>
 
             <button
@@ -225,10 +239,19 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               className="bg-white font-bold text-lg px-10 py-4 rounded-full shadow-xl
                 hover:bg-white/90 active:scale-95 transition-all duration-200
                 focus:outline-none focus:ring-4 focus:ring-white/40"
-              style={{ color: '#14532d' }}
+              style={{ color: '#0a4621' }}
             >
-              Begin Determination
+              Run Determination
             </button>
+
+            {/* Trust signals */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-2.5 gap-y-1 mt-5 text-[11px] font-semibold text-white/45">
+              <span>47 guided questions</span>
+              <span aria-hidden="true">·</span>
+              <span>4,223 legal pathways</span>
+              <span aria-hidden="true">·</span>
+              <span>100% cited determinations</span>
+            </div>
 
             {/* Offline notice — only shown when offline */}
             {!online && (
@@ -267,16 +290,23 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                 </span>
               </div>
 
-              {/* Example question — rotates every 4s */}
+              {/* Example question — one random pick per page load */}
+              <style>{`
+                @keyframes demo-fade {
+                  from { opacity: 0; transform: translateY(6px); }
+                  to   { opacity: 1; transform: translateY(0); }
+                }
+                .demo-fade { animation: demo-fade 450ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+              `}</style>
               <div
-                className="rounded-2xl p-4 mb-4"
+                className="demo-fade rounded-2xl p-4 mb-4"
                 style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)' }}
               >
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">{demo.label}</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Sample Question</span>
                 <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4" style={{ minHeight: '3rem' }}>
                   {demo.text}
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-2 mb-3" style={{ minHeight: '160px' }}>
                   {demo.answers.map((answer, i) => (
                     <div
                       key={answer}
@@ -297,7 +327,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                       <span
                         className="text-sm font-semibold"
                         style={{
-                          color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.6)',
+                          color: hoveredAnswer === i || i === 0 ? '#0a4621' : 'rgba(255,255,255,0.6)',
                           transition: 'color 300ms ease',
                         }}
                       >
@@ -306,7 +336,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                       <ChevronRight
                         size={14}
                         style={{
-                          color: hoveredAnswer === i || i === 0 ? '#14532d' : 'rgba(255,255,255,0.25)',
+                          color: hoveredAnswer === i || i === 0 ? '#0a4621' : 'rgba(255,255,255,0.25)',
                           opacity: hoveredAnswer === i ? 0.7 : 0.4,
                           transition: 'color 300ms ease, opacity 300ms ease',
                         }}
@@ -314,21 +344,37 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                     </div>
                   ))}
                 </div>
+
+                {/* Authority panel — the actual proof point: every answer cites controlling law */}
+                <div
+                  className="rounded-xl p-3"
+                  style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.18)' }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: '#fbbf24' }}>
+                      Authority
+                    </span>
+                    <span className="text-[10px] font-semibold text-white/45">{demo.result}</span>
+                  </div>
+                  <p className="text-xs font-bold mb-1" style={{ color: '#fcd34d' }}>{demo.citation}</p>
+                  <p className="text-[11px] leading-snug text-white/55">{demo.reasoning}</p>
+                </div>
               </div>
 
               {/* Progress bar */}
               <div aria-hidden="true">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Progress</span>
-                  <span className="text-[10px] font-bold text-white/40">7%</span>
+                  <span className="text-[10px] font-bold text-white/40">{demoProgress}%</span>
                 </div>
                 <div className="w-full rounded-full overflow-hidden" style={{ height: 7, background: 'rgba(255,255,255,0.12)' }}>
                   <div
                     style={{
                       height: '100%',
-                      width: '7%',
+                      width: `${demoProgress}%`,
                       background: 'linear-gradient(90deg, #166534, #4ade80)',
                       borderRadius: 9999,
+                      transition: 'width 600ms cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   />
                 </div>
@@ -341,7 +387,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
       {/* Features */}
       <section
         className="px-6 py-16 md:py-24"
-        style={{ background: 'linear-gradient(180deg, #f0f7f4 0%, #ffffff 100%)' }}
+        style={{ background: 'linear-gradient(180deg, #fafafa 0%, #ffffff 100%)' }}
         aria-labelledby="features-heading"
       >
         <div className="max-w-5xl mx-auto">
@@ -359,8 +405,8 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               description="47 questions across every citizenship pathway — birth, territory, naturalization, derivation, loss, and re-acquisition."
             />
             <FeatureCard
-              icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#16a34a' }} />}
-              accent="#16a34a"
+              icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
+              accent="#b45309"
               title="4,223 Legal Paths"
               description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
             />
@@ -401,8 +447,8 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
             <p className="text-xs font-semibold uppercase tracking-widest text-[#333] mb-4">More Information</p>
             <nav aria-label="More information links">
               <ul className="space-y-3">
-                <li><a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#065f46' }}>U.S. Citizenship Overview →</a></li>
-                <li><a href="https://www.uscis.gov/citizenship/learn-about-citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#065f46' }}>Certificate of Citizenship →</a></li>
+                <li><a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>U.S. Citizenship Overview →</a></li>
+                <li><a href="https://www.uscis.gov/citizenship/learn-about-citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>Certificate of Citizenship →</a></li>
               </ul>
             </nav>
           </div>
