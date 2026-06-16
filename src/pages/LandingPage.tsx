@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff } from 'lucide-react'
+import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff, Compass } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
 
 const DEMO_QUESTIONS = [
@@ -82,7 +82,7 @@ function BranchingBackground() {
     [560, 630], [680, 630], [800, 630],
     [1000, 630], [1140, 630], [1300, 630],
   ]
-  const l5: Pt[] = [[100, 770], [370, 770], [730, 770], [900, 770], [1220, 770]]
+  const l5: Pt[] = [[100, 770], [370, 770], [620, 770], [900, 770], [1220, 770]]
 
   const edges: [Pt, Pt][] = [
     [root, l1[0]], [root, l1[1]], [root, l1[2]],
@@ -206,12 +206,12 @@ function Reveal({
   )
 }
 
-export default function LandingPage({ onStart }: { onStart: () => void }) {
+export default function LandingPage({ onStart, onCheckStatus }: { onStart: () => void; onCheckStatus: () => void }) {
   const online = useOnlineStatus()
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
   // One random question per page load — stays put for the session, changes on refresh
   const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
-  // Most determinations resolve in well under 75 questions (often ~7), so the demo
+  // Most determinations resolve in well under 61 questions (often ~7), so the demo
   // progress bar randomizes per page load within a "mostly there" range rather than
   // implying a long slog — picked once on mount, stays put for the session.
   const [demoProgress] = useState(() => Math.floor(Math.random() * (92 - 58 + 1)) + 58)
@@ -276,7 +276,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
             </h1>
 
             <p className="text-sm md:text-base text-white/80 max-w-xs lg:max-w-sm leading-relaxed mb-10">
-              A guided, one-question-at-a-time engine across 8,649 legal pathways —
+              A guided, one-question-at-a-time engine across 7,233 legal pathways —
               every determination cites controlling statute or case law.
             </p>
 
@@ -285,16 +285,30 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
               className="bg-white font-bold text-lg px-10 py-4 rounded-full shadow-xl
                 hover:bg-white/90 active:scale-95 transition-all duration-200
                 focus:outline-none focus:ring-4 focus:ring-white/40"
-              style={{ color: '#0a4731' }}
+              style={{ color: '#0a4621' }}
             >
               Run Determination
             </button>
 
+            {/* Secondary entry point — classifies current immigration status (tourist,
+                student, work visa, marriage, undocumented, etc.) independently of running
+                a full citizenship determination first. */}
+            <button
+              onClick={onCheckStatus}
+              className="mt-3 inline-flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-full
+                border transition-all duration-200 active:scale-95
+                hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-white/20"
+              style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.85)' }}
+            >
+              <Compass size={16} aria-hidden="true" />
+              Check Immigration Status
+            </button>
+
             {/* Trust signals */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-2.5 gap-y-1 mt-5 text-[11px] font-semibold text-white/45">
-              <span>75 guided questions</span>
+              <span>61 guided questions</span>
               <span aria-hidden="true">·</span>
-              <span>8,649 legal pathways</span>
+              <span>7,233 legal pathways</span>
               <span aria-hidden="true">·</span>
               <span>100% cited determinations</span>
             </div>
@@ -373,7 +387,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                       <span
                         className="text-sm font-semibold"
                         style={{
-                          color: hoveredAnswer === i || i === 0 ? '#0a4731' : 'rgba(255,255,255,0.6)',
+                          color: hoveredAnswer === i || i === 0 ? '#0a4621' : 'rgba(255,255,255,0.6)',
                           transition: 'color 300ms ease',
                         }}
                       >
@@ -382,7 +396,7 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                       <ChevronRight
                         size={14}
                         style={{
-                          color: hoveredAnswer === i || i === 0 ? '#0a4731' : 'rgba(255,255,255,0.25)',
+                          color: hoveredAnswer === i || i === 0 ? '#0a4621' : 'rgba(255,255,255,0.25)',
                           opacity: hoveredAnswer === i ? 0.7 : 0.4,
                           transition: 'color 300ms ease, opacity 300ms ease',
                         }}
@@ -451,14 +465,14 @@ export default function LandingPage({ onStart }: { onStart: () => void }) {
                 icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
                 accent="#065f46"
                 title="Guided Case Review"
-                description="75 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and current immigration status."
+                description="61 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and current immigration status."
               />
             </Reveal>
             <Reveal delay={120}>
               <FeatureCard
                 icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
                 accent="#b45309"
-                title="8,649 Legal Paths"
+                title="7,233 Legal Paths"
                 description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
               />
             </Reveal>

@@ -13,6 +13,10 @@ export default function App() {
   const [result, setResult] = useState<ResultState | null>(null)
   const [geo, setGeo] = useState<GeoData | null>(null)
   const [verifyStart, setVerifyStart] = useState<string | undefined>(undefined)
+  // Tracks where a Q_STATUS run was launched from, so "back" returns to the right
+  // place — distinct from inferring it off `result`, since a stale prior result can
+  // linger in state after returning to the landing page.
+  const [verifyOrigin, setVerifyOrigin] = useState<'landing' | 'result' | undefined>(undefined)
 
   const goToVerify = useCallback(async () => {
     setVerifyStart(undefined)
@@ -28,14 +32,24 @@ export default function App() {
     }
   }, [])
 
-  const goToLanding = useCallback(() => { setPage('landing'); setGeo(null); setVerifyStart(undefined) }, [])
+  const goToLanding = useCallback(() => { setPage('landing'); setGeo(null); setVerifyStart(undefined); setVerifyOrigin(undefined) }, [])
   const goToResult = useCallback((r: ResultState) => { setResult(r); setPage('result') }, [])
-  const goToNewCase = useCallback(() => { setResult(null); setVerifyStart(undefined); setPage('verify') }, [])
+  const goToNewCase = useCallback(() => { setResult(null); setVerifyStart(undefined); setVerifyOrigin(undefined); setPage('verify') }, [])
 
-  // Secondary "wizard" entry point: from a NOT_CITIZEN result, jump straight into
+  // Secondary "wizard" entry point #1: from a NOT_CITIZEN result, jump straight into
   // the immigration-status classifier (Q_STATUS) without restarting the whole interview.
   // The prior result/geo stay in state so "back" from the first question returns to it.
-  const goToStatusCheck = useCallback(() => { setVerifyStart('Q_STATUS'); setPage('verify') }, [])
+  const goToStatusCheck = useCallback(() => { setVerifyStart('Q_STATUS'); setVerifyOrigin('result'); setPage('verify') }, [])
+
+  // Secondary "wizard" entry point #2: straight from the landing page, with no prior
+  // citizenship determination at all. Clears any stale result so "back" goes home.
+  const goToStatusCheckFromLanding = useCallback(() => {
+    setResult(null)
+    setVerifyStart('Q_STATUS')
+    setVerifyOrigin('landing')
+    setPage('verify')
+  }, [])
+
   const backToResult = useCallback(() => { setPage('result') }, [])
 
   if (page === 'result' && result) {
@@ -45,11 +59,11 @@ export default function App() {
     return (
       <VerifyPage
         onResult={goToResult}
-        onBack={verifyStart ? backToResult : goToLanding}
+        onBack={verifyStart ? (verifyOrigin === 'result' ? backToResult : goToLanding) : goToLanding}
         geo={geo}
         startNodeId={verifyStart}
       />
     )
   }
-  return <LandingPage onStart={goToVerify} />
+  return <LandingPage onStart={goToVerify} onCheckStatus={goToStatusCheckFromLanding} />
 }

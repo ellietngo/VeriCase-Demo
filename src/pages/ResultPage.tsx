@@ -258,40 +258,6 @@ export default function ResultPage({
                   </div>
                 )}
 
-                {/* Immigration status check — secondary wizard entry, NOT_CITIZEN only.
-                    Distinct from citizenship: classifies current status (tourist, student,
-                    work visa, marriage, undocumented) and what — if anything — leads toward
-                    LPR status and eventual naturalization. Hidden when the result IS already
-                    a status-check outcome, since re-offering the same wizard is circular. */}
-                {!isCitizen && !isStatusCheck && (
-                  <div
-                    className="mb-4 flex items-start gap-3 rounded-2xl p-4"
-                    style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}
-                  >
-                    <Compass size={18} className="flex-shrink-0 mt-0.5" style={{ color: '#2563eb' }} aria-hidden="true" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: '#1d4ed8' }}>
-                        Check current immigration status
-                      </p>
-                      <p className="text-xs mt-0.5 leading-relaxed" style={{ color: '#3b82f6' }}>
-                        Not a citizen yet doesn't mean no current status. Run a short follow-up to classify
-                        this person as a tourist, student, work-visa holder, marriage-based applicant, or
-                        undocumented — and see whether that status opens any path toward lawful permanent
-                        residence and, eventually, naturalization.
-                      </p>
-                      <button
-                        onClick={onStatusCheck}
-                        className="mt-3 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white transition-colors
-                          hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-700/20"
-                        style={{ background: '#2563eb' }}
-                      >
-                        <Compass size={14} aria-hidden="true" />
-                        Check Immigration Status
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 {/* Audit trail toggle */}
                 {result.history.length > 0 && (
                   <div className="mb-4">
@@ -371,6 +337,21 @@ export default function ResultPage({
                     <RotateCcw size={16} aria-hidden="true" />
                     New Case
                   </button>
+                  {/* Immigration status check — secondary wizard entry, only offered after
+                      a NOT_CITIZEN determination, and hidden once already viewing a
+                      status-check result (re-offering the same wizard is circular). */}
+                  {!isCitizen && !isStatusCheck && (
+                    <button
+                      onClick={onStatusCheck}
+                      className="flex-1 flex items-center justify-center gap-2 border-2
+                        text-white font-semibold py-3 rounded-2xl transition-colors
+                        hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-700/20"
+                      style={{ background: '#2563eb', borderColor: '#2563eb' }}
+                    >
+                      <Compass size={16} aria-hidden="true" />
+                      Check Immigration Status
+                    </button>
+                  )}
                   <button
                     onClick={onHome}
                     className="flex-1 flex items-center justify-center gap-2 text-white
