@@ -63,10 +63,32 @@ const STATUS_PATH_OUTCOME_COPY: Record<string, Record<string, { eyebrow: string;
       headline: 'Military Naturalization Requirements Not Yet Met',
       body: "This person's military service does not currently satisfy the requirements for naturalization through service. Depending on the specifics, this may be because the service was not during a designated period of hostilities and lawful permanent residence or one year of qualifying service was missing, or because another naturalization requirement (residence, presence, moral character, or testing) was not met.",
     },
+    // NOTE: military's path (Q49 -> Q50/Q42m -> Q47) never reaches the moral-character
+    // permanent-bar question (Q45b), so NO_PERM is not reachable from this branch and is
+    // intentionally omitted here — it's only reachable via the marriage/standard LPR
+    // naturalization chain below.
+  },
+  // "Married to a citizen, green card already approved" continues into the FULL standard
+  // naturalization chain (Q48 -> Q42 -> Q43 -> Q44 -> Q45 -> [Q45b] -> Q46 -> Q47), which is
+  // 6+ questions long, not a 1-2 hop shortcut. This was the single biggest gap in the prior
+  // fix — it's likely the most common test path, and it had NO entry at all here, so it
+  // always fell through to generic citizen/not-citizen copy. That's the "most of the time"
+  // the user was seeing.
+  marriage: {
+    CIT_NAT: {
+      eyebrow: 'Status Check Complete',
+      headline: 'Naturalized Through Marriage-Based Green Card',
+      body: 'This person became a lawful permanent resident through their marriage to a U.S. citizen, then went on to meet the standard naturalization requirements (continuous residence, physical presence, good moral character, English/civics, and the Oath of Allegiance) and is now a U.S. citizen.',
+    },
+    NO_NAT: {
+      eyebrow: 'Status Check Complete',
+      headline: 'Marriage-Based Green Card Holder — Naturalization Requirements Not Yet Met',
+      body: 'This person holds a marriage-based green card but does not currently satisfy one or more naturalization requirements — such as the 3-year continuous residence period, physical presence, good moral character, the English/civics test, or willingness to take the Oath of Allegiance.',
+    },
     NO_PERM: {
       eyebrow: 'Status Check Complete',
       headline: 'Permanently Barred From Naturalization',
-      body: 'Despite military service, this person is permanently barred from naturalization due to a disqualifying criminal history (murder, or an aggravated felony committed after November 29, 1990).',
+      body: 'Despite holding a marriage-based green card, this person is permanently barred from naturalization due to a disqualifying criminal history (murder, or an aggravated felony committed after November 29, 1990).',
     },
   },
   other: {
