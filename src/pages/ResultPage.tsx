@@ -205,7 +205,9 @@ function exportAuditJson(result: ResultState, geo: GeoData | null) {
 // result card. Built field-by-field with jsPDF so the export stays concise and
 // readable on its own: VeriCase letterhead, a generated-at + location stamp,
 // the final determination, then every question/answer/citation in the path.
-function exportAuditPdf(result: ResultState, geo: GeoData | null) {
+// Shared by both the "Save as PDF" and "Print" actions so what you print is
+// exactly what you download.
+function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
   const snapshot = buildAuditSnapshot(result, geo)
   const isCitizenPdf = snapshot.determination.outcome === 'CITIZEN'
 
@@ -327,7 +329,20 @@ function exportAuditPdf(result: ResultState, geo: GeoData | null) {
     doc.text(`Page ${p} of ${pageCount}`, pageWidth - margin - 56, pageHeight - 14)
   }
 
-  doc.save(`vericase-audit-${Date.now()}.pdf`)
+  return doc
+}
+
+function exportAuditPdf(result: ResultState, geo: GeoData | null) {
+  buildAuditPdfDoc(result, geo).save(`vericase-audit-${Date.now()}.pdf`)
+}
+
+// "Print" opens the same formatted PDF document (not the result card) in a new
+// tab and asks the browser's PDF viewer to trigger its print dialog right away.
+function printAuditPdf(result: ResultState, geo: GeoData | null) {
+  const doc = buildAuditPdfDoc(result, geo)
+  doc.autoPrint()
+  const blobUrl = doc.output('bloburl')
+  window.open(blobUrl, '_blank')
 }
 
 export default function ResultPage({
@@ -634,7 +649,7 @@ export default function ResultPage({
                         {/* Audit trail download actions */}
                         <div className="mt-4 pt-3 border-t border-[#eee] flex flex-wrap gap-2">
                           <button
-                            onClick={() => window.print()}
+                            onClick={() => printAuditPdf(result, activeGeo)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-gray-100"
                             style={{ border: '1px solid #ddd', color: '#555' }}
                           >
