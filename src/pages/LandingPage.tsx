@@ -211,7 +211,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
   // One random question per page load — stays put for the session, changes on refresh
   const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
-  // Most determinations resolve in well under 73 questions (often ~7), so the demo
+  // Most determinations resolve in well under 87 questions (often ~7), so the demo
   // progress bar randomizes per page load within a "mostly there" range rather than
   // implying a long slog — picked once on mount, stays put for the session.
   const [demoProgress] = useState(() => Math.floor(Math.random() * (92 - 58 + 1)) + 58)
@@ -276,7 +276,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
             </h1>
 
             <p className="text-sm md:text-base text-white/80 max-w-xs lg:max-w-sm leading-relaxed mb-10">
-              A guided, one-question-at-a-time engine across 15,987 legal pathways —
+              A guided, one-question-at-a-time engine across 17,685 legal pathways —
               every determination cites controlling statute or case law.
             </p>
 
@@ -306,9 +306,9 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
 
             {/* Trust signals */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-2.5 gap-y-1 mt-5 text-[11px] font-semibold text-white/45">
-              <span>73 guided questions</span>
+              <span>87 guided questions</span>
               <span aria-hidden="true">·</span>
-              <span>15,987 legal pathways</span>
+              <span>17,685 legal pathways</span>
               <span aria-hidden="true">·</span>
               <span>100% cited determinations</span>
             </div>
@@ -465,14 +465,14 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
                 icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
                 accent="#065f46"
                 title="Guided Case Review"
-                description="73 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and current immigration status."
+                description="87 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and current immigration status."
               />
             </Reveal>
             <Reveal delay={120}>
               <FeatureCard
                 icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
                 accent="#b45309"
-                title="15,987 Legal Paths"
+                title="17,685 Legal Paths"
                 description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
               />
             </Reveal>
