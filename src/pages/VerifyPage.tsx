@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { ArrowLeft, ChevronRight, Check, MapPin, AlertTriangle, WifiOff, Menu, X } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
 import rulesJson from '../engine/citizenship_rules.json'
-import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode, type Step } from '../engine/engine'
+import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode, type Step, IMMIGRATION_ENGINE_START_NODE } from '../engine/engine'
 import { type ResultState } from '../App'
 import { type GeoData } from '../geo'
 import GovBanner from '../components/GovBanner'
@@ -22,7 +22,9 @@ function countPaths(nodeId: string): number {
   _pathMemo.set(nodeId, total)
   return total
 }
-const TOTAL_PATHS = countPaths(rules.start)
+// NOTE: deliberately not a module-level constant — each engine (citizenship vs.
+// immigration-status) has its own start node and its own total path count, so
+// this is computed per-session inside the component below.
 
 export default function VerifyPage({
   onResult,
@@ -44,8 +46,17 @@ export default function VerifyPage({
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
+  // Each engine has its own start node and its own total path count — fixed
+  // for the lifetime of this session so the progress bar reflects only the
+  // active engine (citizenship vs. immigration-status), never a mix of both.
+  const [totalPaths] = useState(() => countPaths(startNodeId ?? rules.start))
+  const isImmigrationMode = startNodeId === IMMIGRATION_ENGINE_START_NODE
+  const accentDark = isImmigrationMode ? '#1e3a8a' : '#065f46'
+  const accentMid = isImmigrationMode ? '#2563eb' : '#16a34a'
+  const accentGradient = `linear-gradient(90deg, ${accentDark}, ${accentMid})`
+
   const pathsRemaining = countPaths(current.nodeId)
-  const progressPct = Math.round((1 - pathsRemaining / TOTAL_PATHS) * 100)
+  const progressPct = Math.round((1 - pathsRemaining / totalPaths) * 100)
   const pathsLabel = pathsRemaining === 1 ? '1 path remaining' : `~${pathsRemaining.toLocaleString()} paths remaining`
   const questionNum = history.length + 1
 
@@ -224,7 +235,7 @@ export default function VerifyPage({
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#5a7a6a]">
-              {startNodeId ? 'Immigration Status Check' : 'Guided Interview'}
+              {isImmigrationMode ? 'Immigration Status Check' : 'Guided Interview'}
             </span>
             <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#5a7a6a]">{pathsLabel}</span>
           </div>
@@ -233,7 +244,7 @@ export default function VerifyPage({
               style={{
                 height: '100%',
                 width: `${progressPct}%`,
-                background: 'linear-gradient(90deg, #065f46, #16a34a)',
+                background: accentGradient,
                 transition: 'width 750ms cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
                 overflow: 'hidden',
@@ -268,7 +279,7 @@ export default function VerifyPage({
               .question-in { animation: question-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
             `}</style>
             <div className="bg-white rounded-3xl overflow-hidden" style={{ boxShadow: '0 4px 32px rgba(6,95,70,0.10)' }}>
-              <div className="h-1.5" style={{ background: 'linear-gradient(90deg, #065f46, #16a34a)' }} aria-hidden="true" />
+              <div className="h-1.5" style={{ background: accentGradient }} aria-hidden="true" />
               <div key={current.nodeId} className="question-in p-5 md:p-8">
                 <div className="flex items-center mb-3">
                   <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
@@ -298,10 +309,10 @@ export default function VerifyPage({
                         onClick={() => handleAnswer(opt.value, opt.label)}
                         onMouseEnter={() => setHoveredAnswer(i)}
                         onMouseLeave={() => setHoveredAnswer(null)}
-                        className="w-full py-4 px-4 md:py-5 md:px-5 rounded-2xl text-left flex items-center gap-3
-                          active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-800/20"
+                        className={`w-full py-4 px-4 md:py-5 md:px-5 rounded-2xl text-left flex items-center gap-3
+                          active:scale-[0.98] focus:outline-none focus:ring-4 ${isImmigrationMode ? 'focus:ring-blue-800/20' : 'focus:ring-green-800/20'}`}
                         style={{
-                          background: isPrimary ? (isHovered ? '#054f3a' : '#065f46') : (isHovered ? '#ECEEF1' : '#F5F6F8'),
+                          background: isPrimary ? (isHovered ? (isImmigrationMode ? '#1e3a8a' : '#054f3a') : accentDark) : (isHovered ? '#ECEEF1' : '#F5F6F8'),
                           border: isPrimary ? 'none' : '1.5px solid #E4E8EC',
                           color: isPrimary ? 'white' : '#222',
                           transform: isHovered ? 'translateX(3px)' : 'translateX(0)',
@@ -343,7 +354,7 @@ export default function VerifyPage({
                   <div className="absolute left-[8px] top-4 bottom-0 w-px bg-[#e4e8ec]" aria-hidden="true" />
                   <div className="space-y-5">
                     <div className="flex gap-3 items-start">
-                      <div className="relative z-10 w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ background: '#065f46' }}>
+                      <div className="relative z-10 w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ background: accentDark }}>
                         <div className="w-2 h-2 rounded-full bg-white" />
                       </div>
                       <div>
@@ -363,8 +374,8 @@ export default function VerifyPage({
                       </div>
                     ))}
                     <div className="flex gap-3 items-start">
-                      <div className="relative z-10 w-[18px] h-[18px] rounded-full border-2 bg-white flex-shrink-0 flex items-center justify-center mt-0.5" style={{ borderColor: '#16a34a' }}>
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#16a34a' }} />
+                      <div className="relative z-10 w-[18px] h-[18px] rounded-full border-2 bg-white flex-shrink-0 flex items-center justify-center mt-0.5" style={{ borderColor: accentMid }}>
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: accentMid }} />
                       </div>
                       <div>
                         <p className="text-xs text-[#888]">Question {questionNum}</p>

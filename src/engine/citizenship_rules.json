@@ -708,59 +708,6 @@
         }
       ]
     },
-    "Q_STATUS": {
-      "kind": "question",
-      "prompt": "What best describes the person's current immigration status?",
-      "explanation": "Naturalization requires first holding the right underlying basis. Nonimmigrant status (tourist, student, work visa) and undocumented presence do not themselves lead toward citizenship — lawful permanent residence is the necessary first step on every route except certain military-service provisions.",
-      "citation": "8 U.S.C. § 1101(a)(15); 8 U.S.C. § 1429",
-      "answer_type": "enum",
-      "answers": [
-        {
-          "value": "military",
-          "label": "Active duty or veteran of the U.S. armed forces",
-          "next": "Q49"
-        },
-        {
-          "value": "marriage",
-          "label": "Married to (or holds a fiancé/marriage-based visa for) a U.S. citizen, not yet a green card holder",
-          "next": "Q_MARR"
-        },
-        {
-          "value": "nonimmigrant",
-          "label": "Tourist, student, or work-visa holder (e.g., B-1/B-2, F-1, H-1B, L-1)",
-          "next": "NO_NONIMM"
-        },
-        {
-          "value": "undocumented",
-          "label": "No current lawful immigration status",
-          "next": "NO_UNDOC"
-        },
-        {
-          "value": "other",
-          "label": "None of these / check for a citizen parent",
-          "next": "Q60br"
-        }
-      ]
-    },
-    "Q_MARR": {
-      "kind": "question",
-      "prompt": "Has the marriage-based adjustment of status or immigrant visa already been approved, making the person a lawful permanent resident?",
-      "explanation": "Marriage to a U.S. citizen does not itself confer citizenship or even lawful permanent residence — it only opens an immigrant-visa or adjustment-of-status pathway. The person must first become an LPR (conditional or full) before the marriage-based 3-year naturalization timeline under 8 U.S.C. § 1430(a) can begin.",
-      "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1186a; 8 U.S.C. § 1430(a)",
-      "answer_type": "boolean",
-      "answers": [
-        {
-          "value": true,
-          "label": "Yes (now an LPR)",
-          "next": "Q48"
-        },
-        {
-          "value": false,
-          "label": "No (still pending / not yet filed)",
-          "next": "NO_NAT_MARRIAGE"
-        }
-      ]
-    },
     "Q48": {
       "kind": "question",
       "prompt": "Is the person married to and living in marital union with a U.S. citizen (3-year pathway), versus the standard 5-year pathway?",
@@ -1444,23 +1391,59 @@
       "title": "Not a U.S. Citizen — Puerto Rican citizen only (pre-1941)",
       "citation": "Jones Act of 1917"
     },
-    "NO_NONIMM": {
-      "kind": "outcome",
-      "outcome": "NOT_CITIZEN",
-      "title": "Not a U.S. Citizen — nonimmigrant status, no current path to citizenship",
-      "citation": "8 U.S.C. § 1101(a)(15); 8 U.S.C. § 1429"
+    "IM_START": {
+      "kind": "question",
+      "prompt": "What is the person's current immigration status?",
+      "explanation": "This checks current immigration status only — a separate question from whether someone is a U.S. citizen. \"Immigrant status\" means lawful permanent residence (a green card, including conditional residence); every other current status, including nonimmigrant visas and no current lawful status, is \"nonimmigrant status\" for purposes of this check.",
+      "citation": "8 U.S.C. § 1101(a)(15)-(20)",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "lpr", "label": "Lawful permanent resident (green card holder, including conditional residence)", "next": "IM_LPR" },
+        { "value": "nonimmigrant", "label": "Nonimmigrant visa holder (e.g., tourist, student, or work visa)", "next": "IM_NONIMM" },
+        { "value": "marriage_pending", "label": "Married to (or holds a fiancé/marriage-based visa for) a U.S. citizen or LPR, not yet a green card holder", "next": "IM_MARR_FOLLOWUP" },
+        { "value": "undocumented", "label": "No current lawful immigration status", "next": "IM_UNDOC" }
+      ]
     },
-    "NO_UNDOC": {
-      "kind": "outcome",
-      "outcome": "NOT_CITIZEN",
-      "title": "Not a U.S. Citizen — no current lawful immigration status",
-      "citation": "8 U.S.C. § 1182; 8 U.S.C. § 1429"
+    "IM_MARR_FOLLOWUP": {
+      "kind": "question",
+      "prompt": "Has the marriage-based adjustment of status or immigrant visa already been approved, granting lawful permanent residence?",
+      "explanation": "Marriage to a U.S. citizen or LPR does not itself confer immigrant status — it only opens an immigrant-visa or adjustment-of-status pathway. Immigrant status begins once that petition is approved and permanent residence (conditional or full) is granted.",
+      "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1186a",
+      "answer_type": "boolean",
+      "answers": [
+        { "value": true, "label": "Yes (now a lawful permanent resident)", "next": "IM_LPR_MARR" },
+        { "value": false, "label": "No (still pending / not yet approved)", "next": "IM_MARR_PENDING" }
+      ]
     },
-    "NO_NAT_MARRIAGE": {
+    "IM_LPR": {
       "kind": "outcome",
-      "outcome": "NOT_CITIZEN",
-      "title": "Not a U.S. Citizen — marriage-based green card not yet obtained",
-      "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1430(a)"
+      "outcome": "IMMIGRANT_STATUS",
+      "title": "Immigrant Status — Lawful Permanent Resident",
+      "citation": "8 U.S.C. § 1101(a)(20)"
+    },
+    "IM_LPR_MARR": {
+      "kind": "outcome",
+      "outcome": "IMMIGRANT_STATUS",
+      "title": "Immigrant Status — Lawful Permanent Resident (Marriage-Based)",
+      "citation": "8 U.S.C. § 1101(a)(20); 8 U.S.C. § 1186a"
+    },
+    "IM_NONIMM": {
+      "kind": "outcome",
+      "outcome": "NONIMMIGRANT_STATUS",
+      "title": "Nonimmigrant Status — Visa Holder",
+      "citation": "8 U.S.C. § 1101(a)(15)"
+    },
+    "IM_UNDOC": {
+      "kind": "outcome",
+      "outcome": "NONIMMIGRANT_STATUS",
+      "title": "Nonimmigrant Status — No Current Lawful Status",
+      "citation": "8 U.S.C. § 1182"
+    },
+    "IM_MARR_PENDING": {
+      "kind": "outcome",
+      "outcome": "NONIMMIGRANT_STATUS",
+      "title": "Nonimmigrant Status — Marriage-Based Petition Pending",
+      "citation": "8 U.S.C. § 1151(b)(2)(A)(i); 8 U.S.C. § 1186a"
     },
     "Q1c": {
       "kind": "question",

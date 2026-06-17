@@ -24,98 +24,38 @@ const shineStyle: React.CSSProperties = {
   pointerEvents: 'none',
 }
 
-// Outcomes reached via the immigration-status classifier (Q_STATUS) describe a
-// *current status*, not a citizenship verdict in the adversarial sense — so they
-// get their own headline/icon/copy instead of the generic "Not a U.S. Citizen" framing.
-// The underlying engine still resolves every one of these to outcome: 'NOT_CITIZEN';
-// this is presentation-only differentiation, no change to the rules engine.
-const STATUS_OUTCOME_COPY: Record<string, { eyebrow: string; headline: string; body: string }> = {
-  NO_NONIMM: {
+// The immigration-status engine (see IMMIGRATION_ENGINE_START_NODE in engine.ts)
+// is a fully separate question tree from the citizenship determination — it never
+// shares nodes with, or routes into, the citizenship engine. Its outcome nodes
+// resolve only to IMMIGRANT_STATUS or NONIMMIGRANT_STATUS, and each gets its own
+// headline/body copy here (keyed by outcome node id), distinct from the generic
+// "U.S. Citizen" / "Not a U.S. Citizen" framing used for citizenship results.
+const IMMIGRATION_OUTCOME_COPY: Record<string, { eyebrow: string; headline: string; body: string }> = {
+  IM_LPR: {
     eyebrow: 'Status Check Complete',
-    headline: 'Nonimmigrant Status',
-    body: 'This person currently holds nonimmigrant status (such as a tourist, student, or work visa). On its own, nonimmigrant status does not lead toward lawful permanent residence or citizenship — a separate basis (such as employer sponsorship, family petition, or marriage to a U.S. citizen) would be needed to start that process.',
+    headline: 'Immigrant Status — Lawful Permanent Resident',
+    body: 'This person currently holds lawful permanent residence (a green card, including conditional residence). This is a current-status check only — it is separate from, and does not by itself determine, U.S. citizenship.',
   },
-  NO_UNDOC: {
+  IM_LPR_MARR: {
     eyebrow: 'Status Check Complete',
-    headline: 'No Current Lawful Status',
-    body: 'This person does not currently hold any lawful immigration status. There is no direct path to citizenship without first obtaining a lawful basis to remain, such as an approved visa petition, asylum, or another form of relief. An immigration attorney can help identify what options, if any, may be available.',
+    headline: 'Immigrant Status — Lawful Permanent Resident (Marriage-Based)',
+    body: 'This person obtained lawful permanent residence through a marriage-based petition. This is a current-status check only — it is separate from, and does not by itself determine, U.S. citizenship.',
   },
-  NO_NAT_MARRIAGE: {
+  IM_NONIMM: {
     eyebrow: 'Status Check Complete',
-    headline: 'Marriage-Based Status Pending',
-    body: 'This person is married to (or holds a marriage/fiancé-based visa tied to) a U.S. citizen, but has not yet been approved for lawful permanent residence. The marriage itself does not confer citizenship — naturalization eligibility begins only after the green card is approved.',
+    headline: 'Nonimmigrant Status — Visa Holder',
+    body: 'This person currently holds nonimmigrant status (such as a tourist, student, or work visa). On its own, nonimmigrant status does not lead toward lawful permanent residence or citizenship — a separate basis (such as employer sponsorship, family petition, or marriage to a U.S. citizen or LPR) would be needed to start that process.',
   },
-}
-
-// The "military" and "other" answers at Q_STATUS don't terminate immediately — they
-// continue into the shared naturalization / derivative-citizenship sub-tree that the
-// main Q0 citizenship flow also uses. So the same final outcome node (e.g. NO_NAT)
-// can be reached either from the main flow or from a status check, and means
-// something different in each case. This map is keyed first by the answer chosen at
-// Q_STATUS, then by the final outcome node reached, so those shared nodes still get
-// accurate, status-check-specific framing — this is what was missing before, and why
-// outcomes like "military" or "other" fell through to generic CITIZEN/NOT_CITIZEN copy.
-const STATUS_PATH_OUTCOME_COPY: Record<string, Record<string, { eyebrow: string; headline: string; body: string }>> = {
-  military: {
-    CIT_NAT: {
-      eyebrow: 'Status Check Complete',
-      headline: 'Naturalized Through Military Service',
-      body: 'This person became a U.S. citizen through the military naturalization pathway, which can waive the usual lawful-permanent-residence requirement for honorable service during a designated period of hostilities.',
-    },
-    NO_NAT: {
-      eyebrow: 'Status Check Complete',
-      headline: 'Military Naturalization Requirements Not Yet Met',
-      body: "This person's military service does not currently satisfy the requirements for naturalization through service. Depending on the specifics, this may be because the service was not during a designated period of hostilities and lawful permanent residence or one year of qualifying service was missing, or because another naturalization requirement (residence, presence, moral character, or testing) was not met.",
-    },
-    // NOTE: military's path (Q49 -> Q50/Q42m -> Q47) never reaches the moral-character
-    // permanent-bar question (Q45b), so NO_PERM is not reachable from this branch and is
-    // intentionally omitted here — it's only reachable via the marriage/standard LPR
-    // naturalization chain below.
+  IM_UNDOC: {
+    eyebrow: 'Status Check Complete',
+    headline: 'Nonimmigrant Status — No Current Lawful Status',
+    body: 'This person does not currently hold any lawful immigration status. There is no direct path to lawful permanent residence or citizenship without first obtaining a lawful basis to remain, such as an approved visa petition, asylum, or another form of relief. An immigration attorney can help identify what options, if any, may be available.',
   },
-  // "Married to a citizen, green card already approved" continues into the FULL standard
-  // naturalization chain (Q48 -> Q42 -> Q43 -> Q44 -> Q45 -> [Q45b] -> Q46 -> Q47), which is
-  // 6+ questions long, not a 1-2 hop shortcut. This was the single biggest gap in the prior
-  // fix — it's likely the most common test path, and it had NO entry at all here, so it
-  // always fell through to generic citizen/not-citizen copy. That's the "most of the time"
-  // the user was seeing.
-  marriage: {
-    CIT_NAT: {
-      eyebrow: 'Status Check Complete',
-      headline: 'Naturalized Through Marriage-Based Green Card',
-      body: 'This person became a lawful permanent resident through their marriage to a U.S. citizen, then went on to meet the standard naturalization requirements (continuous residence, physical presence, good moral character, English/civics, and the Oath of Allegiance) and is now a U.S. citizen.',
-    },
-    NO_NAT: {
-      eyebrow: 'Status Check Complete',
-      headline: 'Marriage-Based Green Card Holder — Naturalization Requirements Not Yet Met',
-      body: 'This person holds a marriage-based green card but does not currently satisfy one or more naturalization requirements — such as the 3-year continuous residence period, physical presence, good moral character, the English/civics test, or willingness to take the Oath of Allegiance.',
-    },
-    NO_PERM: {
-      eyebrow: 'Status Check Complete',
-      headline: 'Permanently Barred From Naturalization',
-      body: 'Despite holding a marriage-based green card, this person is permanently barred from naturalization due to a disqualifying criminal history (murder, or an aggravated felony committed after November 29, 1990).',
-    },
+  IM_MARR_PENDING: {
+    eyebrow: 'Status Check Complete',
+    headline: 'Nonimmigrant Status — Marriage-Based Petition Pending',
+    body: 'This person is married to (or holds a marriage/fiancé-based visa tied to) a U.S. citizen or lawful permanent resident, but has not yet been granted lawful permanent residence. The marriage itself does not confer immigrant status — that begins once the petition is approved.',
   },
-  other: {
-    CIT_CCA: {
-      eyebrow: 'Status Check Complete',
-      headline: 'Citizen via Derivative Citizenship',
-      body: 'This person automatically acquired U.S. citizenship through a U.S.-citizen parent under the Child Citizenship Act of 2000 — a basis distinct from their own immigration status.',
-    },
-    NO_NAT: {
-      eyebrow: 'Status Check Complete',
-      headline: 'No Derivative Citizenship or Current Path Identified',
-      body: 'This person is not a child of a U.S. citizen in a way that qualifies for derivative citizenship, and no other current basis for citizenship or naturalization was identified.',
-    },
-  },
-}
-// Q49 ("served honorably?") answering "No" routes into Q60br — the same
-// derivative-citizenship check used by the "other" branch — so a military-entry
-// path can also terminate at CIT_CCA. Without this entry that edge case fell
-// through to generic copy, which is exactly the gap the user flagged.
-STATUS_PATH_OUTCOME_COPY.military.CIT_CCA = {
-  eyebrow: 'Status Check Complete',
-  headline: 'Citizen via Derivative Citizenship',
-  body: 'Although this person did not qualify for naturalization through military service, they automatically acquired U.S. citizenship through a U.S.-citizen parent under the Child Citizenship Act of 2000 — a basis distinct from their own immigration or military status.',
 }
 
 function GeoCard({
@@ -215,9 +155,20 @@ function exportAuditJson(result: ResultState, geo: GeoData | null) {
 // the final determination, then every question/answer/citation in the path.
 // Shared by both the "Save as PDF" and "Print" actions so what you print is
 // exactly what you download.
+// Citizenship-engine results are green (CITIZEN) / red (NOT_CITIZEN); the separate
+// immigration-status engine's results (IMMIGRANT_STATUS / NONIMMIGRANT_STATUS) are
+// both rendered in the engine's blue, matching the in-app theming — they're a
+// current-status check, not a citizenship verdict, so they don't get a green/red split.
+function pdfColorForOutcome(outcome: string): [number, number, number] {
+  if (outcome === 'CITIZEN') return [6, 95, 70] // #065f46
+  if (outcome === 'IMMIGRANT_STATUS' || outcome === 'NONIMMIGRANT_STATUS') return [29, 78, 216] // #1d4ed8
+  return [185, 28, 28] // NOT_CITIZEN — #b91c1c
+}
+
 function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
   const snapshot = buildAuditSnapshot(result, geo)
-  const isCitizenPdf = snapshot.determination.outcome === 'CITIZEN'
+  const isImmigrationPdf = snapshot.determination.outcome === 'IMMIGRANT_STATUS' || snapshot.determination.outcome === 'NONIMMIGRANT_STATUS'
+  const [detR, detG, detB] = pdfColorForOutcome(snapshot.determination.outcome)
 
   const doc = new jsPDF({ unit: 'pt', format: 'letter' })
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -258,7 +209,7 @@ function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
   doc.text('VeriCase', margin, 38)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
-  doc.text('by MetaPhase  ·  Citizenship Determination Audit Trail', margin, 52)
+  doc.text(`by MetaPhase  ·  ${isImmigrationPdf ? 'Immigration Status Audit Trail' : 'Citizenship Determination Audit Trail'}`, margin, 52)
   y = 64 + 28
 
   // Generated + location stamp
@@ -287,7 +238,7 @@ function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
   // Final determination
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
-  doc.setTextColor(isCitizenPdf ? 6 : 185, isCitizenPdf ? 95 : 28, isCitizenPdf ? 70 : 28)
+  doc.setTextColor(detR, detG, detB)
   doc.text('Final Determination', margin, y)
   y += 18
   doc.setFontSize(15)
@@ -394,42 +345,16 @@ export default function ResultPage({
   onHome: () => void
   onStatusCheck: () => void
 }) {
-  const isCitizen = result.outcome.outcome === 'CITIZEN'
+  const outcomeKind = result.outcome.outcome
+  const isCitizen = outcomeKind === 'CITIZEN'
+  // The citizenship engine (rules.start) resolves to CITIZEN/NOT_CITIZEN; the
+  // separate, self-contained immigration-status engine (IMMIGRATION_ENGINE_START_NODE)
+  // resolves only to IMMIGRANT_STATUS/NONIMMIGRANT_STATUS. The two engines never
+  // share nodes, so a result is exactly one of these, never both.
+  const isCitizenshipResult = outcomeKind === 'CITIZEN' || outcomeKind === 'NOT_CITIZEN'
+  const isImmigrationResult = outcomeKind === 'IMMIGRANT_STATUS' || outcomeKind === 'NONIMMIGRANT_STATUS'
 
-  // Did this result come from the Q_STATUS immigration-status classifier at all
-  // (whether it terminated immediately, or continued into the shared naturalization /
-  // derivative-citizenship sub-tree via the "military" or "other" answers)?
-  const statusStep = result.history.find((s) => s.nodeId === 'Q_STATUS')
-  const isFromStatusCheck = !!statusStep
-
-  // Outcome nodes that are reachable WITHOUT ever passing through Q_STATUS but where
-  // the person's current immigration status is already fully known from the path they
-  // took — so offering "Check Immigration Status" afterward would be a non-sequitur:
-  //   - NO_NAT / NO_PERM reached this way only happens via the standard naturalization
-  //     chain (Q42-Q47), which is only entered already KNOWING the person is an LPR
-  //     (via GO_NAT's "Yes (LPR)" branch, the marriage-adjustment Q_MARR branch, or any
-  //     of the adoption-visa QADOPT_* "false" branches) — they're not facing an unknown
-  //     "what's your status" question, they're an LPR who didn't meet other requirements.
-  //   - NO_NATL (American Samoa / outlying-possession national) and NO_PR (pre-1941
-  //     Puerto Rican-citizen-only) are themselves unique non-citizen statuses that don't
-  //     map onto any of Q_STATUS's five categories (military/marriage/nonimmigrant/
-  //     undocumented/other) — there's nothing for that question to resolve for them.
-  // NO_FOUND and NO_LOST are deliberately NOT in this set: both leave the person's
-  // current status genuinely open, so the status check is exactly the right next step.
-  const STATUS_ALREADY_RESOLVED_OUTCOMES = new Set(['NO_NAT', 'NO_PERM', 'NO_NATL', 'NO_PR'])
-  const statusCheckIsApplicable =
-    !isFromStatusCheck && !STATUS_ALREADY_RESOLVED_OUTCOMES.has(result.nodeId)
-
-  const directStatusCopy = STATUS_OUTCOME_COPY[result.nodeId]
-  const pathStatusCopy =
-    isFromStatusCheck && statusStep ? STATUS_PATH_OUTCOME_COPY[String(statusStep.chosenValue)]?.[result.nodeId] : undefined
-  const statusCopy = directStatusCopy ?? pathStatusCopy
-  // Only the 3 nodes exclusive to Q_STATUS (nonimmigrant/undocumented/marriage-pending)
-  // get the distinct blue "current status, not a final verdict" treatment — outcomes
-  // reached via the military/other sub-tree (CIT_NAT, NO_NAT, NO_PERM, CIT_CCA) are
-  // genuine citizenship verdicts, so they keep the normal green/red styling, just with
-  // status-aware headline/body text layered on top.
-  const isPureStatusOutcome = !!directStatusCopy
+  const statusCopy = isImmigrationResult ? IMMIGRATION_OUTCOME_COPY[result.nodeId] : undefined
   const [showAudit, setShowAudit] = useState(false)
   const online = useOnlineStatus()
   const activeGeo = online ? geo : null   // never show stale location data when offline
@@ -452,7 +377,7 @@ export default function ResultPage({
       <div id="print-header" style={{ padding: '16px 24px 8px', borderBottom: '2px solid #065f46', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
           <strong style={{ fontSize: 18, color: '#065f46' }}>VeriCase</strong>
-          <span style={{ fontSize: 11, color: '#888' }}>by MetaPhase — Citizenship Determination</span>
+          <span style={{ fontSize: 11, color: '#888' }}>by MetaPhase — {isImmigrationResult ? 'Immigration Status Check' : 'Citizenship Determination'}</span>
         </div>
         <div style={{ fontSize: 11, color: '#aaa' }}>
           Generated {new Date().toLocaleString()} · No personal data collected or stored
@@ -531,7 +456,7 @@ export default function ResultPage({
               <div
                 className="h-2"
                 style={{
-                  background: isPureStatusOutcome
+                  background: isImmigrationResult
                     ? 'linear-gradient(90deg, #1d4ed8, #2563eb)'
                     : isCitizen
                       ? 'linear-gradient(90deg, #065f46, #16a34a)'
@@ -544,7 +469,7 @@ export default function ResultPage({
                 {/* Icon + headline */}
                 <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-4">
-                    {isPureStatusOutcome ? (
+                    {isImmigrationResult ? (
                       <div className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#dbeafe' }}>
                         <Compass size={30} strokeWidth={1.5} style={{ color: '#1d4ed8' }} aria-hidden="true" />
                       </div>
@@ -563,7 +488,7 @@ export default function ResultPage({
                   </div>
                   <h1
                     className="text-4xl md:text-5xl font-extrabold leading-tight"
-                    style={{ color: isPureStatusOutcome ? '#1d4ed8' : isCitizen ? '#065f46' : '#b91c1c' }}
+                    style={{ color: isImmigrationResult ? '#1d4ed8' : isCitizen ? '#065f46' : '#b91c1c' }}
                   >
                     {statusCopy ? statusCopy.headline : isCitizen ? 'U.S. Citizen' : 'Not a U.S. Citizen'}
                   </h1>
@@ -574,7 +499,7 @@ export default function ResultPage({
                   <span
                     className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-1.5 rounded-full"
                     style={
-                      isPureStatusOutcome
+                      isImmigrationResult
                         ? { background: '#dbeafe', color: '#1d4ed8' }
                         : isCitizen
                           ? { background: '#dcfce7', color: '#065f46' }
@@ -612,7 +537,7 @@ export default function ResultPage({
                 {!isCitizen && (
                   <div className="mb-4">
                     <a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer"
-                      className="text-sm font-medium hover:underline" style={{ color: isPureStatusOutcome ? '#1d4ed8' : '#dc2626' }}>
+                      className="text-sm font-medium hover:underline" style={{ color: isImmigrationResult ? '#1d4ed8' : '#dc2626' }}>
                       Learn about U.S. Citizenship →
                     </a>
                   </div>
@@ -663,9 +588,11 @@ export default function ResultPage({
                             <div className="flex gap-3 items-start relative z-10">
                               <div
                                 className="w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
-                                style={{ background: isCitizen ? '#16a34a' : '#dc2626' }}
+                                style={{ background: isImmigrationResult ? '#1d4ed8' : isCitizen ? '#16a34a' : '#dc2626' }}
                               >
-                                {isCitizen ? (
+                                {isImmigrationResult ? (
+                                  <Compass size={11} className="text-white" aria-hidden="true" />
+                                ) : isCitizen ? (
                                   <CheckCircle2 size={11} className="text-white" aria-hidden="true" />
                                 ) : (
                                   <XCircle size={11} className="text-white" aria-hidden="true" />
@@ -673,7 +600,7 @@ export default function ResultPage({
                               </div>
                               <div className="min-w-0">
                                 <p className="text-xs text-[#999]">Final determination</p>
-                                <p className="text-sm font-semibold mt-0.5" style={{ color: isCitizen ? '#065f46' : '#b91c1c' }}>
+                                <p className="text-sm font-semibold mt-0.5" style={{ color: isImmigrationResult ? '#1d4ed8' : isCitizen ? '#065f46' : '#b91c1c' }}>
                                   {result.outcome.title}
                                 </p>
                                 <p className="text-[11px] text-[#bbb] italic mt-0.5">{result.outcome.citation}</p>
@@ -725,14 +652,12 @@ export default function ResultPage({
                     <RotateCcw size={16} aria-hidden="true" />
                     New Case
                   </button>
-                  {/* Immigration status check — secondary wizard entry. Hidden when:
-                      (1) already viewing a status-check result (re-offering the same
-                      wizard is circular), or (2) the outcome already fully establishes
-                      current status — the standard-naturalization NO_NAT/NO_PERM outcomes
-                      (reached only as a known LPR) and the unique non-citizen statuses
-                      NO_NATL/NO_PR (American Samoa national / pre-1941 PR-only) have
-                      nothing left for Q_STATUS to resolve. See STATUS_ALREADY_RESOLVED_OUTCOMES. */}
-                  {!isCitizen && statusCheckIsApplicable && (
+                  {/* Immigration status check — entry point into the separate immigration-status
+                      engine. Shown on every citizenship-engine result (CITIZEN and NOT_CITIZEN
+                      alike) so it's always available as a next step; hidden on immigration-engine
+                      results themselves, since offering the same wizard from its own result
+                      would be circular. */}
+                  {isCitizenshipResult && (
                     <button
                       onClick={onStatusCheck}
                       className="flex-1 flex items-center justify-center gap-2 border-2

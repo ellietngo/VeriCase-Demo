@@ -5,7 +5,7 @@ import ResultPage from './pages/ResultPage'
 import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import SourcesPage from './pages/SourcesPage'
-import { type OutcomeNode, type Step } from './engine/engine'
+import { type OutcomeNode, type Step, IMMIGRATION_ENGINE_START_NODE } from './engine/engine'
 import { type GeoData, fetchGeoData, getLocation } from './geo'
 
 export type Page = 'landing' | 'verify' | 'result' | 'terms' | 'privacy' | 'sources'
@@ -92,9 +92,9 @@ export default function App() {
   }, [])
   const goToResult = useCallback((r: ResultState) => { setResult(r); setPage('result') }, [])
   const goToNewCase = useCallback(() => { setResult(null); setVerifyStart(undefined); setVerifyOrigin(undefined); setPage('verify') }, [])
-  const goToStatusCheck = useCallback(() => { setVerifyStart('Q_STATUS'); setVerifyOrigin('result'); setPage('verify') }, [])
+  const goToStatusCheck = useCallback(() => { setVerifyStart(IMMIGRATION_ENGINE_START_NODE); setVerifyOrigin('result'); setPage('verify') }, [])
   const goToStatusCheckFromLanding = useCallback(() => {
-    setResult(null); setVerifyStart('Q_STATUS'); setVerifyOrigin('landing'); setPage('verify')
+    setResult(null); setVerifyStart(IMMIGRATION_ENGINE_START_NODE); setVerifyOrigin('landing'); setPage('verify')
   }, [])
   const backToResult = useCallback(() => { setPage('result') }, [])
 
