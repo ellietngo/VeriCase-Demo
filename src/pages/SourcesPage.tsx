@@ -21,6 +21,35 @@ const SOURCES: { category: string; items: Source[] }[] = [
     ],
   },
   {
+    category: 'Statutes — Immigration Status (8 U.S.C. / INA)',
+    items: [
+      { title: '8 U.S.C. § 1101(a)(15) — Nonimmigrant classifications', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1101', description: 'Defines the nonimmigrant visa categories — students (F, M), temporary workers (H, L, O, P, E, R), visitors (B), exchange visitors (J), fiancé(e)s (K), and crime/trafficking victims (U, T).' },
+      { title: '8 U.S.C. § 1101(a)(20) — Lawful permanent resident defined', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1101', description: 'Defines "lawfully admitted for permanent residence" — the basis for LPR (green card) status.' },
+      { title: '8 U.S.C. § 1101(a)(22) — National, but not citizen', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1101', description: 'Defines "national of the United States," a status distinct from citizenship.' },
+      { title: '8 U.S.C. § 1101(a)(27) — Special immigrant defined', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1101', description: 'Defines special immigrant categories, including Special Immigrant Juveniles (SIJ) and religious workers.' },
+      { title: '8 U.S.C. § 1154(a)(1)(A)(iii) — VAWA self-petitions', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1154', description: 'Self-petitioning process for victims of abuse by a U.S. citizen or LPR spouse or parent.' },
+      { title: '8 U.S.C. § 1157 — Refugee admissions', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1157', description: 'Annual refugee admissions ceiling and admission procedures.' },
+      { title: '8 U.S.C. § 1158 — Asylum', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1158', description: 'Eligibility and procedure for a grant of asylum, including pending asylum applications.' },
+      { title: '8 U.S.C. § 1182(d)(5) — Parole authority', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1182', description: 'DHS authority to parole an applicant for admission for urgent humanitarian reasons or significant public benefit.' },
+      { title: '8 U.S.C. § 1184(o) — T nonimmigrant status procedures', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1184', description: 'Procedures and numerical limits for T nonimmigrant (trafficking victim) status.' },
+      { title: '8 U.S.C. § 1184(p) — U nonimmigrant status procedures', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1184', description: 'Procedures and numerical limits for U nonimmigrant (crime victim) status.' },
+      { title: '8 U.S.C. § 1186a — Conditional permanent resident status', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1186a', description: 'Two-year conditional residence for marriage-based green card holders; basis for Form I-751/I-829.' },
+      { title: '8 U.S.C. § 1227 — Deportable aliens', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1227', description: 'Grounds of removability for individuals who entered lawfully but fell out of status.' },
+      { title: '8 U.S.C. § 1229b — Cancellation of removal', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1229b', description: 'Discretionary relief from removal available in immigration court proceedings.' },
+      { title: '8 U.S.C. § 1254a — Temporary Protected Status', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1254a', description: 'TPS country designation, eligibility, and Form I-821 filing basis.' },
+      { title: '8 U.S.C. § 1255 — Adjustment of status', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1255', description: 'Adjustment to lawful permanent resident status from within the U.S. via Form I-485.' },
+      { title: '8 U.S.C. § 1258 — Change of nonimmigrant classification', url: 'https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1258', description: 'Procedure for changing or extending a nonimmigrant classification.' },
+    ],
+  },
+  {
+    category: 'Federal Regulations — Immigration Status (8 C.F.R.)',
+    items: [
+      { title: '8 C.F.R. § 103.2 — Applications, petitions, and evidence', url: 'https://www.ecfr.gov/current/title-8/chapter-I/subchapter-A/part-103/section-103.2', description: 'General filing and evidentiary requirements; basis for cases needing further document or record review.' },
+      { title: '8 C.F.R. § 214.1 — Nonimmigrant general requirements', url: 'https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-214/section-214.1', description: 'General nonimmigrant admission, extension, and maintenance-of-status requirements.' },
+      { title: '8 C.F.R. § 274a.12(c)(14) — Deferred action work authorization', url: 'https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-274a/section-274a.12', description: 'Employment authorization eligibility for individuals granted deferred action, including DACA.' },
+    ],
+  },
+  {
     category: 'Constitutional Authority',
     items: [
       { title: '14th Amendment — Citizenship Clause', url: 'https://constitution.congress.gov/constitution/amendment-14/', description: 'Birthright citizenship; "subject to the jurisdiction thereof."' },
@@ -48,6 +77,14 @@ const SOURCES: { category: string; items: Source[] }[] = [
       { title: 'USCIS — U.S. Citizenship', url: 'https://www.uscis.gov/citizenship', description: 'Official USCIS citizenship overview and naturalization resources.' },
       { title: 'USCIS — Certificate of Citizenship (N-600)', url: 'https://www.uscis.gov/n-600', description: 'Application for certificate of citizenship for those who acquired citizenship automatically.' },
       { title: 'USCIS Policy Manual — Volume 12', url: 'https://www.uscis.gov/policy-manual/volume-12', description: 'Comprehensive USCIS guidance on citizenship and naturalization.' },
+      { title: 'USCIS — Consideration of DACA', url: 'https://www.uscis.gov/humanitarian/consideration-of-deferred-action-for-childhood-arrivals-daca', description: 'Official DACA program overview, eligibility criteria, and Form I-821D.' },
+      { title: 'USCIS — Temporary Protected Status', url: 'https://www.uscis.gov/humanitarian/temporary-protected-status', description: 'Current TPS country designations and Form I-821 filing instructions.' },
+      { title: 'USCIS — U Visa', url: 'https://www.uscis.gov/working-in-the-united-states/u-visa', description: 'U nonimmigrant status overview for victims of qualifying crimes.' },
+      { title: 'USCIS — T Visa', url: 'https://www.uscis.gov/humanitarian/victims-of-human-trafficking-and-other-crimes/victims-of-human-trafficking-t-nonimmigrant-status', description: 'T nonimmigrant status overview for victims of human trafficking.' },
+      { title: 'USCIS — VAWA Self-Petitions', url: 'https://www.uscis.gov/humanitarian/abused-spouses-children-and-parents/battered-spouse-children-parents', description: 'Self-petitioning process for abused spouses, children, and parents of U.S. citizens or LPRs.' },
+      { title: 'USCIS — Special Immigrant Juvenile Status', url: 'https://www.uscis.gov/working-in-the-united-states/sij-status', description: 'Eligibility and filing process (Form I-360) for Special Immigrant Juvenile status.' },
+      { title: 'USCIS — Adjustment of Status (I-485)', url: 'https://www.uscis.gov/i-485', description: 'Application to register permanent residence or adjust status.' },
+      { title: 'EOIR — Executive Office for Immigration Review', url: 'https://www.justice.gov/eoir', description: 'Immigration court system; handles cancellation of removal and other relief under § 1229b.' },
     ],
   },
   {
@@ -85,8 +122,9 @@ export default function SourcesPage({ onBack }: { onBack: () => void }) {
           <h1 className="text-3xl font-extrabold text-[#111] mb-2">Sources</h1>
           <p className="text-sm text-[#777] mb-8 leading-relaxed">
             Every determination in VeriCase cites controlling authority. This page lists the
-            primary statutes, case law, regulatory guidance, and data sources underlying the
-            rules engine and location context.
+            primary statutes, case law, regulatory guidance, and data sources underlying both
+            the citizenship determination and the separate immigration-status check, plus the
+            location context engine.
           </p>
 
           <div className="space-y-10">

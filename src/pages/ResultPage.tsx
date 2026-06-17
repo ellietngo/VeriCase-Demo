@@ -626,13 +626,20 @@ export default function ResultPage({
                 <div className="border-t border-[#EEE] pt-5 flex flex-wrap sm:flex-nowrap gap-3">
                   <button
                     onClick={onNewCase}
-                    className="flex-1 min-w-[9.5rem] flex items-center justify-center gap-2 border-2 border-[#EEE]
+                    className="flex-1 min-w-[9.5rem] flex items-center justify-center border-2 border-[#EEE]
                       text-[#333] font-semibold py-3 rounded-2xl
                       hover:border-green-700 hover:text-green-700 transition-colors
                       focus:outline-none focus:ring-4 focus:ring-green-700/20"
                   >
-                    <RotateCcw size={16} className="flex-shrink-0" aria-hidden="true" />
-                    New Case
+                    {/* Icon + label wrapped together so the pair is sized to its own
+                        content and centered as one unit — if the button is left as a
+                        flex row with two top-level children, a wrapped two-line label
+                        stretches to fill the remaining width and shoves the icon
+                        against the left edge instead of keeping it next to the text. */}
+                    <span className="inline-flex items-center gap-2">
+                      <RotateCcw size={16} className="flex-shrink-0" aria-hidden="true" />
+                      New Case
+                    </span>
                   </button>
                   {/* Immigration status check — entry point into the separate immigration-status
                       engine. Shown on every citizenship-engine result (CITIZEN and NOT_CITIZEN
@@ -642,24 +649,28 @@ export default function ResultPage({
                   {isCitizenshipResult && (
                     <button
                       onClick={onStatusCheck}
-                      className="flex-1 min-w-[9.5rem] flex items-center justify-center gap-2 border-2
+                      className="flex-1 min-w-[9.5rem] flex items-center justify-center border-2
                         text-white font-semibold py-3 rounded-2xl transition-colors
                         hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-700/20"
                       style={{ background: '#2563eb', borderColor: '#2563eb' }}
                     >
-                      <Compass size={16} className="flex-shrink-0" aria-hidden="true" />
-                      Check Immigration Status
+                      <span className="inline-flex items-center gap-2">
+                        <Compass size={16} className="flex-shrink-0" aria-hidden="true" />
+                        Check Immigration Status
+                      </span>
                     </button>
                   )}
                   <button
                     onClick={onHome}
-                    className="flex-1 min-w-[9.5rem] flex items-center justify-center gap-2 text-white
+                    className="flex-1 min-w-[9.5rem] flex items-center justify-center text-white
                       font-semibold py-3 rounded-2xl transition-colors
                       focus:outline-none focus:ring-4 focus:ring-green-900/30"
                     style={{ background: '#065f46' }}
                   >
-                    <Home size={16} className="flex-shrink-0" aria-hidden="true" />
-                    Back to Home
+                    <span className="inline-flex items-center gap-2">
+                      <Home size={16} className="flex-shrink-0" aria-hidden="true" />
+                      Back to Home
+                    </span>
                   </button>
                 </div>
               </div>
