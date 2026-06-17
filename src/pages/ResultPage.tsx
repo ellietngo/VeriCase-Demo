@@ -136,7 +136,7 @@ function GeoCard({
         className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center mt-0.5"
         style={{ background: accentColor + '22' }}
       >
-        <span style={{ color: accentColor }}>{icon}</span>
+        <span className="flex items-center justify-center" style={{ color: accentColor }}>{icon}</span>
       </div>
       <div className="min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40 mb-0.5">{label}</p>
@@ -167,6 +167,25 @@ export default function ResultPage({
   // derivative-citizenship sub-tree via the "military" or "other" answers)?
   const statusStep = result.history.find((s) => s.nodeId === 'Q_STATUS')
   const isFromStatusCheck = !!statusStep
+
+  // Outcome nodes that are reachable WITHOUT ever passing through Q_STATUS but where
+  // the person's current immigration status is already fully known from the path they
+  // took — so offering "Check Immigration Status" afterward would be a non-sequitur:
+  //   - NO_NAT / NO_PERM reached this way only happens via the standard naturalization
+  //     chain (Q42-Q47), which is only entered already KNOWING the person is an LPR
+  //     (via GO_NAT's "Yes (LPR)" branch, the marriage-adjustment Q_MARR branch, or any
+  //     of the adoption-visa QADOPT_* "false" branches) — they're not facing an unknown
+  //     "what's your status" question, they're an LPR who didn't meet other requirements.
+  //   - NO_NATL (American Samoa / outlying-possession national) and NO_PR (pre-1941
+  //     Puerto Rican-citizen-only) are themselves unique non-citizen statuses that don't
+  //     map onto any of Q_STATUS's five categories (military/marriage/nonimmigrant/
+  //     undocumented/other) — there's nothing for that question to resolve for them.
+  // NO_FOUND and NO_LOST are deliberately NOT in this set: both leave the person's
+  // current status genuinely open, so the status check is exactly the right next step.
+  const STATUS_ALREADY_RESOLVED_OUTCOMES = new Set(['NO_NAT', 'NO_PERM', 'NO_NATL', 'NO_PR'])
+  const statusCheckIsApplicable =
+    !isFromStatusCheck && !STATUS_ALREADY_RESOLVED_OUTCOMES.has(result.nodeId)
+
   const directStatusCopy = STATUS_OUTCOME_COPY[result.nodeId]
   const pathStatusCopy =
     isFromStatusCheck && statusStep ? STATUS_PATH_OUTCOME_COPY[String(statusStep.chosenValue)]?.[result.nodeId] : undefined
@@ -422,10 +441,14 @@ export default function ResultPage({
                     <RotateCcw size={16} aria-hidden="true" />
                     New Case
                   </button>
-                  {/* Immigration status check — secondary wizard entry, only offered after
-                      a NOT_CITIZEN determination, and hidden once already viewing a
-                      status-check result (re-offering the same wizard is circular). */}
-                  {!isCitizen && !isFromStatusCheck && (
+                  {/* Immigration status check — secondary wizard entry. Hidden when:
+                      (1) already viewing a status-check result (re-offering the same
+                      wizard is circular), or (2) the outcome already fully establishes
+                      current status — the standard-naturalization NO_NAT/NO_PERM outcomes
+                      (reached only as a known LPR) and the unique non-citizen statuses
+                      NO_NATL/NO_PR (American Samoa national / pre-1941 PR-only) have
+                      nothing left for Q_STATUS to resolve. See STATUS_ALREADY_RESOLVED_OUTCOMES. */}
+                  {!isCitizen && statusCheckIsApplicable && (
                     <button
                       onClick={onStatusCheck}
                       className="flex-1 flex items-center justify-center gap-2 border-2
