@@ -225,12 +225,33 @@ export default function ResultPage({
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden" style={pageStyle}>
+      <style>{`
+        @media print {
+          body { background: white !important; color: #111 !important; }
+          .no-print { display: none !important; }
+          .print-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+          header, .geo-panel, iframe { display: none !important; }
+          .card-in { animation: none !important; }
+          #print-header { display: block !important; }
+        }
+        #print-header { display: none; }
+      `}</style>
+      {/* Print-only header */}
+      <div id="print-header" style={{ padding: '16px 24px 8px', borderBottom: '2px solid #065f46', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+          <strong style={{ fontSize: 18, color: '#065f46' }}>VeriCase</strong>
+          <span style={{ fontSize: 11, color: '#888' }}>by MetaPhase — Citizenship Determination</span>
+        </div>
+        <div style={{ fontSize: 11, color: '#aaa' }}>
+          Generated {new Date().toLocaleString()} · No personal data collected or stored
+        </div>
+      </div>
       <div style={shineStyle} aria-hidden="true" />
       <GovBanner />
 
       {/* Header */}
       <header
-        className="relative z-10 px-4 py-4 text-white"
+        className="relative z-10 px-4 py-4 text-white no-print"
         style={{ background: 'rgba(0,25,15,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
@@ -294,7 +315,7 @@ export default function ResultPage({
               }
               .card-in { animation: card-in 400ms cubic-bezier(0.22, 1, 0.36, 1) both; }
             `}</style>
-            <div className="card-in bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className="card-in print-card bg-white rounded-3xl shadow-2xl overflow-hidden">
               <div
                 className="h-2"
                 style={{
@@ -614,6 +635,31 @@ export default function ResultPage({
                   />
                 )}
 
+                {/* Minimap */}
+                {activeGeo && (
+                  <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <iframe
+                      title="Location map"
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${activeGeo.longitude - 0.12}%2C${activeGeo.latitude - 0.08}%2C${activeGeo.longitude + 0.12}%2C${activeGeo.latitude + 0.08}&layer=mapnik&marker=${activeGeo.latitude}%2C${activeGeo.longitude}`}
+                      width="100%"
+                      height="140"
+                      style={{ display: 'block', border: 0, filter: 'saturate(0.8) brightness(0.9)' }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                    <a
+                      href={`https://maps.google.com/?q=${activeGeo.latitude},${activeGeo.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-semibold transition-colors hover:bg-white/10"
+                      style={{ color: 'rgba(255,255,255,0.45)', background: 'rgba(0,0,0,0.25)' }}
+                    >
+                      <MapPin size={10} style={{ color: '#86efac' }} aria-hidden="true" />
+                      Open in Google Maps
+                    </a>
+                  </div>
+                )}
+
                 {/* Footer */}
                 <p className="text-[10px] text-center leading-relaxed px-1 mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
                   Built by{' '}
@@ -622,7 +668,7 @@ export default function ResultPage({
                     MetaPhase
                   </a>
                   {' · '}
-                  <a href="#terms" className="hover:underline" style={{ color: 'rgba(255,255,255,0.28)' }}>Terms of Use</a>
+                  <a href="#/terms" className="hover:underline" style={{ color: 'rgba(255,255,255,0.28)' }}>Terms of Use</a>
                 </p>
               </div>
             )}

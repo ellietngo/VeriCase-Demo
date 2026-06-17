@@ -77,9 +77,11 @@ export default function VerifyPage({
     setCurrent({ nodeId: prev.nodeId, node: prev.node })
   }, [history, onBack])
 
-  // Browser back/forward — pop state triggers handleBack
+  // Browser back — only fire for VerifyPage's own pushState entries (tagged with historyLen)
   useEffect(() => {
-    const onPopState = () => handleBack()
+    const onPopState = (e: PopStateEvent) => {
+      if (e.state && typeof e.state.historyLen === 'number') handleBack()
+    }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [handleBack])

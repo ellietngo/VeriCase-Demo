@@ -4,6 +4,10 @@ const API_BASE = 'https://api.geoborder.metaphase.tech/v1'
 const API_KEY = import.meta.env.VITE_GEOBORDER_KEY as string
 
 export interface GeoData {
+  // Raw coordinates
+  latitude: number
+  longitude: number
+
   // Jurisdiction labels
   state: string | null
   county: string | null
@@ -105,6 +109,8 @@ export async function fetchGeoData(lat: number, lon: number): Promise<GeoData> {
   }
 
   return {
+    latitude: lat,
+    longitude: lon,
     state: (stateFeature?.properties?.['STUSPS'] as string) ?? stateFeature?.name ?? null,
     county: countyFeature?.name ?? null,
     congressionalDistrict: cdLabel,

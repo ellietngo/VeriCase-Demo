@@ -23,14 +23,14 @@
   "nodes": {
     "Q0": {
       "kind": "question",
-      "prompt": "Where was the person born?",
-      "explanation": "Threshold routing question. U.S. citizenship can arise by birth in U.S. territory, birth abroad to a citizen parent, naturalization, or derivation through a parent.",
+      "prompt": "Where was this person born?",
+      "explanation": "This determines which citizenship rules apply. People born in the U.S. are generally citizens at birth under the 14th Amendment. People born abroad may be citizens through a parent.",
       "citation": "14th Amendment; 8 U.S.C. § 1401; United States v. Wong Kim Ark, 169 U.S. 649 (1898)",
       "answer_type": "enum",
       "answers": [
         {
           "value": "us_states_dc",
-          "label": "In the 50 states or D.C.",
+          "label": "In the United States (50 states or D.C.)",
           "next": "Q1"
         },
         {
@@ -39,34 +39,81 @@
           "next": "Q3"
         },
         {
-          "value": "abroad_both_citizens",
-          "label": "Abroad, both parents were U.S. citizens",
-          "next": "Q10"
-        },
-        {
-          "value": "abroad_one_citizen",
-          "label": "Abroad, one parent was a U.S. citizen",
-          "next": "Q20"
-        },
-        {
-          "value": "abroad_no_citizen",
-          "label": "Abroad, neither parent a citizen (or unknown)",
-          "next": "GO_NAT"
+          "value": "abroad",
+          "label": "Outside the United States",
+          "next": "Q0_ABROAD"
         },
         {
           "value": "foundling",
-          "label": "Found in the U.S., parentage unknown",
+          "label": "Found in the U.S. — parents unknown",
           "next": "Q8"
+        }
+      ]
+    },
+    "Q0_ABROAD": {
+      "kind": "question",
+      "prompt": "Was at least one of this person's parents a U.S. citizen at the time of birth?",
+      "explanation": "A child born abroad can acquire U.S. citizenship through a citizen parent, but physical presence and transmission requirements must be met. If neither parent was a citizen, citizenship must come through naturalization or derivation through a parent who later naturalizes.",
+      "citation": "8 U.S.C. §§ 1401(c), 1401(g), 1409; 7 FAM 1130",
+      "answer_type": "enum",
+      "answers": [
+        {
+          "value": "both",
+          "label": "Yes — both parents were U.S. citizens",
+          "next": "Q10"
         },
         {
-          "value": "internationally_adopted",
-          "label": "Born abroad, internationally adopted by a U.S. citizen parent",
-          "next": "QADOPT_VISA"
+          "value": "one",
+          "label": "Yes — one parent was a U.S. citizen",
+          "next": "Q0_ABROAD_ONE"
+        },
+        {
+          "value": "neither",
+          "label": "No — neither parent was a U.S. citizen (or status is unknown)",
+          "next": "Q0_ABROAD_NONE"
+        }
+      ]
+    },
+    "Q0_ABROAD_ONE": {
+      "kind": "question",
+      "prompt": "Were there any special circumstances around the birth?",
+      "explanation": "Standard births abroad to one citizen parent follow the § 1401(g) physical-presence rules. Surrogacy and international adoption have separate legal frameworks.",
+      "citation": "8 U.S.C. § 1401(g); 8 U.S.C. § 1409; 7 FAM 1131.4-3; 8 U.S.C. §§ 1431–1433",
+      "answer_type": "enum",
+      "answers": [
+        {
+          "value": "standard",
+          "label": "No — standard birth",
+          "next": "Q20"
         },
         {
           "value": "surrogacy",
           "label": "Born via surrogacy or assisted reproduction",
           "next": "QSURR"
+        },
+        {
+          "value": "adoption",
+          "label": "Internationally adopted by a U.S. citizen parent",
+          "next": "QADOPT_VISA"
+        }
+      ]
+    },
+    "Q0_ABROAD_NONE": {
+      "kind": "question",
+      "prompt": "Was the person internationally adopted by a U.S. citizen parent?",
+      "explanation": "When neither parent was a citizen at birth, citizenship through adoption may still be available under the Child Citizenship Act or the N-600K process. Without adoption, the person is not a citizen by birth and would need to qualify through naturalization or a parent's later naturalization.",
+      "citation": "8 U.S.C. §§ 1431–1433; 8 C.F.R. § 320",
+      "answer_type": "boolean",
+      "answers": [
+        {
+          "value": true,
+          "label": "Yes — adopted by a U.S. citizen parent",
+          "next": "QADOPT_VISA"
+        },
+        {
+          "value": false,
+          "label": "No",
+          "next": "GO_NAT"
         }
       ]
     },

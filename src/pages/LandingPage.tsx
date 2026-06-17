@@ -279,7 +279,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
             </h1>
 
             <p className="text-sm md:text-base text-white/80 max-w-xs lg:max-w-sm leading-relaxed mb-10">
-              A guided, one-question-at-a-time engine across 17,685 legal pathways —
+              A guided, one-question-at-a-time engine across 17,960 legal pathways —
               every determination cites controlling statute or case law.
             </p>
 
@@ -309,9 +309,9 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
 
             {/* Trust signals */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-2.5 gap-y-1 mt-5 text-[11px] font-semibold text-white/45">
-              <span>87 guided questions</span>
+              <span>90 guided questions</span>
               <span aria-hidden="true">·</span>
-              <span>17,685 legal pathways</span>
+              <span>17,960 legal pathways</span>
               <span aria-hidden="true">·</span>
               <span>100% cited determinations</span>
               <span aria-hidden="true">·</span>
@@ -470,7 +470,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
                 icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
                 accent="#065f46"
                 title="Guided Case Review"
-                description="87 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and immigration status."
+                description="90 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and immigration status."
               />
             </Reveal>
             <Reveal delay={80}>
@@ -503,42 +503,80 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
 
       {/* Footer */}
       <footer className="bg-[#F6F6F6] border-t border-[#EEE] px-6 py-12">
-        <Reveal className="max-w-5xl mx-auto md:flex md:gap-16 md:items-start">
-          <div className="mb-8 md:mb-0 md:flex-1">
-            <div className="flex items-center gap-2 mb-3">
+        <Reveal className="max-w-5xl mx-auto grid gap-10 md:grid-cols-[1fr_auto_auto]">
+          {/* Brand column */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
               <TorchLogo size={14} className="text-[#065f46]" />
               <span className="font-bold text-sm tracking-tight" style={{ color: '#065f46' }}>VeriCase</span>
             </div>
-            <p className="text-xs font-semibold text-[#222] mb-1">
+            <p className="text-sm font-semibold text-[#111] mb-1">
               Built by{' '}
               <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
                 className="hover:underline" style={{ color: '#f97316' }}>
                 MetaPhase
               </a>
             </p>
-            <p className="text-xs text-[#666] leading-relaxed max-w-xs">
+            <p className="text-xs text-[#777] leading-relaxed max-w-xs mb-3">
               Location context powered by{' '}
               <a href="https://geoborder.metaphase.tech" target="_blank" rel="noopener noreferrer"
                 className="font-semibold hover:underline" style={{ color: '#16a34a' }}>
                 GeoBorder
               </a>
-              . Not legal advice. No data is collected or stored.
+              , built on public geographic data.
             </p>
-            <div className="flex gap-4 mt-3">
-              <a href="#terms" className="text-xs text-[#888] hover:text-[#333] hover:underline transition-colors">Terms of Use</a>
-              <a href="#privacy" className="text-xs text-[#888] hover:text-[#333] hover:underline transition-colors">Privacy Policy</a>
-            </div>
+            <p className="text-xs text-[#999]">Not legal advice. No data is collected or stored.</p>
           </div>
+
+          {/* Legal column */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#333] mb-4">Sources</p>
-            <nav aria-label="More information links">
-              <ul className="space-y-3">
-                <li><a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>U.S. Citizenship Overview →</a></li>
-                <li><a href="https://www.uscis.gov/citizenship/learn-about-citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>Certificate of Citizenship →</a></li>
-                <li><a href="https://travel.state.gov/content/travel/en/legal/travel-legal-considerations/us-citizenship.html" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>7 FAM — Consular Affairs →</a></li>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#aaa] mb-4">Legal</p>
+            <nav aria-label="Legal links">
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="#/terms" className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    Terms of Use
+                  </a>
+                </li>
+                <li>
+                  <a href="#/privacy" className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    Privacy Policy
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>
+
+          {/* Sources column */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#aaa] mb-4">Sources</p>
+            <nav aria-label="Sources links">
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="#/sources" className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    All Sources →
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer"
+                    className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    USCIS.gov →
+                  </a>
+                </li>
+                <li>
+                  <a href="https://travel.state.gov/content/travel/en/legal/travel-legal-considerations/us-citizenship.html" target="_blank" rel="noopener noreferrer"
+                    className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    7 FAM →
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </Reveal>
+        <Reveal className="max-w-5xl mx-auto mt-8 pt-6 border-t border-[#E8E8E8]">
+          <p className="text-xs text-[#bbb] text-center">
+            © {new Date().getFullYear()} MetaPhase. VeriCase is not affiliated with or endorsed by DHS, CBP, USCIS, or any U.S. government agency.
+          </p>
         </Reveal>
       </footer>
     </div>
