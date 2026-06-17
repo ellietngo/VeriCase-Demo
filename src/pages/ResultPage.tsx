@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff, ListChecks, ChevronDown, Compass, Printer, Download, FileJson } from 'lucide-react'
+import { jsPDF } from 'jspdf'
 import { type ResultState } from '../App'
 import { type GeoData } from '../geo'
 import { useOnlineStatus } from '../useOnlineStatus'
@@ -149,6 +150,186 @@ function GeoCard({
   )
 }
 
+type AuditSnapshot = {
+  app: string
+  generatedAtIso: string
+  generatedAtLocal: string
+  location: { latitude: number; longitude: number; jurisdiction: string | null } | null
+  determination: { outcome: string; title: string; citation: string }
+  questions: { step: number; prompt: string; answer: string; citation: string }[]
+}
+
+function buildAuditSnapshot(result: ResultState, geo: GeoData | null): AuditSnapshot {
+  const now = new Date()
+  return {
+    app: 'VeriCase by MetaPhase',
+    generatedAtIso: now.toISOString(),
+    generatedAtLocal: now.toLocaleString(),
+    location: geo
+      ? {
+          latitude: geo.latitude,
+          longitude: geo.longitude,
+          jurisdiction: [geo.county, geo.state].filter(Boolean).join(', ') || null,
+        }
+      : null,
+    determination: {
+      outcome: result.outcome.outcome,
+      title: result.outcome.title,
+      citation: result.outcome.citation,
+    },
+    questions: result.history.map((s, i) => ({
+      step: i + 1,
+      prompt: s.node.prompt,
+      answer: s.chosenLabel,
+      citation: s.node.citation,
+    })),
+  }
+}
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function exportAuditJson(result: ResultState, geo: GeoData | null) {
+  const snapshot = buildAuditSnapshot(result, geo)
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' })
+  triggerDownload(blob, `vericase-audit-${Date.now()}.json`)
+}
+
+// Custom-formatted audit document — deliberately NOT a screenshot/print of the
+// result card. Built field-by-field with jsPDF so the export stays concise and
+// readable on its own: VeriCase letterhead, a generated-at + location stamp,
+// the final determination, then every question/answer/citation in the path.
+function exportAuditPdf(result: ResultState, geo: GeoData | null) {
+  const snapshot = buildAuditSnapshot(result, geo)
+  const isCitizenPdf = snapshot.determination.outcome === 'CITIZEN'
+
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' })
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const margin = 48
+  const usableWidth = pageWidth - margin * 2
+  let y = margin
+
+  function ensureSpace(needed: number) {
+    if (y + needed > pageHeight - margin - 24) {
+      doc.addPage()
+      y = margin
+    }
+  }
+
+  // Letterhead
+  doc.setFillColor(6, 95, 70) // #065f46
+  doc.rect(0, 0, pageWidth, 64, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(20)
+  doc.text('VeriCase', margin, 38)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text('by MetaPhase  ·  Citizenship Determination Audit Trail', margin, 52)
+  y = 64 + 28
+
+  // Generated + location stamp
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.text('Generated', margin, y)
+  doc.setFont('helvetica', 'normal')
+  doc.text(snapshot.generatedAtLocal, margin + 72, y)
+  y += 16
+
+  doc.setFont('helvetica', 'bold')
+  doc.text('Location', margin, y)
+  doc.setFont('helvetica', 'normal')
+  const locationLine = snapshot.location
+    ? `${snapshot.location.latitude.toFixed(5)}, ${snapshot.location.longitude.toFixed(5)}` +
+      (snapshot.location.jurisdiction ? `   (${snapshot.location.jurisdiction})` : '')
+    : 'Not available'
+  doc.text(locationLine, margin + 72, y)
+  y += 22
+
+  doc.setDrawColor(220, 220, 220)
+  doc.line(margin, y, pageWidth - margin, y)
+  y += 24
+
+  // Final determination
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.setTextColor(isCitizenPdf ? 6 : 185, isCitizenPdf ? 95 : 28, isCitizenPdf ? 70 : 28)
+  doc.text('Final Determination', margin, y)
+  y += 18
+  doc.setFontSize(15)
+  doc.text(snapshot.determination.title, margin, y)
+  y += 16
+  doc.setFont('helvetica', 'italic')
+  doc.setFontSize(9)
+  doc.setTextColor(120, 120, 120)
+  doc.text(snapshot.determination.citation, margin, y)
+  y += 26
+
+  doc.setDrawColor(220, 220, 220)
+  doc.line(margin, y, pageWidth - margin, y)
+  y += 22
+
+  // Questions & answers
+  doc.setTextColor(40, 40, 40)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  ensureSpace(20)
+  doc.text(`Questions & Answers (${snapshot.questions.length})`, margin, y)
+  y += 18
+
+  snapshot.questions.forEach((q) => {
+    const promptLines: string[] = doc.splitTextToSize(`${q.step}. ${q.prompt}`, usableWidth)
+    const answerLines: string[] = doc.splitTextToSize(q.answer, usableWidth - 10)
+    const citationLines: string[] = doc.splitTextToSize(q.citation, usableWidth - 10)
+    const blockHeight = promptLines.length * 12 + answerLines.length * 12 + citationLines.length * 10 + 14
+
+    ensureSpace(blockHeight)
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.setTextColor(30, 30, 30)
+    doc.text(promptLines, margin, y)
+    y += promptLines.length * 12 + 2
+
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(20, 90, 60)
+    doc.text(answerLines, margin + 10, y)
+    y += answerLines.length * 12 + 1
+
+    doc.setFont('helvetica', 'italic')
+    doc.setFontSize(8.5)
+    doc.setTextColor(140, 140, 140)
+    doc.text(citationLines, margin + 10, y)
+    y += citationLines.length * 10 + 12
+  })
+
+  // Disclaimer + page numbers on every page
+  const pageCount = doc.getNumberOfPages()
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7.5)
+    doc.setTextColor(170, 170, 170)
+    doc.text(
+      'No personal data is collected or stored by VeriCase. This determination is for demonstration purposes only and is not legal advice.',
+      margin,
+      pageHeight - 28,
+      { maxWidth: usableWidth }
+    )
+    doc.text(`Page ${p} of ${pageCount}`, pageWidth - margin - 56, pageHeight - 14)
+  }
+
+  doc.save(`vericase-audit-${Date.now()}.pdf`)
+}
+
 export default function ResultPage({
   result,
   geo,
@@ -202,26 +383,6 @@ export default function ResultPage({
   const online = useOnlineStatus()
   const activeGeo = online ? geo : null   // never show stale location data when offline
   const hasGeoCards = activeGeo && (activeGeo.cbpPort || activeGeo.immigrationCourt || activeGeo.iceEro)
-
-  function downloadJson() {
-    const payload = {
-      determination: result.outcome.title,
-      citation: result.outcome.citation,
-      timestamp: new Date().toISOString(),
-      jurisdiction: activeGeo ? [activeGeo.county, activeGeo.state].filter(Boolean).join(', ') : null,
-      steps: result.history.map((s, i) => ({
-        step: i + 1,
-        question: s.node.prompt,
-        answer: s.chosenLabel,
-        citation: s.node.citation,
-      })),
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = `vericase-audit-${Date.now()}.json`; a.click()
-    URL.revokeObjectURL(url)
-  }
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden" style={pageStyle}>
@@ -481,7 +642,7 @@ export default function ResultPage({
                             Print
                           </button>
                           <button
-                            onClick={downloadJson}
+                            onClick={() => exportAuditJson(result, activeGeo)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-gray-100"
                             style={{ border: '1px solid #ddd', color: '#555' }}
                           >
@@ -489,7 +650,7 @@ export default function ResultPage({
                             Download JSON
                           </button>
                           <button
-                            onClick={() => window.print()}
+                            onClick={() => exportAuditPdf(result, activeGeo)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-gray-100"
                             style={{ border: '1px solid #ddd', color: '#555' }}
                           >
