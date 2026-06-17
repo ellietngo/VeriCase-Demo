@@ -6,6 +6,7 @@ import { type GeoData } from '../geo'
 import { useOnlineStatus } from '../useOnlineStatus'
 import GovBanner from '../components/GovBanner'
 import TorchLogo from '../components/TorchLogo'
+import MiniMap from '../components/MiniMap'
 
 const pageStyle: React.CSSProperties = {
   background: 'linear-gradient(-45deg, #064e3b, #052e16, #065f46, #14532d)',
@@ -150,6 +151,11 @@ function GeoCard({
   )
 }
 
+// Shared disclaimer text — appears on every export (PDF footer, JSON field) so
+// the two artifacts stay in sync if this wording ever changes.
+const LEGAL_DISCLAIMER =
+  'No personal data is collected or stored by VeriCase. This determination is not legal advice.'
+
 type AuditSnapshot = {
   app: string
   generatedAtIso: string
@@ -157,6 +163,7 @@ type AuditSnapshot = {
   location: { latitude: number; longitude: number; jurisdiction: string | null } | null
   determination: { outcome: string; title: string; citation: string }
   questions: { step: number; prompt: string; answer: string; citation: string }[]
+  disclaimer: string
 }
 
 function buildAuditSnapshot(result: ResultState, geo: GeoData | null): AuditSnapshot {
@@ -183,6 +190,7 @@ function buildAuditSnapshot(result: ResultState, geo: GeoData | null): AuditSnap
       answer: s.chosenLabel,
       citation: s.node.citation,
     })),
+    disclaimer: LEGAL_DISCLAIMER,
   }
 }
 
@@ -216,13 +224,29 @@ function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
   const pageHeight = doc.internal.pageSize.getHeight()
   const margin = 48
   const usableWidth = pageWidth - margin * 2
+  // Room reserved at the bottom of every page for the disclaimer (which can
+  // wrap to two lines) + page-number line, so body text never gets drawn
+  // underneath or past it.
+  const footerReserve = 40
   let y = margin
 
+  // Checks space for a single line and breaks to a new page if it won't fit.
+  // Called per-line (not per-block) so a long question/answer/citation can
+  // never run off the bottom of a page — it just continues on the next one.
   function ensureSpace(needed: number) {
-    if (y + needed > pageHeight - margin - 24) {
+    if (y + needed > pageHeight - margin - footerReserve) {
       doc.addPage()
       y = margin
     }
+  }
+
+  // Draws each line individually, page-breaking as needed, and advances y.
+  function drawWrappedLines(lines: string[], x: number, lineHeight: number) {
+    lines.forEach((line) => {
+      ensureSpace(lineHeight)
+      doc.text(line, x, y)
+      y += lineHeight
+    })
   }
 
   // Letterhead
@@ -288,29 +312,46 @@ function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
   y += 18
 
   snapshot.questions.forEach((q) => {
+    // IMPORTANT: set each segment's font/size BEFORE calling splitTextToSize
+    // for it. splitTextToSize wraps using whatever font is currently active —
+    // measuring with one font's metrics and then drawing in a different,
+    // wider font (as the previous version did, by computing all three
+    // line-arrays up front against leftover font state) lets lines run past
+    // the right margin and off the page.
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
     const promptLines: string[] = doc.splitTextToSize(`${q.step}. ${q.prompt}`, usableWidth)
-    const answerLines: string[] = doc.splitTextToSize(q.answer, usableWidth - 10)
-    const citationLines: string[] = doc.splitTextToSize(q.citation, usableWidth - 10)
-    const blockHeight = promptLines.length * 12 + answerLines.length * 12 + citationLines.length * 10 + 14
 
-    ensureSpace(blockHeight)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    const answerLines: string[] = doc.splitTextToSize(q.answer, usableWidth - 10)
+
+    doc.setFont('helvetica', 'italic')
+    doc.setFontSize(8.5)
+    const citationLines: string[] = doc.splitTextToSize(q.citation, usableWidth - 10)
+
+    // Keep a question glued to its answer/citation when it reasonably fits;
+    // if it doesn't, drawWrappedLines below still breaks safely line-by-line.
+    const blockHeight = promptLines.length * 13 + answerLines.length * 13 + citationLines.length * 11 + 14
+    ensureSpace(Math.min(blockHeight, pageHeight - margin * 2 - footerReserve))
 
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(10)
     doc.setTextColor(30, 30, 30)
-    doc.text(promptLines, margin, y)
-    y += promptLines.length * 12 + 2
+    drawWrappedLines(promptLines, margin, 13)
+    y += 2
 
     doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
     doc.setTextColor(20, 90, 60)
-    doc.text(answerLines, margin + 10, y)
-    y += answerLines.length * 12 + 1
+    drawWrappedLines(answerLines, margin + 10, 13)
+    y += 1
 
     doc.setFont('helvetica', 'italic')
     doc.setFontSize(8.5)
     doc.setTextColor(140, 140, 140)
-    doc.text(citationLines, margin + 10, y)
-    y += citationLines.length * 10 + 12
+    drawWrappedLines(citationLines, margin + 10, 11)
+    y += 12
   })
 
   // Disclaimer + page numbers on every page
@@ -320,12 +361,7 @@ function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7.5)
     doc.setTextColor(170, 170, 170)
-    doc.text(
-      'No personal data is collected or stored by VeriCase. This determination is for demonstration purposes only and is not legal advice.',
-      margin,
-      pageHeight - 28,
-      { maxWidth: usableWidth }
-    )
+    doc.text(LEGAL_DISCLAIMER, margin, pageHeight - 28, { maxWidth: usableWidth })
     doc.text(`Page ${p} of ${pageCount}`, pageWidth - margin - 56, pageHeight - 14)
   }
 
@@ -432,7 +468,7 @@ export default function ResultPage({
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TorchLogo size={18} className="text-white" />
+            <TorchLogo size={22} className="text-white" />
             <div>
               <span className="font-bold tracking-tight">VeriCase</span>
               <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
@@ -556,7 +592,7 @@ export default function ResultPage({
                   {statusCopy
                     ? statusCopy.body
                     : isCitizen
-                      ? 'Based on the answers provided, this person appears to be a U.S. citizen. This determination is for demonstration purposes only and is not legal advice.'
+                      ? 'Based on the answers provided, this person appears to be a U.S. citizen. This determination is not legal advice.'
                       : 'Based on the answers provided, this person does not appear to be a U.S. citizen. For information about citizenship and naturalization pathways, visit USCIS.gov.'}
                 </p>
 
@@ -814,15 +850,7 @@ export default function ResultPage({
                 {/* Minimap */}
                 {activeGeo && (
                   <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <iframe
-                      title="Location map"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${activeGeo.longitude - 0.12}%2C${activeGeo.latitude - 0.08}%2C${activeGeo.longitude + 0.12}%2C${activeGeo.latitude + 0.08}&layer=mapnik&marker=${activeGeo.latitude}%2C${activeGeo.longitude}`}
-                      width="100%"
-                      height="140"
-                      style={{ display: 'block', border: 0, filter: 'saturate(0.8) brightness(0.9)' }}
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                    />
+                    <MiniMap latitude={activeGeo.latitude} longitude={activeGeo.longitude} height={160} />
                     <a
                       href={`https://maps.google.com/?q=${activeGeo.latitude},${activeGeo.longitude}`}
                       target="_blank"
@@ -859,7 +887,7 @@ export default function ResultPage({
                 MetaPhase
               </a>
               {' · '}
-              <a href="#terms" className="hover:underline" style={{ color: 'rgba(255,255,255,0.28)' }}>Terms of Use</a>
+              <a href="#/terms" className="hover:underline" style={{ color: 'rgba(255,255,255,0.28)' }}>Terms of Use</a>
             </p>
           )}
         </div>

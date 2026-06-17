@@ -124,7 +124,7 @@ export default function VerifyPage({
             className="flex items-center gap-2 rounded-xl hover:bg-white/10 px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
             aria-label="Go to home"
           >
-            <TorchLogo size={18} className="text-white" />
+            <TorchLogo size={22} className="text-white" />
             <div className="text-left">
               <div className="font-bold tracking-tight text-sm">VeriCase</div>
               <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
@@ -192,7 +192,7 @@ export default function VerifyPage({
                     className="w-full text-left px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors">
                     New Case
                   </button>
-                  <a href="#terms"
+                  <a href="#/terms"
                     className="block px-4 py-3 text-sm text-white/50 hover:bg-white/10 transition-colors">
                     Terms of Use
                   </a>
@@ -390,7 +390,7 @@ export default function VerifyPage({
               </>
             )}
             {' '}·{' '}
-            <a href="#terms" className="hover:underline text-[#6a8a76]">Terms of Use</a>
+            <a href="#/terms" className="hover:underline text-[#6a8a76]">Terms of Use</a>
           </p>
         </div>
       </main>

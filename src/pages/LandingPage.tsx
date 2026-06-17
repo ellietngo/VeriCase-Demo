@@ -3,6 +3,26 @@ import { ClipboardCheck, Zap, Users, ChevronRight, WifiOff, Compass, Lock } from
 import { useOnlineStatus } from '../useOnlineStatus'
 import GovBanner from '../components/GovBanner'
 import TorchLogo from '../components/TorchLogo'
+import rulesJson from '../engine/citizenship_rules.json'
+import { type Rules } from '../engine/engine'
+
+const rules = rulesJson as Rules
+
+// Count distinct outcome paths reachable from a node (memoized) — mirrors the
+// real intake's path-counting so the homepage preview shows the same kind of
+// number the actual guided interview does, not a fabricated percentage.
+const _demoPathMemo = new Map<string, number>()
+function countDemoPaths(nodeId: string): number {
+  const cached = _demoPathMemo.get(nodeId)
+  if (cached !== undefined) return cached
+  const node = rules.nodes[nodeId]
+  if (!node) return 0
+  if (node.kind === 'outcome') { _demoPathMemo.set(nodeId, 1); return 1 }
+  const total = node.answers.reduce((sum, a) => sum + countDemoPaths(a.next), 0)
+  _demoPathMemo.set(nodeId, total)
+  return total
+}
+const DEMO_TOTAL_PATHS = countDemoPaths(rules.start)
 
 const DEMO_QUESTIONS = [
   {
@@ -213,10 +233,17 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
   // One random question per page load — stays put for the session, changes on refresh
   const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
-  // Most determinations resolve in well under 87 questions (often ~7), so the demo
-  // progress bar randomizes per page load within a "mostly there" range rather than
-  // implying a long slog — picked once on mount, stays put for the session.
-  const [demoProgress] = useState(() => Math.floor(Math.random() * (92 - 58 + 1)) + 58)
+  // Most determinations resolve well before exhausting every legal pathway, so the
+  // demo card randomizes a "mostly there" remaining-paths count per page load rather
+  // than implying a long slog — picked once on mount, stays put for the session, and
+  // expressed the same way the real intake expresses it (paths remaining, not a
+  // fabricated percentage).
+  const [demoPathsRemaining] = useState(() => {
+    const fractionRemaining = 1 - (Math.floor(Math.random() * (92 - 58 + 1)) + 58) / 100
+    return Math.max(1, Math.round(DEMO_TOTAL_PATHS * fractionRemaining))
+  })
+  const demoProgressPct = Math.round((1 - demoPathsRemaining / DEMO_TOTAL_PATHS) * 100)
+  const demoPathsLabel = demoPathsRemaining === 1 ? '1 path remaining' : `~${demoPathsRemaining.toLocaleString()} paths remaining`
 
   return (
     <div>
@@ -233,7 +260,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
         {/* Top bar */}
         <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between mb-16">
           <div className="flex items-center gap-2">
-            <TorchLogo size={20} className="text-green-300" />
+            <TorchLogo size={24} className="text-green-300" />
             <span className="font-bold tracking-tight text-white text-base">VeriCase</span>
           </div>
           <div className="flex items-center gap-3">
@@ -269,7 +296,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
               <div className="absolute rounded-3xl border border-white/15" style={{ inset: -10, animation: 'pulse-out 3.5s ease-out infinite' }} />
               <div className="absolute rounded-3xl border border-white/8"  style={{ inset: -20, animation: 'pulse-out 3.5s ease-out infinite', animationDelay: '1.2s' }} />
               <div className="w-full h-full rounded-3xl flex items-center justify-center border border-white/20" style={{ background: 'rgba(255,255,255,0.11)', backdropFilter: 'blur(8px)' }}>
-                <TorchLogo size={38} className="text-white" />
+                <TorchLogo size={46} className="text-white" />
               </div>
             </div>
 
@@ -426,17 +453,17 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
                 </div>
               </div>
 
-              {/* Progress bar */}
+              {/* Progress bar — same paths-remaining presentation as the real intake */}
               <div aria-hidden="true">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Progress</span>
-                  <span className="text-[10px] font-bold text-white/40">{demoProgress}%</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Guided Interview</span>
+                  <span className="text-[10px] font-bold text-white/40">{demoPathsLabel}</span>
                 </div>
                 <div className="w-full rounded-full overflow-hidden" style={{ height: 7, background: 'rgba(255,255,255,0.12)' }}>
                   <div
                     style={{
                       height: '100%',
-                      width: `${demoProgress}%`,
+                      width: `${demoProgressPct}%`,
                       background: 'linear-gradient(90deg, #166534, #4ade80)',
                       borderRadius: 9999,
                       transition: 'width 600ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -507,7 +534,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
           {/* Brand column */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <TorchLogo size={14} className="text-[#065f46]" />
+              <TorchLogo size={17} className="text-[#065f46]" />
               <span className="font-bold text-sm tracking-tight" style={{ color: '#065f46' }}>VeriCase</span>
             </div>
             <p className="text-sm font-semibold text-[#111] mb-1">

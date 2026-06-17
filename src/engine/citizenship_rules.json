@@ -680,7 +680,31 @@
         {
           "value": false,
           "label": "No",
-          "next": "Q_STATUS"
+          "next": "GO_NAT_NOLPR"
+        }
+      ]
+    },
+    "GO_NAT_NOLPR": {
+      "kind": "question",
+      "prompt": "Without lawful permanent residence, the standard naturalization path is not yet available. Does either narrow exception apply?",
+      "explanation": "Only two routes can lead to citizenship without first holding a green card: certain military service, and derivative citizenship through a U.S.-citizen parent. Every other current immigration status — a visa, a pending marriage petition, or no lawful status at all — still requires becoming an LPR first, so it does not change today's determination. (Current status alone can be reviewed separately using Check Immigration Status from the result page.)",
+      "citation": "8 U.S.C. § 1429; 8 U.S.C. §§ 1439, 1440; 8 U.S.C. § 1431",
+      "answer_type": "enum",
+      "answers": [
+        {
+          "value": "military",
+          "label": "Active duty or veteran of the U.S. armed forces",
+          "next": "Q49"
+        },
+        {
+          "value": "citizen_parent",
+          "label": "Has a U.S.-citizen parent (potential derivative citizenship)",
+          "next": "Q60br"
+        },
+        {
+          "value": "neither",
+          "label": "Neither applies",
+          "next": "NO_NAT_NOLPR"
         }
       ]
     },
@@ -1389,6 +1413,12 @@
       "outcome": "NOT_CITIZEN",
       "title": "Not a U.S. Citizen — naturalization requirements not met",
       "citation": "8 U.S.C. §§ 1421-1448"
+    },
+    "NO_NAT_NOLPR": {
+      "kind": "outcome",
+      "outcome": "NOT_CITIZEN",
+      "title": "Not a U.S. Citizen — naturalization requires lawful permanent residence first",
+      "citation": "8 U.S.C. § 1429"
     },
     "NO_PERM": {
       "kind": "outcome",

@@ -16,7 +16,7 @@ export default function PrivacyPage({ onBack }: { onBack: () => void }) {
             Back
           </button>
           <div className="flex items-center gap-2 ml-2">
-            <TorchLogo size={14} className="text-[#065f46]" />
+            <TorchLogo size={17} className="text-[#065f46]" />
             <span className="font-bold text-sm" style={{ color: '#065f46' }}>VeriCase</span>
           </div>
         </div>

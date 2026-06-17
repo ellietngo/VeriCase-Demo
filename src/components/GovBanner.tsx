@@ -10,7 +10,7 @@ export default function GovBanner() {
       <div className="px-4 py-1.5 flex items-center justify-between max-w-screen-xl mx-auto">
         <span className="flex items-center gap-2 font-medium">
           <span aria-hidden="true" style={{ fontSize: 14 }}>🇺🇸</span>
-          A secure web application and source for public geospatial data.
+          A secure web application for U.S. citizenship determination guidance.
         </span>
         <button
           onClick={() => setOpen((o) => !o)}
@@ -40,8 +40,8 @@ export default function GovBanner() {
             <div>
               <p className="font-semibold text-white mb-0.5">Built by MetaPhase</p>
               <p style={{ color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
-                GeoBorder is built on public geographic data and ships as open source.
-                Source provenance and vintage travel with every layer in the API response.
+                VeriCase walks through U.S. citizenship and naturalization law one question
+                at a time, citing the controlling statute or case law at every step.
               </p>
             </div>
           </div>
@@ -51,8 +51,7 @@ export default function GovBanner() {
               <p className="font-semibold text-white mb-0.5">Secure https:// connection</p>
               <p style={{ color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>
                 A lock icon or <strong className="text-white/80">https://</strong> means you&apos;re connected securely.
-                Every VeriCase page and GeoBorder API endpoint requires HTTPS, with traffic
-                encrypted in transit using TLS.
+                Every VeriCase page requires HTTPS, with traffic encrypted in transit using TLS.
               </p>
             </div>
           </div>
