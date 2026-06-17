@@ -27,35 +27,17 @@ const shineStyle: React.CSSProperties = {
 // The immigration-status engine (see IMMIGRATION_ENGINE_START_NODE in engine.ts)
 // is a fully separate question tree from the citizenship determination — it never
 // shares nodes with, or routes into, the citizenship engine. Its outcome nodes
-// resolve only to IMMIGRANT_STATUS or NONIMMIGRANT_STATUS, and each gets its own
-// headline/body copy here (keyed by outcome node id), distinct from the generic
-// "U.S. Citizen" / "Not a U.S. Citizen" framing used for citizenship results.
-const IMMIGRATION_OUTCOME_COPY: Record<string, { eyebrow: string; headline: string; body: string }> = {
-  IM_LPR: {
+// resolve to one of 16 status codes (LPR, CPR, REFUGEE, ASYLEE, etc.), each
+// carrying its own `title` and `definition` from citizenship_rules.json — so the
+// result page builds its headline/body generically from those fields instead of
+// a hand-maintained per-outcome copy table.
+function immigrationStatusCopy(outcome: { title: string; definition?: string }) {
+  return {
     eyebrow: 'Status Check Complete',
-    headline: 'Immigrant Status — Lawful Permanent Resident',
-    body: 'This person currently holds lawful permanent residence (a green card, including conditional residence). This is a current-status check only — it is separate from, and does not by itself determine, U.S. citizenship.',
-  },
-  IM_LPR_MARR: {
-    eyebrow: 'Status Check Complete',
-    headline: 'Immigrant Status — Lawful Permanent Resident (Marriage-Based)',
-    body: 'This person obtained lawful permanent residence through a marriage-based petition. This is a current-status check only — it is separate from, and does not by itself determine, U.S. citizenship.',
-  },
-  IM_NONIMM: {
-    eyebrow: 'Status Check Complete',
-    headline: 'Nonimmigrant Status — Visa Holder',
-    body: 'This person currently holds nonimmigrant status (such as a tourist, student, or work visa). On its own, nonimmigrant status does not lead toward lawful permanent residence or citizenship — a separate basis (such as employer sponsorship, family petition, or marriage to a U.S. citizen or LPR) would be needed to start that process.',
-  },
-  IM_UNDOC: {
-    eyebrow: 'Status Check Complete',
-    headline: 'Nonimmigrant Status — No Current Lawful Status',
-    body: 'This person does not currently hold any lawful immigration status. There is no direct path to lawful permanent residence or citizenship without first obtaining a lawful basis to remain, such as an approved visa petition, asylum, or another form of relief. An immigration attorney can help identify what options, if any, may be available.',
-  },
-  IM_MARR_PENDING: {
-    eyebrow: 'Status Check Complete',
-    headline: 'Nonimmigrant Status — Marriage-Based Petition Pending',
-    body: 'This person is married to (or holds a marriage/fiancé-based visa tied to) a U.S. citizen or lawful permanent resident, but has not yet been granted lawful permanent residence. The marriage itself does not confer immigrant status — that begins once the petition is approved.',
-  },
+    headline: outcome.title,
+    body: (outcome.definition ? `${outcome.definition} ` : '') +
+      'This is a current-status check only — it is separate from, and does not by itself determine, U.S. citizenship.',
+  }
 }
 
 function GeoCard({
@@ -155,19 +137,19 @@ function exportAuditJson(result: ResultState, geo: GeoData | null) {
 // the final determination, then every question/answer/citation in the path.
 // Shared by both the "Save as PDF" and "Print" actions so what you print is
 // exactly what you download.
-// Citizenship-engine results are green (CITIZEN) / red (NOT_CITIZEN); the separate
-// immigration-status engine's results (IMMIGRANT_STATUS / NONIMMIGRANT_STATUS) are
-// both rendered in the engine's blue, matching the in-app theming — they're a
-// current-status check, not a citizenship verdict, so they don't get a green/red split.
+// Citizenship-engine results are green (CITIZEN) / red (NOT_CITIZEN); every
+// immigration-status engine outcome (any of the 16 status codes) is rendered in
+// the engine's blue, matching the in-app theming — they're a current-status
+// check, not a citizenship verdict, so they don't get a green/red split.
 function pdfColorForOutcome(outcome: string): [number, number, number] {
   if (outcome === 'CITIZEN') return [6, 95, 70] // #065f46
-  if (outcome === 'IMMIGRANT_STATUS' || outcome === 'NONIMMIGRANT_STATUS') return [29, 78, 216] // #1d4ed8
-  return [185, 28, 28] // NOT_CITIZEN — #b91c1c
+  if (outcome === 'NOT_CITIZEN') return [185, 28, 28] // #b91c1c
+  return [29, 78, 216] // immigration-status outcomes — #1d4ed8
 }
 
 function buildAuditPdfDoc(result: ResultState, geo: GeoData | null): jsPDF {
   const snapshot = buildAuditSnapshot(result, geo)
-  const isImmigrationPdf = snapshot.determination.outcome === 'IMMIGRANT_STATUS' || snapshot.determination.outcome === 'NONIMMIGRANT_STATUS'
+  const isImmigrationPdf = snapshot.determination.outcome !== 'CITIZEN' && snapshot.determination.outcome !== 'NOT_CITIZEN'
   const [detR, detG, detB] = pdfColorForOutcome(snapshot.determination.outcome)
 
   const doc = new jsPDF({ unit: 'pt', format: 'letter' })
@@ -352,9 +334,9 @@ export default function ResultPage({
   // resolves only to IMMIGRANT_STATUS/NONIMMIGRANT_STATUS. The two engines never
   // share nodes, so a result is exactly one of these, never both.
   const isCitizenshipResult = outcomeKind === 'CITIZEN' || outcomeKind === 'NOT_CITIZEN'
-  const isImmigrationResult = outcomeKind === 'IMMIGRANT_STATUS' || outcomeKind === 'NONIMMIGRANT_STATUS'
+  const isImmigrationResult = !isCitizenshipResult
 
-  const statusCopy = isImmigrationResult ? IMMIGRATION_OUTCOME_COPY[result.nodeId] : undefined
+  const statusCopy = isImmigrationResult ? immigrationStatusCopy(result.outcome) : undefined
   const [showAudit, setShowAudit] = useState(false)
   const online = useOnlineStatus()
   const activeGeo = online ? geo : null   // never show stale location data when offline
@@ -641,15 +623,15 @@ export default function ResultPage({
                   </div>
                 )}
 
-                <div className="border-t border-[#EEE] pt-5 flex flex-col sm:flex-row gap-3">
+                <div className="border-t border-[#EEE] pt-5 flex flex-wrap sm:flex-nowrap gap-3">
                   <button
                     onClick={onNewCase}
-                    className="flex-1 flex items-center justify-center gap-2 border-2 border-[#EEE]
+                    className="flex-1 min-w-[9.5rem] flex items-center justify-center gap-2 border-2 border-[#EEE]
                       text-[#333] font-semibold py-3 rounded-2xl
                       hover:border-green-700 hover:text-green-700 transition-colors
                       focus:outline-none focus:ring-4 focus:ring-green-700/20"
                   >
-                    <RotateCcw size={16} aria-hidden="true" />
+                    <RotateCcw size={16} className="flex-shrink-0" aria-hidden="true" />
                     New Case
                   </button>
                   {/* Immigration status check — entry point into the separate immigration-status
@@ -660,23 +642,23 @@ export default function ResultPage({
                   {isCitizenshipResult && (
                     <button
                       onClick={onStatusCheck}
-                      className="flex-1 flex items-center justify-center gap-2 border-2
+                      className="flex-1 min-w-[9.5rem] flex items-center justify-center gap-2 border-2
                         text-white font-semibold py-3 rounded-2xl transition-colors
                         hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-700/20"
                       style={{ background: '#2563eb', borderColor: '#2563eb' }}
                     >
-                      <Compass size={16} aria-hidden="true" />
+                      <Compass size={16} className="flex-shrink-0" aria-hidden="true" />
                       Check Immigration Status
                     </button>
                   )}
                   <button
                     onClick={onHome}
-                    className="flex-1 flex items-center justify-center gap-2 text-white
+                    className="flex-1 min-w-[9.5rem] flex items-center justify-center gap-2 text-white
                       font-semibold py-3 rounded-2xl transition-colors
                       focus:outline-none focus:ring-4 focus:ring-green-900/30"
                     style={{ background: '#065f46' }}
                   >
-                    <Home size={16} aria-hidden="true" />
+                    <Home size={16} className="flex-shrink-0" aria-hidden="true" />
                     Back to Home
                   </button>
                 </div>
