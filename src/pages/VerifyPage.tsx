@@ -1,14 +1,28 @@
-import { useState, useCallback } from 'react'
-import { Shield, ArrowLeft, ChevronRight, Check, MapPin, AlertTriangle, WifiOff } from 'lucide-react'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { ArrowLeft, ChevronRight, Check, MapPin, AlertTriangle, WifiOff, Menu, X } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
 import rulesJson from '../engine/citizenship_rules.json'
 import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode, type Step } from '../engine/engine'
 import { type ResultState } from '../App'
 import { type GeoData } from '../geo'
+import GovBanner from '../components/GovBanner'
+import TorchLogo from '../components/TorchLogo'
 
 const rules = rulesJson as unknown as Rules
 
-const MAX_STEPS = 14
+// Count distinct outcome paths reachable from a node (memoized)
+const _pathMemo = new Map<string, number>()
+function countPaths(nodeId: string): number {
+  const cached = _pathMemo.get(nodeId)
+  if (cached !== undefined) return cached
+  const node = rules.nodes[nodeId]
+  if (!node) return 0
+  if (node.kind === 'outcome') { _pathMemo.set(nodeId, 1); return 1 }
+  const total = node.answers.reduce((sum, a) => sum + countPaths(a.next), 0)
+  _pathMemo.set(nodeId, total)
+  return total
+}
+const TOTAL_PATHS = countPaths(rules.start)
 
 export default function VerifyPage({
   onResult,
@@ -27,22 +41,29 @@ export default function VerifyPage({
     const n = rules.nodes[id]
     return { nodeId: id, node: n as QuestionNode }
   })
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-  const progress = Math.min(Math.round((history.length / MAX_STEPS) * 100), 95)
+  const pathsRemaining = countPaths(current.nodeId)
+  const progressPct = Math.round((1 - pathsRemaining / TOTAL_PATHS) * 100)
+  const pathsLabel = pathsRemaining === 1 ? '1 path remaining' : `~${pathsRemaining.toLocaleString()} paths remaining`
   const questionNum = history.length + 1
 
+  // Push a browser history entry per question answer so back button works
   const handleAnswer = useCallback(
     (value: AnswerValue, label: string) => {
       const match = current.node.answers.find((a) => a.value === value)
       if (!match) return
 
-      setHistory((h) => [...h, { nodeId: current.nodeId, node: current.node, chosenValue: value, chosenLabel: label }])
+      const newStep = { nodeId: current.nodeId, node: current.node, chosenValue: value, chosenLabel: label }
+      const newHistory = [...history, newStep]
+      setHistory(newHistory)
 
       const next = rules.nodes[match.next]
       if (next.kind === 'outcome') {
-        const fullHistory = [...history, { nodeId: current.nodeId, node: current.node, chosenValue: value, chosenLabel: label }]
-        onResult({ outcome: next as OutcomeNode, nodeId: match.next, history: fullHistory })
+        onResult({ outcome: next as OutcomeNode, nodeId: match.next, history: newHistory })
       } else {
+        window.history.pushState({ historyLen: newHistory.length }, '', '#/verify')
         setCurrent({ nodeId: match.next, node: next as QuestionNode })
       }
     },
@@ -56,20 +77,31 @@ export default function VerifyPage({
     setCurrent({ nodeId: prev.nodeId, node: prev.node })
   }, [history, onBack])
 
+  // Browser back/forward — pop state triggers handleBack
+  useEffect(() => {
+    const onPopState = () => handleBack()
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [handleBack])
+
+  // Close hamburger menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
+
   const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
   const isBoolean = current.node.answer_type === 'boolean'
   const online = useOnlineStatus()
-
-  // Only show geo context when online — never show stale cached location
   const activeGeo = online ? geo : null
 
-  // Build jurisdiction label from geo
   const jurisdictionLabel = activeGeo
-    ? [activeGeo.county, activeGeo.state].filter(Boolean).join(', ') ||
-      activeGeo.state ||
-      null
+    ? [activeGeo.county, activeGeo.state].filter(Boolean).join(', ') || activeGeo.state || null
     : null
-
   const districtLabel = activeGeo?.federalJudicialDistrict ?? null
 
   return (
@@ -77,7 +109,9 @@ export default function VerifyPage({
       className="min-h-screen flex flex-col"
       style={{ background: 'linear-gradient(160deg, #eef5f1 0%, #e4ede8 60%, #dce8e2 100%)' }}
     >
-      {/* Header — logo only, clickable to go home */}
+      <GovBanner />
+
+      {/* Header */}
       <header
         className="text-white px-4 py-4"
         style={{ background: 'linear-gradient(135deg, #052e16 0%, #065f46 55%, #064e3b 100%)' }}
@@ -88,7 +122,7 @@ export default function VerifyPage({
             className="flex items-center gap-2 rounded-xl hover:bg-white/10 px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
             aria-label="Go to home"
           >
-            <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
+            <TorchLogo size={18} className="text-white" />
             <div className="text-left">
               <div className="font-bold tracking-tight text-sm">VeriCase</div>
               <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
@@ -96,7 +130,6 @@ export default function VerifyPage({
           </button>
 
           <div className="flex items-center gap-3">
-            {/* Jurisdiction chip — shows once geo resolves */}
             {jurisdictionLabel && (
               <div
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
@@ -105,13 +138,10 @@ export default function VerifyPage({
               >
                 <MapPin size={11} aria-hidden="true" style={{ color: '#86efac' }} />
                 {jurisdictionLabel}
-                {districtLabel && (
-                  <span className="text-white/40 font-normal ml-1">· {districtLabel}</span>
-                )}
+                {districtLabel && <span className="text-white/40 font-normal ml-1">· {districtLabel}</span>}
               </div>
             )}
 
-            {/* Offline indicator — replaces geo chip when offline */}
             {!online && !jurisdictionLabel && (
               <div
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
@@ -137,26 +167,50 @@ export default function VerifyPage({
               )}
               {online ? 'Online' : 'Offline'}
             </div>
+
+            {/* Hamburger — mobile only */}
+            <div className="relative sm:hidden" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                className="p-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Menu"
+              >
+                {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+              {menuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-44 rounded-2xl overflow-hidden z-50"
+                  style={{ background: '#052e16', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                >
+                  <button onClick={() => { setMenuOpen(false); onBack() }}
+                    className="w-full text-left px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors">
+                    Home
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); window.location.hash = '#/verify' }}
+                    className="w-full text-left px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors">
+                    New Case
+                  </button>
+                  <a href="#terms"
+                    className="block px-4 py-3 text-sm text-white/50 hover:bg-white/10 transition-colors">
+                    Terms of Use
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Roosevelt Reservation warning */}
         {activeGeo?.inRooseveltReservation && (
-          <div
-            className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
-            style={{ background: 'rgba(251,146,60,0.18)', border: '1px solid rgba(251,146,60,0.35)', color: '#fed7aa' }}
-          >
+          <div className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
+            style={{ background: 'rgba(251,146,60,0.18)', border: '1px solid rgba(251,146,60,0.35)', color: '#fed7aa' }}>
             <AlertTriangle size={13} className="flex-shrink-0" style={{ color: '#fb923c' }} />
             Completing this determination within the Roosevelt Reservation (federal border zone) — enhanced CBP enforcement authority applies.
           </div>
         )}
 
-        {/* Tribal trust land notice */}
         {activeGeo?.inTribalTrustLand && (
-          <div
-            className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
-            style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', color: '#fde68a' }}
-          >
+          <div className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
+            style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', color: '#fde68a' }}>
             <AlertTriangle size={13} className="flex-shrink-0" style={{ color: '#fbbf24' }} />
             Completing this determination on {activeGeo.tribalName ? `${activeGeo.tribalName} trust land` : 'tribal trust land'} — tribal enrollment may affect jurisdictional considerations.
           </div>
@@ -170,35 +224,29 @@ export default function VerifyPage({
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#5a7a6a]">
               {startNodeId ? 'Immigration Status Check' : 'Guided Interview'}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#5a7a6a]">{progress}% Complete</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#5a7a6a]">{pathsLabel}</span>
           </div>
           <div className="w-full rounded-full overflow-hidden" style={{ height: 12, background: '#b8d4c8' }}>
             <div
               style={{
                 height: '100%',
-                width: `${progress}%`,
+                width: `${progressPct}%`,
                 background: 'linear-gradient(90deg, #065f46, #16a34a)',
                 transition: 'width 750ms cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
               role="progressbar"
-              aria-valuenow={progress}
+              aria-valuenow={progressPct}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="Interview progress"
+              aria-label={`Interview progress: ${pathsLabel}`}
             >
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  top: 0, bottom: 0,
-                  width: '40%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
-                  animation: 'progress-shimmer 3.5s linear infinite',
-                  animationDelay: '0.8s',
-                }}
-              />
+              <div aria-hidden="true" style={{
+                position: 'absolute', top: 0, bottom: 0, width: '40%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+                animation: 'progress-shimmer 3.5s linear infinite', animationDelay: '0.8s',
+              }} />
             </div>
           </div>
         </div>
@@ -251,9 +299,7 @@ export default function VerifyPage({
                         className="w-full py-4 px-4 md:py-5 md:px-5 rounded-2xl text-left flex items-center gap-3
                           active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-green-800/20"
                         style={{
-                          background: isPrimary
-                            ? (isHovered ? '#054f3a' : '#065f46')
-                            : (isHovered ? '#ECEEF1' : '#F5F6F8'),
+                          background: isPrimary ? (isHovered ? '#054f3a' : '#065f46') : (isHovered ? '#ECEEF1' : '#F5F6F8'),
                           border: isPrimary ? 'none' : '1.5px solid #E4E8EC',
                           color: isPrimary ? 'white' : '#222',
                           transform: isHovered ? 'translateX(3px)' : 'translateX(0)',
@@ -263,22 +309,17 @@ export default function VerifyPage({
                         <div className="flex-1">
                           <div className="font-semibold text-base leading-snug">{opt.label}</div>
                         </div>
-                        <ChevronRight
-                          size={18}
-                          aria-hidden="true"
-                          style={{
-                            color: isPrimary ? 'rgba(255,255,255,0.5)' : '#AAAAAA',
-                            flexShrink: 0,
-                            transform: isHovered ? 'translateX(2px)' : 'translateX(0)',
-                            transition: 'transform 180ms ease',
-                          }}
-                        />
+                        <ChevronRight size={18} aria-hidden="true" style={{
+                          color: isPrimary ? 'rgba(255,255,255,0.5)' : '#AAAAAA',
+                          flexShrink: 0,
+                          transform: isHovered ? 'translateX(2px)' : 'translateX(0)',
+                          transition: 'transform 180ms ease',
+                        }} />
                       </button>
                     )
                   })}
                 </div>
 
-                {/* Back button inside the card */}
                 <div className="mt-5 pt-4 border-t border-[#f0f0f0]">
                   <button
                     onClick={handleBack}
@@ -296,26 +337,21 @@ export default function VerifyPage({
             <aside className="hidden md:block" aria-label="Interview trail">
               <div className="bg-white rounded-3xl p-5" style={{ boxShadow: '0 4px 32px rgba(6,95,70,0.10)' }}>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a8a96] mb-5">Interview Trail</p>
-
                 <div className="relative">
                   <div className="absolute left-[8px] top-4 bottom-0 w-px bg-[#e4e8ec]" aria-hidden="true" />
                   <div className="space-y-5">
-
                     <div className="flex gap-3 items-start">
                       <div className="relative z-10 w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ background: '#065f46' }}>
                         <div className="w-2 h-2 rounded-full bg-white" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[#222]">Case opened</p>
-                        <p className="text-xs text-[#999] mt-0.5">
-                          {jurisdictionLabel ? jurisdictionLabel : 'Interview in progress'}
-                        </p>
+                        <p className="text-xs text-[#999] mt-0.5">{jurisdictionLabel ?? 'Interview in progress'}</p>
                       </div>
                     </div>
-
                     {history.map((step, i) => (
                       <div key={i} className="flex gap-3 items-start">
-                        <div className="relative z-10 w-[18px] h-[18px] rounded-full bg-cbp-slate flex-shrink-0 flex items-center justify-center mt-0.5">
+                        <div className="relative z-10 w-[18px] h-[18px] rounded-full bg-[#5a7a6a] flex-shrink-0 flex items-center justify-center mt-0.5">
                           <Check size={10} className="text-white" strokeWidth={3} aria-hidden="true" />
                         </div>
                         <div>
@@ -324,7 +360,6 @@ export default function VerifyPage({
                         </div>
                       </div>
                     ))}
-
                     <div className="flex gap-3 items-start">
                       <div className="relative z-10 w-[18px] h-[18px] rounded-full border-2 bg-white flex-shrink-0 flex items-center justify-center mt-0.5" style={{ borderColor: '#16a34a' }}>
                         <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#16a34a' }} />
@@ -334,7 +369,6 @@ export default function VerifyPage({
                         <p className="text-sm font-medium text-[#555] mt-0.5">Awaiting response…</p>
                       </div>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -342,32 +376,19 @@ export default function VerifyPage({
 
           </div>
 
-          <p className="mt-4 text-xs text-[#6a8a76] text-center leading-relaxed">
-            Demonstration mode — no case data is collected or stored. Built by{' '}
-            <a
-              href="https://metaphase.tech"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold hover:underline"
-              style={{ color: '#f97316' }}
-            >
-              MetaPhase
-            </a>
+          {/* Footer — desktop */}
+          <p className="hidden md:block mt-4 text-xs text-[#6a8a76] text-center leading-relaxed">
+            Built by{' '}
+            <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
+              className="font-semibold hover:underline" style={{ color: '#f97316' }}>MetaPhase</a>
             {activeGeo && (
-              <>
-                {' '}· location data by{' '}
-                <a
-                  href="https://geoborder.metaphase.tech"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold hover:underline"
-                  style={{ color: '#16a34a' }}
-                >
-                  GeoBorder
-                </a>
+              <> · location by{' '}
+                <a href="https://geoborder.metaphase.tech" target="_blank" rel="noopener noreferrer"
+                  className="font-semibold hover:underline" style={{ color: '#16a34a' }}>GeoBorder</a>
               </>
             )}
-            .
+            {' '}·{' '}
+            <a href="#terms" className="hover:underline text-[#6a8a76]">Terms of Use</a>
           </p>
         </div>
       </main>

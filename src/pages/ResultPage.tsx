@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
-import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff, ListChecks, ChevronDown, Compass } from 'lucide-react'
+import { CheckCircle2, XCircle, Shield, RotateCcw, Home, Anchor, Building2, AlertTriangle, Users, MapPin, WifiOff, ListChecks, ChevronDown, Compass, Printer, Download, FileJson } from 'lucide-react'
 import { type ResultState } from '../App'
 import { type GeoData } from '../geo'
 import { useOnlineStatus } from '../useOnlineStatus'
+import GovBanner from '../components/GovBanner'
+import TorchLogo from '../components/TorchLogo'
 
 const pageStyle: React.CSSProperties = {
   background: 'linear-gradient(-45deg, #064e3b, #052e16, #065f46, #14532d)',
@@ -201,9 +203,30 @@ export default function ResultPage({
   const activeGeo = online ? geo : null   // never show stale location data when offline
   const hasGeoCards = activeGeo && (activeGeo.cbpPort || activeGeo.immigrationCourt || activeGeo.iceEro)
 
+  function downloadJson() {
+    const payload = {
+      determination: result.outcome.title,
+      citation: result.outcome.citation,
+      timestamp: new Date().toISOString(),
+      jurisdiction: activeGeo ? [activeGeo.county, activeGeo.state].filter(Boolean).join(', ') : null,
+      steps: result.history.map((s, i) => ({
+        step: i + 1,
+        question: s.node.prompt,
+        answer: s.chosenLabel,
+        citation: s.node.citation,
+      })),
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = `vericase-audit-${Date.now()}.json`; a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden" style={pageStyle}>
       <div style={shineStyle} aria-hidden="true" />
+      <GovBanner />
 
       {/* Header */}
       <header
@@ -212,10 +235,10 @@ export default function ResultPage({
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
+            <TorchLogo size={18} className="text-white" />
             <div>
               <span className="font-bold tracking-tight">VeriCase</span>
-              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">MetaPhase</p>
+              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -425,6 +448,34 @@ export default function ResultPage({
                             </div>
                           </div>
                         </div>
+
+                        {/* Audit trail download actions */}
+                        <div className="mt-4 pt-3 border-t border-[#eee] flex flex-wrap gap-2">
+                          <button
+                            onClick={() => window.print()}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-gray-100"
+                            style={{ border: '1px solid #ddd', color: '#555' }}
+                          >
+                            <Printer size={12} aria-hidden="true" />
+                            Print
+                          </button>
+                          <button
+                            onClick={downloadJson}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-gray-100"
+                            style={{ border: '1px solid #ddd', color: '#555' }}
+                          >
+                            <FileJson size={12} aria-hidden="true" />
+                            Download JSON
+                          </button>
+                          <button
+                            onClick={() => window.print()}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-gray-100"
+                            style={{ border: '1px solid #ddd', color: '#555' }}
+                          >
+                            <Download size={12} aria-hidden="true" />
+                            Save as PDF
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -563,28 +614,30 @@ export default function ResultPage({
                   />
                 )}
 
-                {/* Footer disclaimer */}
+                {/* Footer */}
                 <p className="text-[10px] text-center leading-relaxed px-1 mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
                   Built by{' '}
                   <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
                     className="font-semibold hover:underline" style={{ color: '#fb923c' }}>
                     MetaPhase
                   </a>
-                  . Not affiliated with any U.S. government agency.
+                  {' · '}
+                  <a href="#terms" className="hover:underline" style={{ color: 'rgba(255,255,255,0.28)' }}>Terms of Use</a>
                 </p>
               </div>
             )}
           </div>
 
-          {/* Footer — only shown when no geo cards (otherwise footer is inside geo panel) */}
-          {!hasGeoCards && (
+          {/* Footer — only shown when no geo panel */}
+          {!hasGeoCards && !online && (
             <p className="mt-6 text-xs text-center leading-relaxed px-4" style={{ color: 'rgba(255,255,255,0.38)' }}>
-              Demonstration mode — no case data collected or stored. Built by{' '}
+              Built by{' '}
               <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
                 className="font-semibold hover:underline" style={{ color: '#fb923c' }}>
                 MetaPhase
               </a>
-              . Not affiliated with any U.S. government agency.
+              {' · '}
+              <a href="#terms" className="hover:underline" style={{ color: 'rgba(255,255,255,0.28)' }}>Terms of Use</a>
             </p>
           )}
         </div>

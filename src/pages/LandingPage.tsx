@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Shield, ClipboardCheck, Zap, Users, ChevronRight, WifiOff, Compass } from 'lucide-react'
+import { ClipboardCheck, Zap, Users, ChevronRight, WifiOff, Compass, Lock } from 'lucide-react'
 import { useOnlineStatus } from '../useOnlineStatus'
+import GovBanner from '../components/GovBanner'
+import TorchLogo from '../components/TorchLogo'
 
 const DEMO_QUESTIONS = [
   {
@@ -218,6 +220,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
 
   return (
     <div>
+      <GovBanner />
       {/* Hero */}
       <section
         className="relative min-h-screen flex flex-col px-6 py-20 text-white overflow-hidden"
@@ -230,7 +233,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
         {/* Top bar */}
         <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between mb-16">
           <div className="flex items-center gap-2">
-            <Shield size={18} strokeWidth={1.5} className="text-green-300" aria-hidden="true" />
+            <TorchLogo size={20} className="text-green-300" />
             <span className="font-bold tracking-tight text-white text-base">VeriCase</span>
           </div>
           <div className="flex items-center gap-3">
@@ -266,7 +269,7 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
               <div className="absolute rounded-3xl border border-white/15" style={{ inset: -10, animation: 'pulse-out 3.5s ease-out infinite' }} />
               <div className="absolute rounded-3xl border border-white/8"  style={{ inset: -20, animation: 'pulse-out 3.5s ease-out infinite', animationDelay: '1.2s' }} />
               <div className="w-full h-full rounded-3xl flex items-center justify-center border border-white/20" style={{ background: 'rgba(255,255,255,0.11)', backdropFilter: 'blur(8px)' }}>
-                <Shield size={38} strokeWidth={1.5} />
+                <TorchLogo size={38} className="text-white" />
               </div>
             </div>
 
@@ -311,6 +314,8 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
               <span>17,685 legal pathways</span>
               <span aria-hidden="true">·</span>
               <span>100% cited determinations</span>
+              <span aria-hidden="true">·</span>
+              <span className="flex items-center gap-1"><Lock size={9} aria-hidden="true" />No data stored</span>
             </div>
 
             {/* Offline notice — only shown when offline */}
@@ -459,29 +464,37 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
               How It Works
             </h2>
           </Reveal>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Reveal delay={0}>
               <FeatureCard
                 icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
                 accent="#065f46"
                 title="Guided Case Review"
-                description="87 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and current immigration status."
+                description="87 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and immigration status."
               />
             </Reveal>
-            <Reveal delay={120}>
+            <Reveal delay={80}>
               <FeatureCard
                 icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
                 accent="#b45309"
                 title="17,685 Legal Paths"
-                description="A proven total function: every path terminates in CITIZEN or NOT A CITIZEN, each citing controlling statute or case law."
+                description="Every path terminates in a clear determination with controlling statute or case law cited at each step."
               />
             </Reveal>
-            <Reveal delay={240}>
+            <Reveal delay={160}>
               <FeatureCard
                 icon={<Users size={24} strokeWidth={1.8} style={{ color: '#334155' }} />}
                 accent="#334155"
                 title="Full Audit Trail"
                 description="Every answer is recorded in sequence, giving a defensible step-by-step record of the determination."
+              />
+            </Reveal>
+            <Reveal delay={240}>
+              <FeatureCard
+                icon={<Lock size={24} strokeWidth={1.8} style={{ color: '#1e3a5f' }} />}
+                accent="#1e3a5f"
+                title="No Data Collected"
+                description="No case information, personal data, or answers are stored anywhere. Every determination runs entirely in your browser — nothing leaves your device."
               />
             </Reveal>
           </div>
@@ -493,30 +506,36 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
         <Reveal className="max-w-5xl mx-auto md:flex md:gap-16 md:items-start">
           <div className="mb-8 md:mb-0 md:flex-1">
             <div className="flex items-center gap-2 mb-3">
-              <Shield size={14} strokeWidth={2} style={{ color: '#065f46' }} />
+              <TorchLogo size={14} className="text-[#065f46]" />
               <span className="font-bold text-sm tracking-tight" style={{ color: '#065f46' }}>VeriCase</span>
             </div>
-            <p className="text-xs text-[#444] leading-relaxed max-w-xs">
-              built by{' '}
+            <p className="text-xs font-semibold text-[#222] mb-1">
+              Built by{' '}
               <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
-                className="font-semibold hover:underline" style={{ color: '#f97316' }}>
+                className="hover:underline" style={{ color: '#f97316' }}>
                 MetaPhase
               </a>
-              . Location context powered by{' '}
+            </p>
+            <p className="text-xs text-[#666] leading-relaxed max-w-xs">
+              Location context powered by{' '}
               <a href="https://geoborder.metaphase.tech" target="_blank" rel="noopener noreferrer"
                 className="font-semibold hover:underline" style={{ color: '#16a34a' }}>
                 GeoBorder
               </a>
-              . Not affiliated with or endorsed by DHS, CBP, USCIS, or any U.S. government agency.
-              Educational use only — not legal advice. No data is collected or stored.
+              . Not legal advice. No data is collected or stored.
             </p>
+            <div className="flex gap-4 mt-3">
+              <a href="#terms" className="text-xs text-[#888] hover:text-[#333] hover:underline transition-colors">Terms of Use</a>
+              <a href="#privacy" className="text-xs text-[#888] hover:text-[#333] hover:underline transition-colors">Privacy Policy</a>
+            </div>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#333] mb-4">More Information</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#333] mb-4">Sources</p>
             <nav aria-label="More information links">
               <ul className="space-y-3">
                 <li><a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>U.S. Citizenship Overview →</a></li>
                 <li><a href="https://www.uscis.gov/citizenship/learn-about-citizenship" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>Certificate of Citizenship →</a></li>
+                <li><a href="https://travel.state.gov/content/travel/en/legal/travel-legal-considerations/us-citizenship.html" target="_blank" rel="noopener noreferrer" className="text-sm hover:underline" style={{ color: '#334155' }}>7 FAM — Consular Affairs →</a></li>
               </ul>
             </nav>
           </div>

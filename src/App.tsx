@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import LandingPage from './pages/LandingPage'
 import VerifyPage from './pages/VerifyPage'
 import ResultPage from './pages/ResultPage'
@@ -8,15 +8,52 @@ import { type GeoData, fetchGeoData, getLocation } from './geo'
 export type Page = 'landing' | 'verify' | 'result'
 export type ResultState = { outcome: OutcomeNode; nodeId: string; history: Step[] }
 
+function hashForPage(page: Page): string {
+  if (page === 'verify') return '#/verify'
+  if (page === 'result') return '#/result'
+  return '#/'
+}
+
+function pageFromHash(hash: string): Page {
+  if (hash === '#/verify') return 'verify'
+  if (hash === '#/result') return 'result'
+  return 'landing'
+}
+
 export default function App() {
-  const [page, setPage] = useState<Page>('landing')
+  const [page, setPage] = useState<Page>(() => {
+    // On mobile, skip landing page
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return 'verify'
+    return 'landing'
+  })
   const [result, setResult] = useState<ResultState | null>(null)
   const [geo, setGeo] = useState<GeoData | null>(null)
   const [verifyStart, setVerifyStart] = useState<string | undefined>(undefined)
-  // Tracks where a Q_STATUS run was launched from, so "back" returns to the right
-  // place — distinct from inferring it off `result`, since a stale prior result can
-  // linger in state after returning to the landing page.
   const [verifyOrigin, setVerifyOrigin] = useState<'landing' | 'result' | undefined>(undefined)
+
+  // Sync URL hash on page changes
+  useEffect(() => {
+    window.history.pushState(null, '', hashForPage(page))
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [page])
+
+  // Listen for browser back/forward
+  useEffect(() => {
+    const onPopState = () => {
+      const p = pageFromHash(window.location.hash)
+      setPage(p)
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  // On mobile, immediately go to verify on mount
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      goToVerify()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const goToVerify = useCallback(async () => {
     setVerifyStart(undefined)
@@ -36,13 +73,8 @@ export default function App() {
   const goToResult = useCallback((r: ResultState) => { setResult(r); setPage('result') }, [])
   const goToNewCase = useCallback(() => { setResult(null); setVerifyStart(undefined); setVerifyOrigin(undefined); setPage('verify') }, [])
 
-  // Secondary "wizard" entry point #1: from a NOT_CITIZEN result, jump straight into
-  // the immigration-status classifier (Q_STATUS) without restarting the whole interview.
-  // The prior result/geo stay in state so "back" from the first question returns to it.
   const goToStatusCheck = useCallback(() => { setVerifyStart('Q_STATUS'); setVerifyOrigin('result'); setPage('verify') }, [])
 
-  // Secondary "wizard" entry point #2: straight from the landing page, with no prior
-  // citizenship determination at all. Clears any stale result so "back" goes home.
   const goToStatusCheckFromLanding = useCallback(() => {
     setResult(null)
     setVerifyStart('Q_STATUS')
