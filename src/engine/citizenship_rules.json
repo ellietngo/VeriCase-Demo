@@ -1393,93 +1393,67 @@
     },
     "root": {
       "kind": "question",
-      "prompt": "Do you have a green card or Permanent Resident Card (Form I-551)?",
-      "citation": "8 U.S.C. § 1101(a)(20); Form I-551",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "q_green_card_condition" },
-        { "value": "no", "label": "No", "next": "q_refugee_admission" }
-      ]
-    },
-    "q_lpr_type": {
-      "kind": "question",
-      "prompt": "What kind of resident card or resident filing is it?",
-      "citation": "8 U.S.C. § 1101(a)(20); 8 U.S.C. § 1186a",
+      "prompt": "Does this person have a Permanent Resident Card (\"green card\", Form I-551) that lets them live and work in the U.S. permanently?",
+      "explanation": "A green card issued for marriages under 2 years old at approval may be 'conditional' — it looks the same but has a 2-year expiration date. Check the card's expiration: 2-year = conditional, 10-year = standard.",
+      "citation": "8 U.S.C. § 1101(a)(20); Form I-551; INA § 216",
       "answer_type": "enum",
       "answers": [
-        { "value": "two_year_conditional_card_or_i751_i829", "label": "Two-year conditional card, or a pending/approved Form I-751 or I-829", "next": "status_cpr" },
-        { "value": "ten_year_green_card_or_i551", "label": "Standard 10-year green card (Form I-551)", "next": "status_lpr" },
-        { "value": "expired_card_but_continuing_resident_status", "label": "Card has expired, but resident status continues", "next": "status_lpr" },
-        { "value": "replacement_or_renewal_filing_only", "label": "Filing only a replacement or renewal of the card", "next": "status_lpr" },
-        { "value": "resident_card_invalidated_or_revoked", "label": "Resident card has been invalidated or revoked", "next": "status_review" }
+        { "value": "yes_10yr", "label": "Yes — standard 10-year green card", "next": "status_lpr" },
+        { "value": "yes_2yr", "label": "Yes — 2-year conditional card (recent marriage or EB-5 investment)", "next": "status_cpr" },
+        { "value": "no", "label": "No green card", "next": "q_how_present" }
+      ]
+    },
+    "q_how_present": {
+      "kind": "question",
+      "prompt": "How did this person most recently enter — or how are they currently present in — the United States?",
+      "explanation": "Choose the option that best matches the current situation. Your I-94 admission record or visa shows the specific class.",
+      "citation": "8 U.S.C. § 1101(a)(15); 8 U.S.C. § 1157; 8 U.S.C. § 1158; 8 U.S.C. § 1182(d)(5); INA §§ 207–208, 212(d)(5)",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "temp_visa", "label": "Admitted on a temporary visa or status (work, student, visitor, exchange, etc.)", "next": "q_nonimmigrant_class" },
+        { "value": "humanitarian", "label": "Granted humanitarian protection or currently seeking it (asylum, refugee, TPS, parole, U/T visa, VAWA, etc.)", "next": "q_humanitarian_type" },
+        { "value": "no_status", "label": "Entered without inspection, overstayed, or otherwise has no current lawful status", "next": "q_daca_check" }
       ]
     },
     "q_nonimmigrant_class": {
       "kind": "question",
-      "prompt": "Which nonimmigrant family fits best?",
-      "citation": "8 U.S.C. § 1101(a)(15)",
+      "prompt": "Which best describes the temporary basis for this person's stay?",
+      "explanation": "These are nonimmigrant categories under INA § 101(a)(15). The I-94 admission record or visa shows the specific class.",
+      "citation": "8 U.S.C. § 1101(a)(15); 9 FAM 402; INA § 214",
       "answer_type": "enum",
       "answers": [
-        { "value": "student", "label": "Student (F-1, M-1)", "next": "status_student" },
-        { "value": "worker", "label": "Temporary worker (H, L, O, P, E, R)", "next": "status_worker" },
-        { "value": "fiance", "label": "Fiancé(e) (K-1, K-2)", "next": "status_fiance" },
-        { "value": "visitor", "label": "Visitor (B-1/B-2)", "next": "status_visitor" },
-        { "value": "exchange", "label": "Exchange visitor (J-1, J-2)", "next": "status_exchange" },
+        { "value": "worker", "label": "Work, training, or treaty/investor (H, L, O, P, E, TN, or similar)", "next": "status_worker" },
+        { "value": "student", "label": "Student or exchange visitor (F, M, or J)", "next": "status_student" },
+        { "value": "visitor", "label": "Tourism or business visitor (B-1/B-2) or Visa Waiver Program / ESTA", "next": "status_visitor" },
+        { "value": "fiance", "label": "Fiancé(e) (K-1 or K-2)", "next": "status_fiance" },
         { "value": "dependent", "label": "Dependent of a principal nonimmigrant (H-4, L-2, F-2, etc.)", "next": "status_dependent" },
         { "value": "other", "label": "Other nonimmigrant classification", "next": "status_nonimmigrant_other" }
       ]
     },
-    "q_special_immigrant_type": {
+    "q_humanitarian_type": {
       "kind": "question",
-      "prompt": "Which special immigrant or related route best fits the person?",
-      "citation": "8 U.S.C. § 1101(a)(27); 8 U.S.C. § 1154(a)(1)(A)(iii)",
+      "prompt": "Which humanitarian category most closely matches this person's situation?",
+      "explanation": "These are humanitarian classes of admission or protection recognized by USCIS, DOS, and DOJ/EOIR.",
+      "citation": "8 U.S.C. §§ 1157–1158, 1182(d)(5), 1254a; INA §§ 207–208, 212(d)(5), 244; 8 U.S.C. § 1184(o),(p); 8 U.S.C. § 1154(a)(1)(A)(iii)",
       "answer_type": "enum",
       "answers": [
-        { "value": "special_immigrant_juvenile", "label": "Special Immigrant Juvenile (SIJ)", "next": "status_special_immigrant" },
-        { "value": "religious_worker_or_other_i360_special_immigrant", "label": "Religious worker or other I-360 special immigrant", "next": "status_special_immigrant" },
-        { "value": "vawa_self_petition", "label": "VAWA self-petition", "next": "status_humanitarian" },
-        { "value": "other_i360_based_special_route", "label": "Other I-360-based special route", "next": "status_special_immigrant" }
+        { "value": "refugee", "label": "Refugee — approved abroad and admitted to the U.S.", "next": "status_refugee" },
+        { "value": "asylee", "label": "Asylee — asylum already granted inside the U.S.", "next": "status_asylee" },
+        { "value": "asylum_pending", "label": "Asylum applied for but not yet decided (pending case)", "next": "status_pending_asylum" },
+        { "value": "tps", "label": "Temporary Protected Status (TPS)", "next": "status_tps" },
+        { "value": "parole", "label": "Humanitarian parole or advance parole", "next": "status_parolee" },
+        { "value": "crime_trafficking", "label": "Victim of crime or trafficking (U visa, T visa) or VAWA self-petitioner", "next": "status_humanitarian" }
       ]
     },
-    "q_pending_type": {
+    "q_daca_check": {
       "kind": "question",
-      "prompt": "What kind of case is pending?",
-      "citation": "8 U.S.C. § 1255; 8 U.S.C. § 1158; 8 U.S.C. § 1254a",
-      "answer_type": "enum",
+      "prompt": "Does this person currently have DACA (Deferred Action for Childhood Arrivals) or another active grant of deferred action?",
+      "explanation": "DACA is not a formal immigration status, but it provides protection from removal and may allow work authorization for those who qualify. It is subject to policy changes and periodic renewal.",
+      "citation": "DHS Deferred Action for Childhood Arrivals policy (2012); 8 C.F.R. § 274a.12(c)(14); USCIS-DACA",
+      "answer_type": "boolean",
       "answers": [
-        { "value": "adjustment_of_status", "label": "Adjustment of status (Form I-485)", "next": "status_pending_adjustment" },
-        { "value": "asylum", "label": "Asylum (Form I-589)", "next": "status_pending_asylum" },
-        { "value": "tps", "label": "Temporary Protected Status (Form I-821)", "next": "status_pending_tps" },
-        { "value": "daca", "label": "DACA / deferred action (Form I-821D)", "next": "status_pending_daca" },
-        { "value": "nonimmigrant_extension_or_change", "label": "Nonimmigrant extension or change of status", "next": "status_pending_nonimmigrant" },
-        { "value": "court_or_relief_case", "label": "Immigration court or other relief case", "next": "status_pending_humanitarian" },
-        { "value": "other", "label": "Other pending case", "next": "status_pending_other" }
-      ]
-    },
-    "q_out_of_status_detail": {
-      "kind": "question",
-      "prompt": "Which description best fits the person's current situation?",
-      "citation": "8 U.S.C. § 1227; 8 U.S.C. § 1182",
-      "answer_type": "enum",
-      "answers": [
-        { "value": "entered_lawfully_then_overstayed", "label": "Entered lawfully, then overstayed", "next": "status_undocumented" },
-        { "value": "entered_without_inspection", "label": "Entered without inspection", "next": "status_undocumented" },
-        { "value": "status_expired_and_no_pending_filing", "label": "Status expired, with no pending filing", "next": "status_undocumented" },
-        { "value": "status_revoked_or_terminated", "label": "Status was revoked or terminated", "next": "status_undocumented" },
-        { "value": "not_enough_evidence_to_place_status", "label": "Not enough evidence to place status", "next": "status_review" }
-      ]
-    },
-    "q_review_path": {
-      "kind": "question",
-      "prompt": "Which evidence type is most likely to resolve the case?",
-      "citation": "8 C.F.R. § 103.2",
-      "answer_type": "enum",
-      "answers": [
-        { "value": "resident_document_review", "label": "Resident document review", "next": "status_review" },
-        { "value": "court_or_protection_document_review", "label": "Court or protection document review", "next": "status_review" },
-        { "value": "visa_or_i94_review", "label": "Visa or I-94 review", "next": "status_review" },
-        { "value": "special_immigrant_document_review", "label": "Special immigrant document review", "next": "status_review" },
-        { "value": "no_useful_documents_present", "label": "No useful documents present", "next": "status_review" }
+        { "value": true, "label": "Yes — active DACA or deferred action", "next": "status_daca" },
+        { "value": false, "label": "No", "next": "status_undocumented" }
       ]
     },
     "status_lpr": {
@@ -1677,133 +1651,6 @@
       "title": "Document / Record Review Needed",
       "citation": "8 C.F.R. § 103.2",
       "definition": "The facts do not fit cleanly into a single status bucket and a document review is needed."
-    },
-    "q_green_card_condition": {
-      "kind": "question",
-      "prompt": "Is it a 2-year conditional card, or do you have a pending or approved Form I-751 or I-829?",
-      "citation": "8 U.S.C. § 1186a",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "status_cpr" },
-        { "value": "no", "label": "No", "next": "status_lpr" }
-      ]
-    },
-    "q_refugee_admission": {
-      "kind": "question",
-      "prompt": "Were you admitted as a refugee, or do you have refugee documents?",
-      "citation": "8 U.S.C. § 1157",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "status_refugee" },
-        { "value": "no", "label": "No", "next": "q_asylum_granted" }
-      ]
-    },
-    "q_asylum_granted": {
-      "kind": "question",
-      "prompt": "Has asylum been granted to you?",
-      "citation": "8 U.S.C. § 1158",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "status_asylee" },
-        { "value": "no", "label": "No", "next": "q_parole" }
-      ]
-    },
-    "q_parole": {
-      "kind": "question",
-      "prompt": "Are you in parole status or advance parole status?",
-      "citation": "8 U.S.C. § 1182(d)(5)",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "status_parolee" },
-        { "value": "no", "label": "No", "next": "q_tps" }
-      ]
-    },
-    "q_tps": {
-      "kind": "question",
-      "prompt": "Do you have Temporary Protected Status (TPS)?",
-      "citation": "8 U.S.C. § 1254a",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "status_tps" },
-        { "value": "no", "label": "No", "next": "q_daca" }
-      ]
-    },
-    "q_daca": {
-      "kind": "question",
-      "prompt": "Do you have deferred action or DACA?",
-      "citation": "DHS Deferred Action for Childhood Arrivals policy (2012)",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "status_daca" },
-        { "value": "no", "label": "No", "next": "q_national" }
-      ]
-    },
-    "q_national": {
-      "kind": "question",
-      "prompt": "Does any official record say you are a U.S. national and not a U.S. citizen?",
-      "citation": "8 U.S.C. § 1408; 8 U.S.C. § 1101(a)(22)",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "status_national" },
-        { "value": "no", "label": "No", "next": "q_nonimmigrant_entry" }
-      ]
-    },
-    "q_nonimmigrant_entry": {
-      "kind": "question",
-      "prompt": "Do you currently have a temporary visa or an I-94 with a nonimmigrant class?",
-      "citation": "8 U.S.C. § 1101(a)(15)",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "q_nonimmigrant_class" },
-        { "value": "no", "label": "No", "next": "q_special_or_humanitarian" }
-      ]
-    },
-    "q_special_or_humanitarian": {
-      "kind": "question",
-      "prompt": "Do you have any special immigrant or humanitarian paperwork, such as I-360, U visa, T visa, VAWA, or SIJ?",
-      "citation": "8 U.S.C. § 1101(a)(15)(T), (U); 8 U.S.C. § 1101(a)(27)",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "q_special_or_humanitarian_type" },
-        { "value": "no", "label": "No", "next": "q_pending_case" }
-      ]
-    },
-    "q_special_or_humanitarian_type": {
-      "kind": "question",
-      "prompt": "Which special or humanitarian route fits best?",
-      "citation": "8 U.S.C. § 1101(a)(15)(T), (U); 8 U.S.C. § 1101(a)(27); 8 U.S.C. § 1154(a)(1)(A)(iii)",
-      "answer_type": "enum",
-      "answers": [
-        { "value": "special_immigrant", "label": "Special immigrant (other than SIJ)", "next": "status_special_immigrant" },
-        { "value": "u_visa", "label": "U visa (victim of a qualifying crime)", "next": "status_u_nonimmigrant" },
-        { "value": "t_visa", "label": "T visa (trafficking victim)", "next": "status_t_nonimmigrant" },
-        { "value": "vawa_or_other_protection", "label": "VAWA or other protection-based filing", "next": "status_humanitarian" },
-        { "value": "sij", "label": "Special Immigrant Juvenile (SIJ)", "next": "status_special_immigrant" },
-        { "value": "other_humanitarian", "label": "Other humanitarian relief", "next": "status_humanitarian" }
-      ]
-    },
-    "q_pending_case": {
-      "kind": "question",
-      "prompt": "Do you have any pending immigration case or receipt notice?",
-      "citation": "8 C.F.R. § 103.2",
-      "answer_type": "boolean",
-      "answers": [
-        { "value": "yes", "label": "Yes", "next": "q_pending_type" },
-        { "value": "no", "label": "No", "next": "q_out_of_status" }
-      ]
-    },
-    "q_out_of_status": {
-      "kind": "question",
-      "prompt": "Which best describes the current situation?",
-      "citation": "8 U.S.C. § 1227; 8 U.S.C. § 1182",
-      "answer_type": "enum",
-      "answers": [
-        { "value": "overstay_after_lawful_entry", "label": "Entered lawfully, then overstayed", "next": "status_undocumented" },
-        { "value": "entered_without_inspection", "label": "Entered without inspection", "next": "status_undocumented" },
-        { "value": "status_expired_and_no_pending_case", "label": "Status expired, with no pending case", "next": "status_undocumented" },
-        { "value": "status_revoked_or_terminated", "label": "Status was revoked or terminated", "next": "status_undocumented" },
-        { "value": "still_unclear_after_records_review", "label": "Still unclear after records review", "next": "status_review" }
-      ]
     },
     "Q1c": {
       "kind": "question",

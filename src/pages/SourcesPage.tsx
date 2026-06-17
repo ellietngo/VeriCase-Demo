@@ -88,6 +88,21 @@ const SOURCES: { category: string; items: Source[] }[] = [
     ],
   },
   {
+    category: 'Primary Government Portals — Immigration Status',
+    items: [
+      { title: 'DHS OHSS — Immigrant Classes of Admission', url: 'https://ohss.dhs.gov/topics/immigration/lawful-permanent-residents/immigrant-classes-admission', description: 'Definition of lawful permanent resident; family-based, employment-based, diversity, refugee/asylee, and special/parole classes of admission; conditional residence.' },
+      { title: 'DOS — Directory of Visa Categories', url: 'https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/all-visa-categories.html', description: 'All immigrant and nonimmigrant visa categories (work, student/exchange, visitor), and references to the Foreign Affairs Manual.' },
+      { title: 'USCIS — U.S. Citizenship and Immigration Services', url: 'https://www.uscis.gov/', description: 'General definitions of citizenship, green cards (Form I-551), nonimmigrant status, humanitarian programs, and the distinction between status and a visa.' },
+      { title: 'USCIS — DACA (Deferred Action for Childhood Arrivals)', url: 'https://www.uscis.gov/DACA', description: 'DACA as deferred action and not a formal immigration status; work authorization and renewal characteristics.' },
+      { title: 'USCIS — Temporary Protected Status', url: 'https://www.uscis.gov/humanitarian/temporary-protected-status', description: 'TPS as a temporary, country-designated protection that does not lead directly to a green card.' },
+      { title: 'USCIS — Asylum', url: 'https://www.uscis.gov/humanitarian/refugees-and-asylum/asylum', description: 'Asylee status and pending-asylum-applicant treatment, including work authorization eligibility timing.' },
+      { title: 'USCIS — Trafficking (T) and Crime Victims (U); VAWA', url: 'https://www.uscis.gov/humanitarian', description: 'U visa, T visa, and VAWA self-petition categories, eligibility requirements, and paths toward a green card.' },
+      { title: 'CBP — I-94 Arrival/Departure Record', url: 'https://i94.cbp.dhs.gov/', description: 'How admission class and authorized period of stay are recorded for nonimmigrants and parolees; lookup your I-94 online.' },
+      { title: 'DOJ EOIR — Executive Office for Immigration Review', url: 'https://www.justice.gov/eoir', description: 'Immigration court system adjudicating asylum claims, cancellation of removal, and other relief from removal.' },
+      { title: 'DOS / DHS — Visa Waiver Program / ESTA', url: 'https://travel.state.gov/content/travel/en/us-visas/tourism-visit/visa-waiver-program.html', description: '90-day visitor entry under VWP/ESTA, limits on extension and change of status, and waiver of certain removal contest rights.' },
+    ],
+  },
+  {
     category: 'GeoBorder — Geographic Data',
     items: [
       { title: 'GeoBorder API', url: 'https://geoborder.metaphase.tech', description: 'MetaPhase open-source geospatial API powering jurisdiction, CBP port, court, and ICE ERO location context in VeriCase.' },
@@ -120,12 +135,21 @@ export default function SourcesPage({ onBack }: { onBack: () => void }) {
       <main className="flex-1 px-6 py-12">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-extrabold text-[#111] mb-2">Sources</h1>
-          <p className="text-sm text-[#777] mb-8 leading-relaxed">
+          <p className="text-sm text-[#777] mb-4 leading-relaxed">
             Every determination in VeriCase cites controlling authority. This page lists the
             primary statutes, case law, regulatory guidance, and data sources underlying both
             the citizenship determination and the separate immigration-status check, plus the
             location context engine.
           </p>
+          <div className="rounded-2xl p-4 mb-8" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+            <p className="text-xs font-semibold text-[#92400e] mb-1">Limitations</p>
+            <p className="text-xs text-[#78350f] leading-relaxed">
+              These sources describe categories at a general level. Immigration programs — especially TPS
+              designations, parole programs, and DACA — change frequently by policy and litigation.
+              VeriCase is a screening aid only and does not constitute legal advice or an official
+              determination. Sources were compiled June 2026.
+            </p>
+          </div>
 
           <div className="space-y-10">
             {SOURCES.map((group) => (
