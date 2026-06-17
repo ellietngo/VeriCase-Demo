@@ -636,7 +636,7 @@ export default function ResultPage({
                         flex row with two top-level children, a wrapped two-line label
                         stretches to fill the remaining width and shoves the icon
                         against the left edge instead of keeping it next to the text. */}
-                    <span className="inline-flex items-center gap-2">
+                    <span className="inline-flex items-center gap-2 whitespace-nowrap">
                       <RotateCcw size={16} className="flex-shrink-0" aria-hidden="true" />
                       New Case
                     </span>
@@ -654,9 +654,9 @@ export default function ResultPage({
                         hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-700/20"
                       style={{ background: '#2563eb', borderColor: '#2563eb' }}
                     >
-                      <span className="inline-flex items-center gap-2">
+                      <span className="inline-flex items-center gap-2 whitespace-nowrap">
                         <Compass size={16} className="flex-shrink-0" aria-hidden="true" />
-                        Check Immigration Status
+                        Immigration Status
                       </span>
                     </button>
                   )}
@@ -667,7 +667,7 @@ export default function ResultPage({
                       focus:outline-none focus:ring-4 focus:ring-green-900/30"
                     style={{ background: '#065f46' }}
                   >
-                    <span className="inline-flex items-center gap-2">
+                    <span className="inline-flex items-center gap-2 whitespace-nowrap">
                       <Home size={16} className="flex-shrink-0" aria-hidden="true" />
                       Back to Home
                     </span>
