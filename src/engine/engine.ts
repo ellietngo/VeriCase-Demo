@@ -126,15 +126,49 @@ export function evaluate(
   throw new Error("Cycle detected — exceeded 1000 steps");
 }
 
+// One independent decision tree within the shared `nodes` map. The citizenship
+// engine and the immigration-status engine are each declared as an entry here
+// so `validate()` proves totality for BOTH graphs, not just whichever one
+// happens to be `rules.start`.
+interface EngineSpec {
+  label: string;
+  start: string;
+}
+
+interface EngineStats {
+  label: string;
+  start: string;
+  distinctPaths: number;
+  leafKinds: string[];
+}
+
 // ── Validator: prove the graph is a total function ───────────────────────────
-export function validate(rules: Rules): {
+// Validates every engine in `engines` (defaulting to the citizenship engine
+// rooted at `rules.start` and the immigration-status engine rooted at
+// IMMIGRATION_ENGINE_START_NODE). Each engine is checked independently for
+// reachability, acyclicity, and full path coverage; a node need only be
+// reachable from ONE of the declared engine roots (the two engines share a
+// single `nodes` map but never share nodes in practice).
+export function validate(
+  rules: Rules,
+  engines: EngineSpec[] = [
+    { label: "citizenship", start: rules.start },
+    { label: "immigration-status", start: IMMIGRATION_ENGINE_START_NODE },
+  ]
+): {
   errors: string[];
-  stats: { questions: number; outcomes: number; distinctPaths: number; leafKinds: string[] };
+  stats: {
+    questions: number;
+    outcomes: number;
+    distinctPaths: number;
+    leafKinds: string[];
+    engines: EngineStats[];
+  };
 } {
   const nodes = rules.nodes;
   const errors: string[] = [];
 
-  // 1. every `next` targets a real node
+  // 1. every `next` targets a real node (graph-wide, independent of engine)
   for (const [id, node] of Object.entries(nodes)) {
     if (node.kind === "question") {
       if (!node.answers?.length) errors.push(`${id}: question has no answers`);
@@ -144,26 +178,29 @@ export function validate(rules: Rules): {
     }
   }
 
-  // 2. reachability
+  // 2. reachability — union of what's reachable from every declared engine root
   const reachable = new Set<string>();
-  const stack = [rules.start];
-  while (stack.length) {
-    const id = stack.pop()!;
-    if (reachable.has(id)) continue;
-    reachable.add(id);
-    const node = nodes[id];
-    if (node?.kind === "question") node.answers.forEach((a) => stack.push(a.next));
+  for (const engine of engines) {
+    const stack = [engine.start];
+    while (stack.length) {
+      const id = stack.pop()!;
+      if (reachable.has(id)) continue;
+      reachable.add(id);
+      const node = nodes[id];
+      if (node?.kind === "question") node.answers.forEach((a) => stack.push(a.next));
+    }
   }
   for (const id of Object.keys(nodes)) {
-    if (!reachable.has(id)) errors.push(`${id}: unreachable from start`);
+    if (!reachable.has(id)) errors.push(`${id}: unreachable from any engine start`);
   }
 
-  // 3. acyclic (DFS coloring)
+  // 3. acyclic (DFS coloring), run independently per engine
   const WHITE = 0, GRAY = 1, BLACK = 2;
   const color: Record<string, number> = {};
   Object.keys(nodes).forEach((id) => (color[id] = WHITE));
   const dfs = (id: string, path: string[]) => {
     const node = nodes[id];
+    if (!node) return;
     if (node.kind === "outcome") { color[id] = BLACK; return; }
     color[id] = GRAY;
     for (const a of node.answers) {
@@ -172,7 +209,7 @@ export function validate(rules: Rules): {
     }
     color[id] = BLACK;
   };
-  dfs(rules.start, []);
+  for (const engine of engines) dfs(engine.start, []);
 
   // 4. outcomes are only CITIZEN / NOT_CITIZEN or one of the immigration-status codes
   const VALID_OUTCOMES = new Set([
@@ -187,19 +224,29 @@ export function validate(rules: Rules): {
     }
   }
 
-  // 5. enumerate every path; confirm all terminate in a valid leaf
-  let distinctPaths = 0;
-  const leafKinds = new Set<string>();
-  const walk = (id: string) => {
-    const node = nodes[id];
-    if (node.kind === "outcome") { leafKinds.add(node.outcome); distinctPaths++; return; }
-    node.answers.forEach((a) => walk(a.next));
-  };
-  if (errors.every((e) => !e.startsWith("CYCLE"))) walk(rules.start);
+  // 5. enumerate every path per engine; confirm all terminate in a valid leaf
+  const hasCycle = errors.some((e) => e.startsWith("CYCLE"));
+  const engineStats: EngineStats[] = engines.map((engine) => {
+    let distinctPaths = 0;
+    const leafKinds = new Set<string>();
+    const walk = (id: string) => {
+      const node = nodes[id];
+      if (!node) return;
+      if (node.kind === "outcome") { leafKinds.add(node.outcome); distinctPaths++; return; }
+      node.answers.forEach((a) => walk(a.next));
+    };
+    if (!hasCycle) walk(engine.start);
+    return { label: engine.label, start: engine.start, distinctPaths, leafKinds: [...leafKinds].sort() };
+  });
 
   const questions = Object.values(nodes).filter((n) => n.kind === "question").length;
   const outcomes = Object.values(nodes).filter((n) => n.kind === "outcome").length;
-  return { errors, stats: { questions, outcomes, distinctPaths, leafKinds: [...leafKinds].sort() } };
+  const distinctPaths = engineStats.reduce((sum, e) => sum + e.distinctPaths, 0);
+  const leafKinds = [...new Set(engineStats.flatMap((e) => e.leafKinds))].sort();
+  return {
+    errors,
+    stats: { questions, outcomes, distinctPaths, leafKinds, engines: engineStats },
+  };
 }
 
 // ── Example: evaluate a recorded answer map ──────────────────────────────────
@@ -227,7 +274,10 @@ Usage (Node):
 
   const { errors, stats } = validate(rules as any);
   if (errors.length) throw new Error(errors.join("\n"));
-  console.log(stats); // { questions, outcomes, distinctPaths, leafKinds }
+  console.log(stats); // { questions, outcomes, distinctPaths, leafKinds, engines }
+  // stats.engines is a per-engine breakdown, e.g.:
+  //   [{ label: "citizenship", start: "Q0", distinctPaths, leafKinds: ["CITIZEN","NOT_CITIZEN"] },
+  //    { label: "immigration-status", start: "root", distinctPaths, leafKinds: [...16 status codes] }]
 
   const result = runWithAnswers(rules as any, {
     Q0: "us_states_dc",

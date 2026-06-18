@@ -382,7 +382,7 @@
       "kind": "question",
       "prompt": "What is the person's date-of-birth era? (Controls which transmission rule applies.)",
       "explanation": "The law in force AT THE DATE OF BIRTH controls physical-presence transmission requirements. This is the central temporal fork.",
-      "citation": "7 FAM 1130 era chart; Act of 1855; Act of May 24, 1934; Nationality Act of 1940; INA 1952; IRCA 1986",
+      "citation": "7 FAM 1130 era chart; Act of 1855; Act of May 24, 1934; Nationality Act of 1940; INA 1952; Pub. L. 99-653 (Act of Nov. 14, 1986)",
       "answer_type": "enum",
       "answers": [
         {
@@ -518,7 +518,7 @@
       "kind": "question",
       "prompt": "Did the citizen parent meet the physical-presence transmission requirement for the applicable era?",
       "explanation": "Era standards: post-Nov 14, 1986 = 5 years total, 2 after age 14; Dec 24, 1952 - Nov 13, 1986 = 10 years total, 5 after age 14; 1934-1952 = Nationality Act of 1940 rules. Count all days physically in the U.S.",
-      "citation": "8 U.S.C. § 1401(g); IRCA 1986 (Pub. L. 99-653); 7 FAM 1131.4",
+      "citation": "8 U.S.C. § 1401(g); Pub. L. 99-653 (Act of Nov. 14, 1986); 7 FAM 1131.4",
       "answer_type": "boolean",
       "answers": [
         {
@@ -1407,12 +1407,16 @@
       "kind": "question",
       "prompt": "How did this person most recently enter — or how are they currently present in — the United States?",
       "explanation": "Choose the option that best matches the current situation. Your I-94 admission record or visa shows the specific class.",
-      "citation": "8 U.S.C. § 1101(a)(15); 8 U.S.C. § 1157; 8 U.S.C. § 1158; 8 U.S.C. § 1182(d)(5); INA §§ 207–208, 212(d)(5)",
+      "citation": "8 U.S.C. § 1101(a)(15), (22), (27); 8 U.S.C. § 1157; 8 U.S.C. § 1158; 8 U.S.C. § 1182(d)(5); 8 C.F.R. § 103.2; INA §§ 207–208, 212(d)(5)",
       "answer_type": "enum",
       "answers": [
         { "value": "temp_visa", "label": "Admitted on a temporary visa or status (work, student, visitor, exchange, etc.)", "next": "q_nonimmigrant_class" },
         { "value": "humanitarian", "label": "Granted humanitarian protection or currently seeking it (asylum, refugee, TPS, parole, U/T visa, VAWA, etc.)", "next": "q_humanitarian_type" },
-        { "value": "no_status", "label": "Entered without inspection, overstayed, or otherwise has no current lawful status", "next": "q_daca_check" }
+        { "value": "no_status", "label": "Entered without inspection, overstayed, or otherwise has no current lawful status", "next": "q_daca_check" },
+        { "value": "national", "label": "U.S. national (e.g., born in American Samoa or Swains Island) who is not a U.S. citizen", "next": "status_national" },
+        { "value": "special_immigrant", "label": "Classified or approved as a special immigrant (e.g., Special Immigrant Juvenile, Afghan/Iraqi translator, religious worker) but not yet issued a green card", "next": "status_special_immigrant" },
+        { "value": "pending", "label": "Has a pending immigration application or petition that has not yet been decided", "next": "q_pending_type" },
+        { "value": "unclear", "label": "Not sure, or the documents are unclear or conflicting", "next": "status_review" }
       ]
     },
     "q_nonimmigrant_class": {
@@ -1423,7 +1427,8 @@
       "answer_type": "enum",
       "answers": [
         { "value": "worker", "label": "Work, training, or treaty/investor (H, L, O, P, E, TN, or similar)", "next": "status_worker" },
-        { "value": "student", "label": "Student or exchange visitor (F, M, or J)", "next": "status_student" },
+        { "value": "student", "label": "Student (F or M)", "next": "status_student" },
+        { "value": "exchange", "label": "Exchange visitor (J-1 or J-2)", "next": "status_exchange" },
         { "value": "visitor", "label": "Tourism or business visitor (B-1/B-2) or Visa Waiver Program / ESTA", "next": "status_visitor" },
         { "value": "fiance", "label": "Fiancé(e) (K-1 or K-2)", "next": "status_fiance" },
         { "value": "dependent", "label": "Dependent of a principal nonimmigrant (H-4, L-2, F-2, etc.)", "next": "status_dependent" },
@@ -1442,7 +1447,9 @@
         { "value": "asylum_pending", "label": "Asylum applied for but not yet decided (pending case)", "next": "status_pending_asylum" },
         { "value": "tps", "label": "Temporary Protected Status (TPS)", "next": "status_tps" },
         { "value": "parole", "label": "Humanitarian parole or advance parole", "next": "status_parolee" },
-        { "value": "crime_trafficking", "label": "Victim of crime or trafficking (U visa, T visa) or VAWA self-petitioner", "next": "status_humanitarian" }
+        { "value": "u_visa", "label": "Victim of qualifying crime with U visa status or pending U petition already approved for status", "next": "status_u_nonimmigrant" },
+        { "value": "t_visa", "label": "Victim of human trafficking with T visa status", "next": "status_t_nonimmigrant" },
+        { "value": "vawa", "label": "VAWA self-petitioner or other humanitarian-based relief not listed above", "next": "status_humanitarian" }
       ]
     },
     "q_daca_check": {
@@ -1454,6 +1461,21 @@
       "answers": [
         { "value": true, "label": "Yes — active DACA or deferred action", "next": "status_daca" },
         { "value": false, "label": "No", "next": "status_undocumented" }
+      ]
+    },
+    "q_pending_type": {
+      "kind": "question",
+      "prompt": "What kind of application or petition does this person have pending?",
+      "explanation": "These outcomes mean a decision is still awaiting USCIS, the Department of State, or an immigration judge — any current lawful presence depends on the terms of the underlying filing, not on the pending request by itself.",
+      "citation": "8 U.S.C. § 1255; 8 U.S.C. § 1254a; 8 U.S.C. § 1258; 8 C.F.R. § 214.1; 8 U.S.C. § 1229b; Form I-821D",
+      "answer_type": "enum",
+      "answers": [
+        { "value": "adjustment", "label": "Pending Form I-485 adjustment of status to permanent resident", "next": "status_pending_adjustment" },
+        { "value": "tps", "label": "Pending Temporary Protected Status registration or re-registration", "next": "status_pending_tps" },
+        { "value": "daca", "label": "Pending DACA / deferred-action request (initial or renewal)", "next": "status_pending_daca" },
+        { "value": "nonimmigrant", "label": "Pending nonimmigrant extension of stay or change of status", "next": "status_pending_nonimmigrant" },
+        { "value": "humanitarian", "label": "Pending humanitarian relief in immigration court (e.g., cancellation of removal, withholding of removal) other than asylum", "next": "status_pending_humanitarian" },
+        { "value": "other", "label": "Some other pending immigration filing not listed above", "next": "status_pending_other" }
       ]
     },
     "status_lpr": {
@@ -1694,7 +1716,7 @@
       "kind": "question",
       "prompt": "What is the person's date-of-birth era? (Controls which physical-presence transmission requirement applies.)",
       "explanation": "The law in force at the date of birth controls how much physical presence the citizen parent needed to transmit citizenship. This mirrors the era analysis for children born abroad under § 1401.",
-      "citation": "7 FAM 1130 era chart; Act of May 24, 1934; Nationality Act of 1940; INA 1952; IRCA 1986",
+      "citation": "7 FAM 1130 era chart; Act of May 24, 1934; Nationality Act of 1940; INA 1952; Pub. L. 99-653 (Act of Nov. 14, 1986)",
       "answer_type": "enum",
       "answers": [
         {
@@ -1830,7 +1852,7 @@
       "kind": "question",
       "prompt": "Did the citizen parent meet the physical-presence transmission requirement for the applicable era?",
       "explanation": "Era standards: post-Nov 14, 1986 = 5 years total, 2 after age 14; Dec 24, 1952–Nov 13, 1986 = 10 years total, 5 after age 14; 1934–1952 = Nationality Act of 1940 rules. Count all days physically present in the U.S.",
-      "citation": "8 U.S.C. § 1401(g); IRCA 1986 (Pub. L. 99-653); 7 FAM 1131.4",
+      "citation": "8 U.S.C. § 1401(g); Pub. L. 99-653 (Act of Nov. 14, 1986); 7 FAM 1131.4",
       "answer_type": "boolean",
       "answers": [
         {
@@ -2043,7 +2065,7 @@
       "kind": "question",
       "prompt": "Has the person’s naturalization been revoked by a federal court under § 1451 (denaturalization)?",
       "explanation": "Denaturalization is a civil or criminal court proceeding to revoke a certificate of naturalization obtained by fraud, willful misrepresentation, concealment of a material fact, or illegal procurement. A revocation strips citizenship retroactively.",
-      "citation": "8 U.S.C. § 1451; Luria v. United States, 231 U.S. 9 (1913); United States v. Maslenjak, 582 U.S. 357 (2017)",
+      "citation": "8 U.S.C. § 1451; Luria v. United States, 231 U.S. 9 (1913); Maslenjak v. United States, 582 U.S. 335 (2017)",
       "answer_type": "boolean",
       "answers": [
         {
@@ -2062,7 +2084,7 @@
       "kind": "question",
       "prompt": "Was the renunciation executed before a U.S. diplomatic or consular officer abroad (§ 1481(a)(5)), or before a designated official during a declared state of war (§ 1481(a)(6))?",
       "explanation": "A purported renunciation of U.S. citizenship is legally effective only if performed in the prescribed form. § 1481(a)(5) requires an oath before a U.S. diplomatic or consular officer outside the United States. § 1481(a)(6) allows renunciation before a designated official in wartime, in the U.S., with prior AG approval. An informal statement or oath before a foreign official has no legal effect.",
-      "citation": "8 U.S.C. § 1481(a)(5)–(6); 7 FAM 1260; Matter of Nolan, 19 I. & N. Dec. 674 (BIA 1988)",
+      "citation": "8 U.S.C. § 1481(a)(5)–(6); 22 C.F.R. § 50.50; 7 FAM 1260",
       "answer_type": "boolean",
       "answers": [
         {
@@ -2100,7 +2122,7 @@
       "kind": "question",
       "prompt": "At the time of the parent’s naturalization, were the child’s parents married to each other?",
       "explanation": "Under former INA § 321 (8 U.S.C. § 1432, repealed 2001), a child’s derivative citizenship depended on whether both parents naturalized (if married) or whether the single surviving or legally sole-custody parent naturalized.",
-      "citation": "Former 8 U.S.C. § 1432(a); Matter of Cross, 26 I. & N. Dec. 485 (BIA 2015)",
+      "citation": "Former 8 U.S.C. § 1432(a)(1)",
       "answer_type": "enum",
       "answers": [
         {
@@ -2138,7 +2160,7 @@
       "kind": "question",
       "prompt": "Did the custodial parent (or the surviving parent, if one had died) naturalize as a U.S. citizen while the child was under 18?",
       "explanation": "Under former § 1432(a)(2)–(3), a child could derive citizenship through one naturalizing parent if: (a) the other parent was deceased; or (b) the naturalizing parent was the sole legal and physical custodian after a legal separation.",
-      "citation": "Former 8 U.S.C. § 1432(a)(2)–(3); Wedgewood v. INS, 217 F.3d 1278 (10th Cir. 2000)",
+      "citation": "Former 8 U.S.C. § 1432(a)(2)–(3); Wedderburn v. INS, 215 F.3d 795 (7th Cir. 2000)",
       "answer_type": "boolean",
       "answers": [
         {
@@ -2157,7 +2179,7 @@
       "kind": "question",
       "prompt": "Was the child a lawful permanent resident (LPR) residing in the United States at the time of the parent’s naturalization?",
       "explanation": "Under former § 1432(a), the child had to be an LPR residing in the U.S. when the parent(s) naturalized. Temporary admission was insufficient. Residence after the parent’s naturalization did not cure the defect.",
-      "citation": "Former 8 U.S.C. § 1432(a); Matter of Nzomo, 25 I. & N. Dec. 285 (BIA 2010)",
+      "citation": "Former 8 U.S.C. § 1432(a)",
       "answer_type": "boolean",
       "answers": [
         {
