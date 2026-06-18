@@ -111,6 +111,7 @@ export default function App() {
         onBack={verifyStart ? (verifyOrigin === 'result' ? backToResult : goToLanding) : goToLanding}
         geo={geo}
         startNodeId={verifyStart}
+        backLabel={verifyStart && verifyOrigin === 'result' ? 'Back to result' : 'Back to home'}
       />
     )
   }

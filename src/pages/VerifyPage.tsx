@@ -31,11 +31,13 @@ export default function VerifyPage({
   onBack,
   geo,
   startNodeId,
+  backLabel = 'Back to home',
 }: {
   onResult: (r: ResultState) => void
   onBack: () => void
   geo: GeoData | null
   startNodeId?: string
+  backLabel?: string
 }) {
   const [history, setHistory] = useState<Step[]>([])
   const [current, setCurrent] = useState<{ nodeId: string; node: QuestionNode }>(() => {
@@ -340,7 +342,7 @@ export default function VerifyPage({
                     aria-label="Go back"
                   >
                     <ArrowLeft size={15} aria-hidden="true" />
-                    {history.length === 0 ? (startNodeId ? 'Back to result' : 'Back to home') : 'Previous question'}
+                    {history.length === 0 ? backLabel : 'Previous question'}
                   </button>
                 </div>
               </div>
