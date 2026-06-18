@@ -1,143 +1,265 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Shield, ArrowLeft, ChevronRight, Check } from 'lucide-react'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { ArrowLeft, ChevronRight, Check, MapPin, AlertTriangle, WifiOff, Menu, X } from 'lucide-react'
+import { useOnlineStatus } from '../useOnlineStatus'
+import rulesJson from '../engine/citizenship_rules.json'
+import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode, type Step, IMMIGRATION_ENGINE_START_NODE } from '../engine/engine'
+import { type ResultState } from '../App'
+import { type GeoData } from '../geo'
+import GovBanner from '../components/GovBanner'
+import TorchLogo from '../components/TorchLogo'
 
-const QUESTIONS = {
-  q1: {
-    text: 'Are you a United States citizen?',
-    sub: 'Record the subject\'s verbal response to proceed.',
-    options: [
-      { label: 'Yes, I am a U.S. Citizen', sub: 'Subject verbally confirmed citizenship', next: 'q2' },
-      { label: 'No, I am not a U.S. Citizen', sub: 'Subject verbally denied citizenship', next: 'non-citizen' },
-    ],
-  },
-  q2: {
-    text: 'Where were you born?',
-    sub: 'Record the subject\'s stated country or territory of birth.',
-    options: [
-      { label: 'In the United States or a U.S. Territory', sub: 'Born a U.S. citizen by birthright', next: 'citizen' },
-      { label: 'Outside the United States', sub: 'Born outside U.S. sovereign territory', next: 'q3' },
-    ],
-  },
-  q3: {
-    text: 'Have you been naturalized as a U.S. citizen?',
-    sub: 'Confirm whether the subject has completed the naturalization process.',
-    options: [
-      { label: 'Yes, I am a naturalized citizen', sub: 'Subject claims a certificate of naturalization', next: 'citizen' },
-      { label: 'No, I have not been naturalized', sub: 'Subject has not completed naturalization', next: 'non-citizen' },
-    ],
-  },
+const rules = rulesJson as unknown as Rules
+
+// Count distinct outcome paths reachable from a node (memoized)
+const _pathMemo = new Map<string, number>()
+function countPaths(nodeId: string): number {
+  const cached = _pathMemo.get(nodeId)
+  if (cached !== undefined) return cached
+  const node = rules.nodes[nodeId]
+  if (!node) return 0
+  if (node.kind === 'outcome') { _pathMemo.set(nodeId, 1); return 1 }
+  const total = node.answers.reduce((sum, a) => sum + countPaths(a.next), 0)
+  _pathMemo.set(nodeId, total)
+  return total
 }
+// NOTE: deliberately not a module-level constant — each engine (citizenship vs.
+// immigration-status) has its own start node and its own total path count, so
+// this is computed per-session inside the component below.
 
-type QuestionId = keyof typeof QUESTIONS
-type NextStep = QuestionId | 'citizen' | 'non-citizen'
+export default function VerifyPage({
+  onResult,
+  onBack,
+  geo,
+  startNodeId,
+}: {
+  onResult: (r: ResultState) => void
+  onBack: () => void
+  geo: GeoData | null
+  startNodeId?: string
+}) {
+  const [history, setHistory] = useState<Step[]>([])
+  const [current, setCurrent] = useState<{ nodeId: string; node: QuestionNode }>(() => {
+    const id = startNodeId ?? rules.start
+    const n = rules.nodes[id]
+    return { nodeId: id, node: n as QuestionNode }
+  })
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
-const QUESTION_PROGRESS: Record<QuestionId, number> = {
-  q1: 22,
-  q2: 54,
-  q3: 78,
-}
+  // Each engine has its own start node and its own total path count — fixed
+  // for the lifetime of this session so the progress bar reflects only the
+  // active engine (citizenship vs. immigration-status), never a mix of both.
+  const [totalPaths] = useState(() => countPaths(startNodeId ?? rules.start))
+  const isImmigrationMode = startNodeId === IMMIGRATION_ENGINE_START_NODE
+  const accentDark = isImmigrationMode ? '#1e3a8a' : '#065f46'
+  const accentMid = isImmigrationMode ? '#2563eb' : '#16a34a'
+  const accentGradient = `linear-gradient(90deg, ${accentDark}, ${accentMid})`
 
-export default function VerifyPage() {
-  const navigate = useNavigate()
-  const [currentQ, setCurrentQ] = useState<QuestionId>('q1')
-  const [questionNum, setQuestionNum] = useState(1)
-  const [history, setHistory] = useState<Array<{ question: string; answer: string }>>([])
+  const pathsRemaining = countPaths(current.nodeId)
+  const progressPct = Math.round((1 - pathsRemaining / totalPaths) * 100)
+  const pathsLabel = pathsRemaining === 1 ? '1 path remaining' : `~${pathsRemaining.toLocaleString()} paths remaining`
+  const questionNum = history.length + 1
 
-  const question = QUESTIONS[currentQ]
-  const progress = QUESTION_PROGRESS[currentQ]
+  // Push a browser history entry per question answer so back button works
+  const handleAnswer = useCallback(
+    (value: AnswerValue, label: string) => {
+      const match = current.node.answers.find((a) => a.value === value)
+      if (!match) return
 
-  const handleChoice = (next: NextStep, chosenLabel: string) => {
-    if (next === 'citizen' || next === 'non-citizen') {
-      navigate('/result', { state: { isCitizen: next === 'citizen' } })
-    } else {
-      setHistory(h => [...h, { question: question.text, answer: chosenLabel }])
-      setCurrentQ(next as QuestionId)
-      setQuestionNum(n => n + 1)
+      const newStep = { nodeId: current.nodeId, node: current.node, chosenValue: value, chosenLabel: label }
+      const newHistory = [...history, newStep]
+      setHistory(newHistory)
+
+      const next = rules.nodes[match.next]
+      if (next.kind === 'outcome') {
+        onResult({ outcome: next as OutcomeNode, nodeId: match.next, history: newHistory })
+      } else {
+        window.history.pushState({ historyLen: newHistory.length }, '', '#/verify')
+        setCurrent({ nodeId: match.next, node: next as QuestionNode })
+      }
+    },
+    [current, history, onResult]
+  )
+
+  const handleBack = useCallback(() => {
+    if (history.length === 0) { onBack(); return }
+    const prev = history[history.length - 1]
+    setHistory((h) => h.slice(0, -1))
+    setCurrent({ nodeId: prev.nodeId, node: prev.node })
+  }, [history, onBack])
+
+  // Browser back — only fire for VerifyPage's own pushState entries (tagged with historyLen)
+  useEffect(() => {
+    const onPopState = (e: PopStateEvent) => {
+      if (e.state && typeof e.state.historyLen === 'number') handleBack()
     }
-  }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [handleBack])
+
+  // Close hamburger menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
+
+  const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
+  const isBoolean = current.node.answer_type === 'boolean'
+  const online = useOnlineStatus()
+  const activeGeo = online ? geo : null
+
+  const jurisdictionLabel = activeGeo
+    ? [activeGeo.county, activeGeo.state].filter(Boolean).join(', ') || activeGeo.state || null
+    : null
+  const districtLabel = activeGeo?.federalJudicialDistrict ?? null
 
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{
-        backgroundImage: [
-          'radial-gradient(circle, rgba(0,65,106,0.065) 1px, transparent 1px)',
-          'linear-gradient(160deg, #d5e3ec 0%, #c8d5c3 100%)',
-        ].join(', '),
-        backgroundSize: '28px 28px, 100% 100%',
-      }}
+      style={{ background: 'linear-gradient(160deg, #eef5f1 0%, #e4ede8 60%, #dce8e2 100%)' }}
     >
+      <GovBanner />
+
       {/* Header */}
       <header
         className="text-white px-4 py-4"
-        style={{ background: 'linear-gradient(135deg, #001e30 0%, #00416A 55%, #0a2a14 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #052e16 0%, #065f46 55%, #064e3b 100%)' }}
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 rounded-xl hover:bg-white/10 px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label="Go to home"
+          >
+            <TorchLogo size={22} className="text-white" />
+            <div className="text-left">
+              <div className="font-bold tracking-tight text-sm">VeriCase</div>
+              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
+            </div>
+          </button>
+
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors
-                focus:outline-none focus:ring-2 focus:ring-white/50"
-              aria-label="Back to home"
-            >
-              <ArrowLeft size={20} aria-hidden="true" />
-            </Link>
-            <div>
-              <div className="flex items-center gap-2">
-                <Shield size={18} strokeWidth={1.5} aria-hidden="true" />
-                <span className="font-bold tracking-tight">VeriCase</span>
+            {jurisdictionLabel && (
+              <div
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.75)' }}
+                title={districtLabel ? `Federal District: ${districtLabel}` : undefined}
+              >
+                <MapPin size={11} aria-hidden="true" style={{ color: '#86efac' }} />
+                {jurisdictionLabel}
+                {districtLabel && <span className="text-white/40 font-normal ml-1">· {districtLabel}</span>}
               </div>
-              <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5 ml-0.5">
-                MetaPhase
-              </p>
+            )}
+
+            {!online && !jurisdictionLabel && (
+              <div
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)' }}
+              >
+                <WifiOff size={10} aria-hidden="true" />
+                Offline — location unavailable
+              </div>
+            )}
+
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={
+                online
+                  ? { background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }
+                  : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.35)' }
+              }
+            >
+              {online ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" style={{ animation: 'pulse-out 2.5s ease-out infinite' }} />
+              ) : (
+                <WifiOff size={10} aria-hidden="true" />
+              )}
+              {online ? 'Online' : 'Offline'}
+            </div>
+
+            {/* Hamburger — mobile only */}
+            <div className="relative sm:hidden" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                className="p-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="Menu"
+              >
+                {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+              {menuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-44 rounded-2xl overflow-hidden z-50"
+                  style={{ background: '#052e16', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                >
+                  <button onClick={() => { setMenuOpen(false); onBack() }}
+                    className="w-full text-left px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors">
+                    Home
+                  </button>
+                  <button onClick={() => { setMenuOpen(false); window.location.hash = '#/verify' }}
+                    className="w-full text-left px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors">
+                    New Case
+                  </button>
+                  <a href="#/terms"
+                    className="block px-4 py-3 text-sm text-white/50 hover:bg-white/10 transition-colors">
+                    Terms of Use
+                  </a>
+                </div>
+              )}
             </div>
           </div>
-          <div className="hidden sm:block text-right">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-white/40">Session</p>
-            <p className="text-xs font-semibold text-white/65 tracking-wide">Guided Intake</p>
-          </div>
         </div>
+
+        {activeGeo?.inRooseveltReservation && (
+          <div className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
+            style={{ background: 'rgba(251,146,60,0.18)', border: '1px solid rgba(251,146,60,0.35)', color: '#fed7aa' }}>
+            <AlertTriangle size={13} className="flex-shrink-0" style={{ color: '#fb923c' }} />
+            Completing this determination within the Roosevelt Reservation (federal border zone) — enhanced CBP enforcement authority applies.
+          </div>
+        )}
+
+        {activeGeo?.inTribalTrustLand && (
+          <div className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2"
+            style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', color: '#fde68a' }}>
+            <AlertTriangle size={13} className="flex-shrink-0" style={{ color: '#fbbf24' }} />
+            Completing this determination on {activeGeo.tribalName ? `${activeGeo.tribalName} trust land` : 'tribal trust land'} — tribal enrollment may affect jurisdictional considerations.
+          </div>
+        )}
       </header>
 
       {/* Progress bar */}
       <div className="px-4 pt-5 pb-4 md:px-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6a7e8a]">
-              Guided Interview
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#5a7a6a]">
+              {isImmigrationMode ? 'Immigration Status Check' : 'Guided Interview'}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6a7e8a]">
-              {progress}% Complete
-            </span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#5a7a6a]">{pathsLabel}</span>
           </div>
-          <div className="w-full rounded-full overflow-hidden" style={{ height: 12, background: '#b8c8d4' }}>
+          <div className="w-full rounded-full overflow-hidden" style={{ height: 12, background: '#b8d4c8' }}>
             <div
               style={{
                 height: '100%',
-                width: `${progress}%`,
-                background: 'linear-gradient(90deg, #00416A, #1460AA)',
+                width: `${progressPct}%`,
+                background: accentGradient,
                 transition: 'width 750ms cubic-bezier(0.4, 0, 0.2, 1)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
               role="progressbar"
-              aria-valuenow={progress}
+              aria-valuenow={progressPct}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="Interview progress"
+              aria-label={`Interview progress: ${pathsLabel}`}
             >
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  top: 0, bottom: 0,
-                  width: '40%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
-                  animation: 'progress-shimmer 3.5s linear infinite',
-                  animationDelay: '0.8s',
-                }}
-              />
+              <div aria-hidden="true" style={{
+                position: 'absolute', top: 0, bottom: 0, width: '40%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+                animation: 'progress-shimmer 3.5s linear infinite', animationDelay: '0.8s',
+              }} />
             </div>
           </div>
         </div>
@@ -146,111 +268,114 @@ export default function VerifyPage() {
       {/* Main */}
       <main className="flex-1 flex flex-col justify-center px-4 py-4 md:px-8 md:py-8">
         <div className="w-full max-w-5xl mx-auto">
-
           <div className="md:grid md:grid-cols-[1fr_260px] md:gap-5 md:items-start">
 
             {/* Question card */}
-            <div
-              className="bg-white rounded-3xl overflow-hidden"
-              style={{ boxShadow: '0 4px 32px rgba(0,65,106,0.11)' }}
-            >
-              <div
-                className="h-1.5"
-                style={{ background: 'linear-gradient(90deg, #00416A, #1460AA)' }}
-                aria-hidden="true"
-              />
-              <div className="p-5 md:p-8">
-                <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96] mb-3">
-                  Question {questionNum}
-                </span>
+            <style>{`
+              @keyframes question-in {
+                from { opacity: 0; transform: translateY(14px); }
+                to   { opacity: 1; transform: translateY(0); }
+              }
+              .question-in { animation: question-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+            `}</style>
+            <div className="bg-white rounded-3xl overflow-hidden" style={{ boxShadow: '0 4px 32px rgba(6,95,70,0.10)' }}>
+              <div className="h-1.5" style={{ background: accentGradient }} aria-hidden="true" />
+              <div key={current.nodeId} className="question-in p-5 md:p-8">
+                <div className="flex items-center mb-3">
+                  <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-[#7a8a96]">
+                    Question {questionNum}
+                  </span>
+                </div>
 
-                <h1 className="text-xl md:text-2xl font-extrabold text-[#111111] leading-tight mb-2">
-                  {question.text}
+                <h1 className="text-xl md:text-2xl font-extrabold text-[#111] leading-tight mb-2">
+                  {current.node.prompt}
                 </h1>
 
-                <p className="text-sm md:text-base text-[#555555] leading-relaxed mb-6">
-                  {question.sub}
-                </p>
+                {current.node.explanation && (
+                  <p className="text-sm md:text-base text-[#555] leading-relaxed mb-4">
+                    {current.node.explanation}
+                  </p>
+                )}
+
+                <p className="text-xs text-[#aaa] italic mb-6">{current.node.citation}</p>
 
                 <div className="space-y-3" role="group" aria-label="Answer options">
-                  {question.options.map((opt, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleChoice(opt.next as NextStep, opt.label)}
-                      className="w-full py-4 px-4 md:py-5 md:px-5 rounded-2xl text-left flex items-center gap-3
-                        active:scale-[0.98] transition-all duration-150 focus:outline-none focus:ring-4"
-                      style={
-                        i === 0
-                          ? { background: '#00416A', color: 'white' }
-                          : { background: '#F5F6F8', border: '1.5px solid #E4E8EC' }
-                      }
-                    >
-                      <div className="flex-1">
-                        <div className="font-semibold text-base leading-snug">{opt.label}</div>
-                        <div
-                          className="text-sm font-normal mt-0.5"
-                          style={{ color: i === 0 ? 'rgba(255,255,255,0.58)' : '#808080' }}
-                        >
-                          {opt.sub}
+                  {current.node.answers.map((opt, i) => {
+                    const isPrimary = isBoolean && i === 0
+                    const isHovered = hoveredAnswer === i
+                    return (
+                      <button
+                        key={String(opt.value)}
+                        onClick={() => handleAnswer(opt.value, opt.label)}
+                        onMouseEnter={() => setHoveredAnswer(i)}
+                        onMouseLeave={() => setHoveredAnswer(null)}
+                        className={`w-full py-4 px-4 md:py-5 md:px-5 rounded-2xl text-left flex items-center gap-3
+                          active:scale-[0.98] focus:outline-none focus:ring-4 ${isImmigrationMode ? 'focus:ring-blue-800/20' : 'focus:ring-green-800/20'}`}
+                        style={{
+                          background: isPrimary ? (isHovered ? (isImmigrationMode ? '#1e3a8a' : '#054f3a') : accentDark) : (isHovered ? '#ECEEF1' : '#F5F6F8'),
+                          border: isPrimary ? 'none' : '1.5px solid #E4E8EC',
+                          color: isPrimary ? 'white' : '#222',
+                          transform: isHovered ? 'translateX(3px)' : 'translateX(0)',
+                          transition: 'background 220ms ease, transform 180ms ease, border-color 220ms ease',
+                        }}
+                      >
+                        <div className="flex-1">
+                          <div className="font-semibold text-base leading-snug">{opt.label}</div>
                         </div>
-                      </div>
-                      <ChevronRight
-                        size={18}
-                        aria-hidden="true"
-                        style={{ color: i === 0 ? 'rgba(255,255,255,0.5)' : '#AAAAAA', flexShrink: 0 }}
-                      />
-                    </button>
-                  ))}
+                        <ChevronRight size={18} aria-hidden="true" style={{
+                          color: isPrimary ? 'rgba(255,255,255,0.5)' : '#AAAAAA',
+                          flexShrink: 0,
+                          transform: isHovered ? 'translateX(2px)' : 'translateX(0)',
+                          transition: 'transform 180ms ease',
+                        }} />
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#f0f0f0]">
+                  <button
+                    onClick={handleBack}
+                    className="flex items-center gap-1.5 text-sm font-medium text-[#888] hover:text-[#333] transition-colors focus:outline-none focus:ring-2 focus:ring-green-700/20 rounded-lg px-1 py-0.5"
+                    aria-label="Go back"
+                  >
+                    <ArrowLeft size={15} aria-hidden="true" />
+                    {history.length === 0 ? (startNodeId ? 'Back to result' : 'Back to home') : 'Previous question'}
+                  </button>
                 </div>
               </div>
             </div>
 
             {/* Interview Trail — desktop only */}
             <aside className="hidden md:block" aria-label="Interview trail">
-              <div
-                className="bg-white rounded-3xl p-5"
-                style={{ boxShadow: '0 4px 32px rgba(0,65,106,0.11)' }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a8a96] mb-5">
-                  Interview Trail
-                </p>
-
+              <div className="bg-white rounded-3xl p-5" style={{ boxShadow: '0 4px 32px rgba(6,95,70,0.10)' }}>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a8a96] mb-5">Interview Trail</p>
                 <div className="relative">
-                  {/* Vertical connector */}
-                  <div
-                    className="absolute left-[8px] top-4 bottom-0 w-px bg-[#e4e8ec]"
-                    aria-hidden="true"
-                  />
-
+                  <div className="absolute left-[8px] top-4 bottom-0 w-px bg-[#e4e8ec]" aria-hidden="true" />
                   <div className="space-y-5">
-                    {/* Case opened — always first */}
                     <div className="flex gap-3 items-start">
-                      <div className="relative z-10 w-[18px] h-[18px] rounded-full bg-cbp-navy flex-shrink-0 flex items-center justify-center mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-white" aria-hidden="true" />
+                      <div className="relative z-10 w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ background: accentDark }}>
+                        <div className="w-2 h-2 rounded-full bg-white" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-[#222]">Case opened</p>
-                        <p className="text-xs text-[#999] mt-0.5">Interview in progress</p>
+                        <p className="text-xs text-[#999] mt-0.5">{jurisdictionLabel ?? 'Interview in progress'}</p>
                       </div>
                     </div>
-
-                    {/* Answered questions */}
-                    {history.map((item, i) => (
+                    {history.map((step, i) => (
                       <div key={i} className="flex gap-3 items-start">
-                        <div className="relative z-10 w-[18px] h-[18px] rounded-full bg-cbp-success flex-shrink-0 flex items-center justify-center mt-0.5">
+                        <div className="relative z-10 w-[18px] h-[18px] rounded-full bg-[#5a7a6a] flex-shrink-0 flex items-center justify-center mt-0.5">
                           <Check size={10} className="text-white" strokeWidth={3} aria-hidden="true" />
                         </div>
                         <div>
-                          <p className="text-xs text-[#888] leading-snug">{item.question}</p>
-                          <p className="text-sm font-semibold text-[#333] mt-0.5">{item.answer}</p>
+                          <p className="text-xs text-[#888] leading-snug">{step.node.prompt.length > 60 ? step.node.prompt.slice(0, 60) + '…' : step.node.prompt}</p>
+                          <p className="text-sm font-semibold text-[#333] mt-0.5">{step.chosenLabel}</p>
                         </div>
                       </div>
                     ))}
-
-                    {/* Current question awaiting */}
                     <div className="flex gap-3 items-start">
-                      <div className="relative z-10 w-[18px] h-[18px] rounded-full border-2 border-cbp-blue bg-white flex-shrink-0 flex items-center justify-center mt-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cbp-blue" aria-hidden="true" />
+                      <div className="relative z-10 w-[18px] h-[18px] rounded-full border-2 bg-white flex-shrink-0 flex items-center justify-center mt-0.5" style={{ borderColor: accentMid }}>
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: accentMid }} />
                       </div>
                       <div>
                         <p className="text-xs text-[#888]">Question {questionNum}</p>
@@ -264,8 +389,19 @@ export default function VerifyPage() {
 
           </div>
 
-          <p className="mt-4 text-xs text-[#6a8090] text-center leading-relaxed">
-            Demonstration mode — no case data is collected or stored.
+          {/* Footer — desktop */}
+          <p className="hidden md:block mt-4 text-xs text-[#6a8a76] text-center leading-relaxed">
+            Built by{' '}
+            <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
+              className="font-semibold hover:underline" style={{ color: '#f97316' }}>MetaPhase</a>
+            {activeGeo && (
+              <> · location by{' '}
+                <a href="https://geoborder.metaphase.tech" target="_blank" rel="noopener noreferrer"
+                  className="font-semibold hover:underline" style={{ color: '#16a34a' }}>GeoBorder</a>
+              </>
+            )}
+            {' '}·{' '}
+            <a href="#/terms" className="hover:underline text-[#6a8a76]">Terms of Use</a>
           </p>
         </div>
       </main>

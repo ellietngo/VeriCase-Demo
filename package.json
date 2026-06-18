@@ -14,7 +14,9 @@
     "test:a11y": "vitest run src/**/*.a11y.test.ts"
   },
   "dependencies": {
-    "lucide-react": "^0.395.0",
+    "jspdf": "^4.2.1",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.18.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.24.0"
@@ -22,6 +24,7 @@
   "devDependencies": {
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.1",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^20.12.12",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -35,7 +38,7 @@
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
-    "jsdom": "^29.1.1",
+    "eslint-plugin-react-refresh": "^0.4.26",
     "postcss": "^8.4.38",
     "prettier": "^3.3.0",
     "tailwindcss": "^3.4.3",

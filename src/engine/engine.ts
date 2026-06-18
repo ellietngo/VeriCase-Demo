@@ -24,11 +24,42 @@ export interface QuestionNode {
   answers: Answer[];
 }
 
+// CITIZEN / NOT_CITIZEN are reached only via the citizenship determination
+// (rules.start). The IMMIGRATION_STATUS codes are reached only via the
+// separate, self-contained immigration-status engine (see
+// IMMIGRATION_ENGINE_START_NODE below) — the two engines never share nodes,
+// so no outcome node mixes a citizenship category with a status category.
+export type CitizenshipOutcome = "CITIZEN" | "NOT_CITIZEN";
+
+// The 16 terminal statuses defined by the immigration-status engine's source
+// tree (immigration_status_interview_tree, meta.terminal_statuses).
+export type ImmigrationOutcome =
+  | "LPR"
+  | "CPR"
+  | "REFUGEE"
+  | "ASYLEE"
+  | "PAROLEE"
+  | "TPS"
+  | "DACA"
+  | "NONIMMIGRANT"
+  | "SPECIAL_IMMIGRANT"
+  | "U_NONIMMIGRANT"
+  | "T_NONIMMIGRANT"
+  | "HUMANITARIAN"
+  | "NATIONAL"
+  | "PENDING"
+  | "UNDOCUMENTED"
+  | "REVIEW";
+
 export interface OutcomeNode {
   kind: "outcome";
-  outcome: "CITIZEN" | "NOT_CITIZEN";
+  outcome: CitizenshipOutcome | ImmigrationOutcome;
   title: string;
   citation: string;
+  // Plain-language description of the status, surfaced on the result page
+  // for immigration-engine outcomes (citizenship outcomes use static copy
+  // instead, since there are only two of them).
+  definition?: string;
 }
 
 export type Node = QuestionNode | OutcomeNode;
@@ -39,6 +70,13 @@ export interface Rules {
   nodes: Record<string, Node>;
 }
 
+// Entry point of the immigration-status engine — a fully separate question
+// tree living in the same `nodes` map as the citizenship engine (for a single
+// shared JSON file) but never reachable from `rules.start` and never routing
+// into any citizenship-engine node. Resolves only to one of the
+// ImmigrationOutcome status codes above.
+export const IMMIGRATION_ENGINE_START_NODE = "root";
+
 export interface TraceStep {
   node: string;
   prompt?: string;
@@ -46,6 +84,15 @@ export interface TraceStep {
   value?: AnswerValue;
   outcome?: string;
   title?: string;
+}
+
+// One answered question in a completed interview — used to render the audit
+// trail on the result page (UI-facing, distinct from TraceStep above).
+export interface Step {
+  nodeId: string;
+  node: QuestionNode;
+  chosenValue: AnswerValue;
+  chosenLabel: string;
 }
 
 // ── Core engine ──────────────────────────────────────────────────────────────
@@ -127,9 +174,15 @@ export function validate(rules: Rules): {
   };
   dfs(rules.start, []);
 
-  // 4. outcomes are only CITIZEN / NOT_CITIZEN
+  // 4. outcomes are only CITIZEN / NOT_CITIZEN or one of the immigration-status codes
+  const VALID_OUTCOMES = new Set([
+    "CITIZEN", "NOT_CITIZEN",
+    "LPR", "CPR", "REFUGEE", "ASYLEE", "PAROLEE", "TPS", "DACA", "NONIMMIGRANT",
+    "SPECIAL_IMMIGRANT", "U_NONIMMIGRANT", "T_NONIMMIGRANT", "HUMANITARIAN",
+    "NATIONAL", "PENDING", "UNDOCUMENTED", "REVIEW",
+  ]);
   for (const [id, node] of Object.entries(nodes)) {
-    if (node.kind === "outcome" && node.outcome !== "CITIZEN" && node.outcome !== "NOT_CITIZEN") {
+    if (node.kind === "outcome" && !VALID_OUTCOMES.has(node.outcome)) {
       errors.push(`${id}: invalid outcome '${(node as OutcomeNode).outcome}'`);
     }
   }

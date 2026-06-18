@@ -1,9 +1,69 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { Shield, ClipboardCheck, Zap, Users, ChevronDown, ChevronRight } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { ClipboardCheck, Zap, Users, ChevronRight, WifiOff, Compass, Lock } from 'lucide-react'
+import { useOnlineStatus } from '../useOnlineStatus'
+import GovBanner from '../components/GovBanner'
+import TorchLogo from '../components/TorchLogo'
+import rulesJson from '../engine/citizenship_rules.json'
+import { type Rules } from '../engine/engine'
+
+const rules = rulesJson as Rules
+
+// Count distinct outcome paths reachable from a node (memoized) — mirrors the
+// real intake's path-counting so the homepage preview shows the same kind of
+// number the actual guided interview does, not a fabricated percentage.
+const _demoPathMemo = new Map<string, number>()
+function countDemoPaths(nodeId: string): number {
+  const cached = _demoPathMemo.get(nodeId)
+  if (cached !== undefined) return cached
+  const node = rules.nodes[nodeId]
+  if (!node) return 0
+  if (node.kind === 'outcome') { _demoPathMemo.set(nodeId, 1); return 1 }
+  const total = node.answers.reduce((sum, a) => sum + countDemoPaths(a.next), 0)
+  _demoPathMemo.set(nodeId, total)
+  return total
+}
+const DEMO_TOTAL_PATHS = countDemoPaths(rules.start)
+
+const DEMO_QUESTIONS = [
+  {
+    text: 'Where was the person born?',
+    answers: ['In the 50 states or D.C.', 'In a U.S. territory or possession', 'Abroad'],
+    result: 'Likely Citizen at Birth',
+    citation: '8 U.S.C. § 1401(a)',
+    reasoning: 'Birth within the United States generally confers citizenship at birth under the Fourteenth Amendment.',
+  },
+  {
+    text: 'Were both parents U.S. citizens at the time of birth?',
+    answers: ['Yes', 'No, only one parent'],
+    result: 'Citizen at Birth',
+    citation: '8 U.S.C. § 1401(c)',
+    reasoning: 'A child born abroad to two U.S.-citizen parents acquires citizenship at birth if either parent had a prior U.S. residence.',
+  },
+  {
+    text: 'Has the person served honorably in the U.S. armed forces?',
+    answers: ['Yes', 'No'],
+    result: 'Naturalization Eligible',
+    citation: '8 U.S.C. § 1439(a)',
+    reasoning: 'Honorable wartime or peacetime service can waive standard residency requirements for naturalization.',
+  },
+  {
+    text: 'Is the person a Lawful Permanent Resident (green card holder)?',
+    answers: ['Yes (LPR)', 'No'],
+    result: 'Naturalization Track',
+    citation: '8 U.S.C. § 1427(a)',
+    reasoning: 'Five years of continuous LPR residence is generally required before filing for naturalization.',
+  },
+  {
+    text: 'Has the person ever performed an expatriating act under 8 U.S.C. § 1481(a)?',
+    answers: ['No expatriating act', 'Foreign naturalization / oath / military', 'Formal renunciation or treason'],
+    result: 'Citizenship Retained',
+    citation: '8 U.S.C. § 1481(a)',
+    reasoning: 'Absent specific intent to relinquish nationality, citizenship is presumed retained.',
+  },
+]
 
 const heroStyle: React.CSSProperties = {
-  background: 'linear-gradient(-45deg, #00416A, #1a5c30, #003456, #0f4a23)',
+  background: 'linear-gradient(-45deg, #04200f, #115c2c, #082c16, #0d4a24)',
   backgroundSize: '400% 400%',
   animation: 'hero-gradient 14s ease infinite',
 }
@@ -18,295 +78,550 @@ const shineStyle: React.CSSProperties = {
   pointerEvents: 'none',
 }
 
-export default function LandingPage() {
+const gradientTextStyle: React.CSSProperties = {
+  background: 'linear-gradient(90deg, #4ade80, #86efac, #ffffff, #86efac, #4ade80)',
+  backgroundSize: '200% auto',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+  animation: 'gradient-text 6s linear infinite',
+}
+
+// Decorative diagonal flowchart-inspired background
+function BranchingBackground() {
+  type Pt = [number, number]
+
+  const root: Pt = [700, 50]
+  const l1: Pt[] = [[200, 195], [700, 195], [1200, 195]]
+  const l2: Pt[] = [[80, 345], [320, 345], [580, 345], [820, 345], [1080, 345], [1320, 345]]
+  const l3: Pt[] = [
+    [30, 490], [130, 490], [260, 490], [380, 490],
+    [520, 490], [640, 490], [760, 490], [880, 490],
+    [1020, 490], [1140, 490], [1260, 490], [1380, 490],
+  ]
+  const l4: Pt[] = [
+    [30, 630], [170, 630], [300, 630], [440, 630],
+    [560, 630], [680, 630], [800, 630],
+    [1000, 630], [1140, 630], [1300, 630],
+  ]
+  const l5: Pt[] = [[100, 770], [370, 770], [620, 770], [900, 770], [1220, 770]]
+
+  const edges: [Pt, Pt][] = [
+    [root, l1[0]], [root, l1[1]], [root, l1[2]],
+    [l1[0], l2[0]], [l1[0], l2[1]],
+    [l1[1], l2[2]], [l1[1], l2[3]],
+    [l1[2], l2[4]], [l1[2], l2[5]],
+    [l2[0], l3[0]], [l2[0], l3[1]],
+    [l2[1], l3[2]], [l2[1], l3[3]],
+    [l2[2], l3[4]], [l2[2], l3[5]],
+    [l2[3], l3[6]], [l2[3], l3[7]],
+    [l2[4], l3[8]], [l2[4], l3[9]],
+    [l2[5], l3[10]], [l2[5], l3[11]],
+    [l3[0], l4[0]],
+    [l3[1], l4[0]], [l3[1], l4[1]],
+    [l3[2], l4[1]], [l3[2], l4[2]],
+    [l3[3], l4[2]], [l3[3], l4[3]],
+    [l3[4], l4[3]], [l3[4], l4[4]],
+    [l3[5], l4[4]], [l3[5], l4[5]],
+    [l3[6], l4[5]], [l3[6], l4[6]],
+    [l3[7], l4[6]],
+    [l3[8], l4[7]],
+    [l3[9], l4[7]], [l3[9], l4[8]],
+    [l3[10], l4[8]], [l3[10], l4[9]],
+    [l3[11], l4[9]],
+    [l4[0], l5[0]], [l4[1], l5[0]],
+    [l4[2], l5[1]], [l4[3], l5[1]],
+    [l4[4], l5[2]], [l4[5], l5[2]],
+    [l4[6], l5[3]], [l4[7], l5[3]],
+    [l4[8], l5[4]], [l4[9], l5[4]],
+  ]
+
+  function diamond(cx: number, cy: number, w: number, h: number) {
+    return `${cx},${cy - h} ${cx + w},${cy} ${cx},${cy + h} ${cx - w},${cy}`
+  }
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 1400 870"
+      preserveAspectRatio="xMidYMid slice"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        opacity: 0.05,
+        transform: 'rotate(-20deg) scale(1.45)',
+        transformOrigin: '60% 32%',
+        overflow: 'visible',
+      }}
+    >
+      <g stroke="white" strokeWidth="0.9" strokeLinecap="round" fill="white">
+        {edges.map(([a, b], i) => (
+          <line key={`e${i}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} fill="none" />
+        ))}
+        <polygon points={diamond(root[0], root[1], 22, 15)} fillOpacity="0.8" />
+        {l1.map(([x, y], i) => (
+          <rect key={`l1${i}`} x={x - 22} y={y - 13} width="44" height="26" rx="4" fillOpacity="0.6" />
+        ))}
+        {l2.map(([x, y], i) => (
+          <polygon key={`l2${i}`} points={diamond(x, y, 16, 11)} fillOpacity="0.5" />
+        ))}
+        {l3.map(([x, y], i) => (
+          <circle key={`l3${i}`} cx={x} cy={y} r="7" fillOpacity="0.45" />
+        ))}
+        {l4.map(([x, y], i) => (
+          <circle key={`l4${i}`} cx={x} cy={y} r="6" fillOpacity="0.38" />
+        ))}
+        {l5.map(([x, y], i) => (
+          <circle key={`l5${i}`} cx={x} cy={y} r="5" fillOpacity="0.3" />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
+// Apple-style scroll reveal: fades + rises into place the first time it enters
+// the viewport, then leaves it alone. No scroll listeners — IntersectionObserver only.
+function Reveal({
+  children,
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -40px 0px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(32px)',
+        transition: `opacity 800ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 800ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+        willChange: 'opacity, transform',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+export default function LandingPage({ onStart, onCheckStatus }: { onStart: () => void; onCheckStatus: () => void }) {
+  const online = useOnlineStatus()
+  const [hoveredAnswer, setHoveredAnswer] = useState<number | null>(null)
+  // One random question per page load — stays put for the session, changes on refresh
+  const [demo] = useState(() => DEMO_QUESTIONS[Math.floor(Math.random() * DEMO_QUESTIONS.length)])
+  // Most determinations resolve well before exhausting every legal pathway, so the
+  // demo card randomizes a "mostly there" remaining-paths count per page load rather
+  // than implying a long slog — picked once on mount, stays put for the session, and
+  // expressed the same way the real intake expresses it (paths remaining, not a
+  // fabricated percentage).
+  const [demoPathsRemaining] = useState(() => {
+    const fractionRemaining = 1 - (Math.floor(Math.random() * (92 - 58 + 1)) + 58) / 100
+    return Math.max(1, Math.round(DEMO_TOTAL_PATHS * fractionRemaining))
+  })
+  const demoProgressPct = Math.round((1 - demoPathsRemaining / DEMO_TOTAL_PATHS) * 100)
+  const demoPathsLabel = demoPathsRemaining === 1 ? '1 path remaining' : `~${demoPathsRemaining.toLocaleString()} paths remaining`
+
   return (
     <div>
+      <GovBanner />
       {/* Hero */}
       <section
-        className="relative min-h-screen flex flex-col items-center justify-center px-6 py-20 text-white overflow-hidden"
+        className="relative min-h-screen flex flex-col px-6 py-20 text-white overflow-hidden"
         style={heroStyle}
         aria-label="Hero"
       >
         <div style={shineStyle} aria-hidden="true" />
+        <BranchingBackground />
 
-        {/* Two-column layout on large screens */}
-        <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center lg:flex-row lg:items-center lg:gap-20">
-
-          {/* ── Left: text content ── */}
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left flex-1 min-w-0">
-            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/65 mb-8 select-none">
-              A MetaPhase Demo
+        {/* Top bar */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between mb-16">
+          <div className="flex items-center gap-2">
+            <TorchLogo size={24} className="text-green-300" />
+            <span className="font-bold tracking-tight text-white text-base">VeriCase</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Online status indicator */}
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={
+                online
+                  ? { background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', color: '#86efac' }
+                  : { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)' }
+              }
+            >
+              {online ? (
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" style={{ animation: 'pulse-out 2.5s ease-out infinite' }} />
+              ) : (
+                <WifiOff size={10} aria-hidden="true" />
+              )}
+              {online ? 'Online' : 'Offline'}
+            </div>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40 select-none">
+              by MetaPhase
             </span>
+          </div>
+        </div>
 
-            {/* Shield — shown on mobile/tablet, hidden on desktop where card takes over */}
-            <div className="relative mb-8 w-24 h-24 lg:hidden" aria-hidden="true">
-              <div
-                className="absolute rounded-3xl border border-white/15"
-                style={{ inset: -10, animation: 'pulse-out 3.5s ease-out infinite' }}
-              />
-              <div
-                className="absolute rounded-3xl border border-white/8"
-                style={{ inset: -20, animation: 'pulse-out 3.5s ease-out infinite', animationDelay: '1.2s' }}
-              />
-              <div
-                className="w-full h-full rounded-3xl flex items-center justify-center border border-white/20"
-                style={{ background: 'rgba(255,255,255,0.11)', backdropFilter: 'blur(8px)' }}
-              >
-                <Shield size={46} strokeWidth={1.5} />
+        {/* Hero content */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center lg:flex-row lg:items-center lg:gap-20 flex-1">
+
+          {/* Left: text */}
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left flex-1 min-w-0">
+            {/* Shield — mobile/tablet only */}
+            <div className="relative mb-8 w-20 h-20 lg:hidden" aria-hidden="true">
+              <div className="absolute rounded-3xl border border-white/15" style={{ inset: -10, animation: 'pulse-out 3.5s ease-out infinite' }} />
+              <div className="absolute rounded-3xl border border-white/8"  style={{ inset: -20, animation: 'pulse-out 3.5s ease-out infinite', animationDelay: '1.2s' }} />
+              <div className="w-full h-full rounded-3xl flex items-center justify-center border border-white/20" style={{ background: 'rgba(255,255,255,0.11)', backdropFilter: 'blur(8px)' }}>
+                <TorchLogo size={46} className="text-white" />
               </div>
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-none mb-5 lg:mb-6">
-              <span className="block text-white/85">Guided interview.</span>
-              <span className="block text-white">Instant determination.</span>
+              <span className="block text-white/80">Citizenship eligibility,</span>
+              <span className="block" style={gradientTextStyle}>clarified.</span>
             </h1>
 
-            <p className="text-sm md:text-base text-white/75 max-w-xs lg:max-w-sm leading-relaxed mb-10">
-              Fast, evidence-based citizenship verification for Border Patrol officers —
-              one question at a time, every time.
+            <p className="text-sm md:text-base text-white/80 max-w-xs lg:max-w-sm leading-relaxed mb-10">
+              A guided, one-question-at-a-time engine across 14,280 legal pathways —
+              every determination cites controlling statute or case law.
             </p>
 
-            <Link
-              to="/verify"
-              className="bg-white text-cbp-navy font-bold text-lg px-10 py-4 rounded-full shadow-xl
+            <button
+              onClick={onStart}
+              className="bg-white font-bold text-lg px-10 py-4 rounded-full shadow-xl
                 hover:bg-white/90 active:scale-95 transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-white/50"
+                focus:outline-none focus:ring-4 focus:ring-white/40"
+              style={{ color: '#0a4621' }}
             >
-              Begin Case
-            </Link>
+              Run Determination
+            </button>
+
+            {/* Secondary entry point — classifies current immigration status (tourist,
+                student, work visa, marriage, undocumented, etc.) independently of running
+                a full citizenship determination first. */}
+            <button
+              onClick={onCheckStatus}
+              className="mt-3 inline-flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-full
+                border transition-all duration-200 active:scale-95
+                hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-white/20"
+              style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.85)' }}
+            >
+              <Compass size={16} aria-hidden="true" />
+              Check Immigration Status
+            </button>
+
+            {/* Trust signals */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-2.5 gap-y-1 mt-5 text-[11px] font-semibold text-white/45">
+              <span>94 guided questions</span>
+              <span aria-hidden="true">·</span>
+              <span>14,280 legal pathways</span>
+              <span aria-hidden="true">·</span>
+              <span>100% cited determinations</span>
+              <span aria-hidden="true">·</span>
+              <span className="flex items-center gap-1"><Lock size={9} aria-hidden="true" />No data stored</span>
+            </div>
+
+            {/* Offline notice — only shown when offline */}
+            {!online && (
+              <div
+                className="flex items-center gap-2 mt-3 px-4 py-2 rounded-full text-xs font-semibold"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}
+              >
+                <WifiOff size={12} aria-hidden="true" />
+                Offline — determination available, location context unavailable
+              </div>
+            )}
           </div>
 
-          {/* ── Right: live demo preview card (desktop only) ── */}
-          <div className="hidden lg:block w-[480px] xl:w-[520px] flex-shrink-0">
+          {/* Right: demo card — desktop only */}
+          <div className="hidden lg:block w-[400px] xl:w-[440px] flex-shrink-0">
             <div
-              className="rounded-3xl p-7"
+              className="rounded-3xl p-6"
               style={{
                 background: 'rgba(255,255,255,0.07)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.16)',
-                boxShadow: '0 24px 48px rgba(0,0,0,0.18)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.14)',
+                boxShadow: '0 24px 48px rgba(0,0,0,0.22)',
               }}
             >
-              {/* Card header */}
-              <div className="flex items-start justify-between mb-5">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-white/55 mb-1">
-                    Live Example
-                  </p>
-                  <p className="text-xl font-extrabold text-white">Citizenship Intake</p>
-                </div>
+              {/* Header row */}
+              <div className="flex items-center justify-between mb-5">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40 select-none">
+                  Example
+                </span>
                 <span
-                  className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full flex-shrink-0"
-                  style={{ background: 'rgba(0,160,0,0.22)', color: '#4ade80' }}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
+                  style={{ background: 'rgba(74,222,128,0.18)', color: '#86efac' }}
                 >
-                  <span className="text-[8px]" aria-hidden="true">●</span> Active
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" aria-hidden="true" />
+                  Live Preview
                 </span>
               </div>
 
-              {/* Mini question preview — static, non-interactive */}
+              {/* Example question — one random pick per page load */}
+              <style>{`
+                @keyframes demo-fade {
+                  from { opacity: 0; transform: translateY(6px); }
+                  to   { opacity: 1; transform: translateY(0); }
+                }
+                .demo-fade { animation: demo-fade 450ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+              `}</style>
               <div
-                className="rounded-2xl p-5 mb-5"
-                style={{
-                  background: 'rgba(0,30,60,0.5)',
-                  backdropFilter: 'blur(6px)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
-                aria-hidden="true"
+                className="demo-fade rounded-2xl p-4 mb-4"
+                style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)' }}
               >
-                <span className="text-sm font-bold uppercase tracking-[0.18em] text-white/50">
-                  Question 1
-                </span>
-                <p className="text-lg font-extrabold text-white leading-snug mt-1.5 mb-4">
-                  Are you a United States citizen?
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Sample Question</span>
+                <p className="text-base font-extrabold text-white leading-snug mt-1.5 mb-4" style={{ minHeight: '3rem' }}>
+                  {demo.text}
                 </p>
-                <div className="space-y-2.5 pointer-events-none select-none">
-                  <div
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.92)' }}
-                  >
-                    <span className="text-base font-semibold text-[#00416A] flex-1">Yes, I am a U.S. Citizen</span>
-                    <ChevronRight size={16} style={{ color: '#00416A', opacity: 0.5 }} className="flex-shrink-0" aria-hidden="true" />
+                <div className="space-y-2 mb-3" style={{ minHeight: '160px' }}>
+                  {demo.answers.map((answer, i) => (
+                    <div
+                      key={answer}
+                      className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer"
+                      style={{
+                        background: hoveredAnswer === i
+                          ? 'rgba(255,255,255,0.96)'
+                          : i === 0
+                          ? 'rgba(255,255,255,0.88)'
+                          : 'rgba(255,255,255,0.07)',
+                        border: i !== 0 ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                        transform: hoveredAnswer === i ? 'translateX(3px)' : 'translateX(0)',
+                        transition: 'background 300ms ease, transform 200ms ease',
+                      }}
+                      onMouseEnter={() => setHoveredAnswer(i)}
+                      onMouseLeave={() => setHoveredAnswer(null)}
+                    >
+                      <span
+                        className="text-sm font-semibold"
+                        style={{
+                          color: hoveredAnswer === i || i === 0 ? '#0a4621' : 'rgba(255,255,255,0.6)',
+                          transition: 'color 300ms ease',
+                        }}
+                      >
+                        {answer}
+                      </span>
+                      <ChevronRight
+                        size={14}
+                        style={{
+                          color: hoveredAnswer === i || i === 0 ? '#0a4621' : 'rgba(255,255,255,0.25)',
+                          opacity: hoveredAnswer === i ? 0.7 : 0.4,
+                          transition: 'color 300ms ease, opacity 300ms ease',
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Authority panel — the actual proof point: every answer cites controlling law */}
+                <div
+                  className="rounded-xl p-3"
+                  style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.18)' }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: '#fbbf24' }}>
+                      Authority
+                    </span>
+                    <span className="text-[10px] font-semibold text-white/45">{demo.result}</span>
                   </div>
-                  <div
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
-                  >
-                    <span className="text-base font-semibold text-white/70 flex-1">No, I am not a U.S. Citizen</span>
-                    <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.35)' }} className="flex-shrink-0" aria-hidden="true" />
-                  </div>
+                  <p className="text-xs font-bold mb-1" style={{ color: '#fcd34d' }}>{demo.citation}</p>
+                  <p className="text-[11px] leading-snug text-white/55">{demo.reasoning}</p>
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="mb-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold uppercase tracking-[0.18em] text-white/55">
-                    Guided Interview
-                  </span>
-                  <span className="text-sm font-bold uppercase tracking-[0.12em] text-white/55">
-                    22% Complete
-                  </span>
+              {/* Progress bar — same paths-remaining presentation as the real intake */}
+              <div aria-hidden="true">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Guided Interview</span>
+                  <span className="text-[10px] font-bold text-white/40">{demoPathsLabel}</span>
                 </div>
-                <div
-                  className="w-full rounded-full overflow-hidden"
-                  style={{ height: 10, background: 'rgba(255,255,255,0.18)' }}
-                >
+                <div className="w-full rounded-full overflow-hidden" style={{ height: 7, background: 'rgba(255,255,255,0.12)' }}>
                   <div
                     style={{
                       height: '100%',
-                      width: '22%',
-                      background: 'linear-gradient(90deg, #00416A, #1460AA)',
+                      width: `${demoProgressPct}%`,
+                      background: 'linear-gradient(90deg, #166534, #4ade80)',
                       borderRadius: 9999,
+                      transition: 'width 600ms cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   />
                 </div>
               </div>
-
-              {/* Feature chips */}
-              <div className="grid grid-cols-3 gap-2">
-                {['Guided flow', 'Auto-routing', 'Instant result'].map(chip => (
-                  <div
-                    key={chip}
-                    className="text-center text-sm font-semibold px-3 py-2.5 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)' }}
-                  >
-                    {chip}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
-
-        </div>
-
-        <div className="absolute bottom-8 flex flex-col items-center gap-1.5 text-white/25 select-none" aria-hidden="true">
-          <span className="text-xs uppercase tracking-widest">Learn more</span>
-          <ChevronDown size={16} className="animate-bounce" />
         </div>
       </section>
 
       {/* Features */}
-      <section className="bg-white px-6 py-16 md:py-24" aria-labelledby="features-heading">
+      <section
+        className="px-6 py-16 md:py-24"
+        style={{ background: 'linear-gradient(180deg, #fafafa 0%, #ffffff 100%)' }}
+        aria-labelledby="features-heading"
+      >
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cbp-blue text-center mb-3">
-            Built for Operations
-          </p>
-          <h2 id="features-heading" className="text-3xl md:text-4xl font-extrabold text-[#222222] text-center mb-12 md:mb-16">
-            How It Works
-          </h2>
-
-          <div className="grid gap-10 md:grid-cols-3 md:gap-8 lg:gap-12">
-            <FeatureRow
-              icon={<ClipboardCheck size={22} strokeWidth={2} className="text-cbp-green" />}
-              iconBg="bg-cbp-tint-green"
-              title="Guided Case Review"
-              description="A structured verification workflow walks officers through applicable citizenship pathways and legal criteria."
-            />
-            <FeatureRow
-              icon={<Zap size={22} strokeWidth={2} className="text-cbp-blue" />}
-              iconBg="bg-cbp-tint"
-              title="Instant Determination"
-              description="Citizenship status is resolved immediately from officer inputs — no processing delay, no waiting."
-            />
-            <FeatureRow
-              icon={<Users size={22} strokeWidth={2} className="text-cbp-green" />}
-              iconBg="bg-cbp-tint-green"
-              title="Officer-Focused Design"
-              description="Designed for the pace of border operations. Clear, decisive, and built around the officer's workflow."
-            />
-          </div>
-
-          <div className="mt-14 md:mt-20 text-center">
-            <Link
-              to="/verify"
-              className="inline-block bg-cbp-navy text-white font-semibold text-base md:text-lg px-8 py-4 md:px-12 md:py-5 rounded-full
-                hover:bg-[#003558] active:scale-95 transition-all duration-200
-                focus:outline-none focus:ring-4 focus:ring-cbp-navy/30"
-            >
-              Start Verification
-            </Link>
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cbp-emerald text-center mb-3">
+              Built for Operations
+            </p>
+            <h2 id="features-heading" className="text-3xl md:text-4xl font-extrabold text-[#222] text-center mb-12 md:mb-16">
+              How It Works
+            </h2>
+          </Reveal>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Reveal delay={0}>
+              <FeatureCard
+                icon={<ClipboardCheck size={24} strokeWidth={1.8} style={{ color: '#065f46' }} />}
+                accent="#065f46"
+                title="Guided Case Review"
+                description="94 questions across every citizenship pathway — birth, territory, adoption, naturalization, derivation, loss, re-acquisition, and immigration status."
+              />
+            </Reveal>
+            <Reveal delay={80}>
+              <FeatureCard
+                icon={<Zap size={24} strokeWidth={1.8} style={{ color: '#b45309' }} />}
+                accent="#b45309"
+                title="14,280 Legal Paths"
+                description="Every path terminates in a clear determination with controlling statute or case law cited at each step."
+              />
+            </Reveal>
+            <Reveal delay={160}>
+              <FeatureCard
+                icon={<Users size={24} strokeWidth={1.8} style={{ color: '#334155' }} />}
+                accent="#334155"
+                title="Full Audit Trail"
+                description="Every answer is recorded in sequence, giving a defensible step-by-step record of the determination."
+              />
+            </Reveal>
+            <Reveal delay={240}>
+              <FeatureCard
+                icon={<Lock size={24} strokeWidth={1.8} style={{ color: '#1e3a5f' }} />}
+                accent="#1e3a5f"
+                title="No Data Collected"
+                description="No case information, personal data, or answers are stored anywhere. Every determination runs entirely in your browser — nothing leaves your device."
+              />
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#F6F6F6] border-t border-[#EEEEEE] px-6 py-12">
-        <div className="max-w-5xl mx-auto md:flex md:gap-16 md:items-start">
-          <div className="mb-8 md:mb-0 md:flex-1">
-            <div className="flex items-center gap-2 mb-3" aria-hidden="true">
-              <Shield size={14} className="text-cbp-navy" strokeWidth={2} />
-              <span className="font-bold text-sm text-cbp-navy tracking-tight">VeriCase</span>
+      <footer className="bg-[#F6F6F6] border-t border-[#EEE] px-6 py-12">
+        <Reveal className="max-w-5xl mx-auto grid gap-10 md:grid-cols-[1fr_auto_auto]">
+          {/* Brand column */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <TorchLogo size={17} className="text-[#065f46]" />
+              <span className="font-bold text-sm tracking-tight" style={{ color: '#065f46' }}>VeriCase</span>
             </div>
-            <p className="text-xs text-[#444444] leading-relaxed max-w-xs">
-              A demonstration product by{' '}
-              <a
-                href="https://metaphase.tech"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold hover:underline focus:outline-none focus:underline"
-                style={{ color: '#E86820' }}
-              >
+            <p className="text-sm font-semibold text-[#111] mb-1">
+              Built by{' '}
+              <a href="https://metaphase.tech" target="_blank" rel="noopener noreferrer"
+                className="hover:underline" style={{ color: '#f97316' }}>
                 MetaPhase
               </a>
-              . Not affiliated with or endorsed by DHS, CBP, USCIS, or any U.S. government agency.
-              No data is collected or stored.
             </p>
+            <p className="text-xs text-[#777] leading-relaxed max-w-xs mb-3">
+              Location context powered by{' '}
+              <a href="https://geoborder.metaphase.tech" target="_blank" rel="noopener noreferrer"
+                className="font-semibold hover:underline" style={{ color: '#16a34a' }}>
+                GeoBorder
+              </a>
+              , built on public geographic data.
+            </p>
+            <p className="text-xs text-[#999]">Not legal advice. No data is collected or stored.</p>
           </div>
 
+          {/* Legal column */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#333333] mb-4">
-              More Information
-            </p>
-            <nav aria-label="More information links">
-              <ul className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#aaa] mb-4">Legal</p>
+            <nav aria-label="Legal links">
+              <ul className="space-y-2.5">
                 <li>
-                  <a
-                    href="https://www.uscis.gov/citizenship"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-cbp-blue hover:underline focus:outline-none focus:underline"
-                  >
-                    U.S. Citizenship Overview →
+                  <a href="#/terms" className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    Terms of Use
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="https://www.uscis.gov/citizenship/learn-about-citizenship"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-cbp-blue hover:underline focus:outline-none focus:underline"
-                  >
-                    Certificate of Citizenship →
+                  <a href="#/privacy" className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    Privacy Policy
                   </a>
-                </li>
-                <li>
-                  <span className="text-sm text-[#888888]">Verification History — coming soon</span>
                 </li>
               </ul>
             </nav>
           </div>
-        </div>
+
+          {/* Sources column */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#aaa] mb-4">Sources</p>
+            <nav aria-label="Sources links">
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="#/sources" className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    All Sources →
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.uscis.gov/citizenship" target="_blank" rel="noopener noreferrer"
+                    className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    USCIS.gov →
+                  </a>
+                </li>
+                <li>
+                  <a href="https://travel.state.gov/content/travel/en/legal/travel-legal-considerations/us-citizenship.html" target="_blank" rel="noopener noreferrer"
+                    className="text-sm text-[#444] hover:text-[#065f46] hover:underline transition-colors">
+                    7 FAM →
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </Reveal>
+        <Reveal className="max-w-5xl mx-auto mt-8 pt-6 border-t border-[#E8E8E8]">
+          <p className="text-xs text-[#bbb] text-center">
+            © {new Date().getFullYear()} MetaPhase. VeriCase is not affiliated with or endorsed by DHS, CBP, USCIS, or any U.S. government agency.
+          </p>
+        </Reveal>
       </footer>
     </div>
   )
 }
 
-function FeatureRow({
-  icon, iconBg, title, description,
-}: {
-  icon: React.ReactNode
-  iconBg: string
-  title: string
-  description: string
-}) {
+function FeatureCard({ icon, accent, title, description }: { icon: React.ReactNode; accent: string; title: string; description: string }) {
   return (
-    <div className="flex gap-5">
-      <div className={`flex-shrink-0 w-11 h-11 rounded-2xl ${iconBg} flex items-center justify-center`}>
+    <div className="flex flex-col gap-4">
+      <div
+        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: accent + '14' }}
+      >
         {icon}
       </div>
       <div>
-        <h3 className="font-bold text-[#222222] mb-1">{title}</h3>
-        <p className="text-sm text-[#444444] leading-relaxed">{description}</p>
+        <h3 className="font-bold text-[#111] mb-2 text-base">{title}</h3>
+        <p className="text-sm text-[#555] leading-relaxed">{description}</p>
       </div>
     </div>
   )

@@ -34,3 +34,6 @@ coverage
 
 # Vitest
 .vitest
+
+# Vite transient config build artifacts
+vite.config.ts.timestamp-*.mjs
