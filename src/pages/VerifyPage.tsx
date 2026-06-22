@@ -4,7 +4,7 @@ import { useOnlineStatus } from '../useOnlineStatus'
 import rulesJson from '../engine/citizenship_rules.json'
 import { type Rules, type QuestionNode, type AnswerValue, type OutcomeNode, type Step, IMMIGRATION_ENGINE_START_NODE } from '../engine/engine'
 import { type ResultState } from '../App'
-import { type GeoData } from '../geo'
+import { type GeoData, type GeoError } from '../geo'
 import GovBanner from '../components/GovBanner'
 import TorchLogo from '../components/TorchLogo'
 
@@ -26,16 +26,35 @@ function countPaths(nodeId: string): number {
 // immigration-status) has its own start node and its own total path count, so
 // this is computed per-session inside the component below.
 
+function geoErrorBanner(err: GeoError): string {
+  const isEdge = navigator.userAgent.includes('Edg/')
+  const isFirefox = navigator.userAgent.includes('Firefox')
+  if (err.kind === 'denied') {
+    if (isEdge)
+      return 'Location access was blocked. In Edge, go to Settings → Cookies and site permissions → Location and allow this site, then reload.'
+    if (isFirefox)
+      return 'Location access was blocked. Click the lock icon in the address bar, then set Location to "Allow" and reload.'
+    return 'Location access was blocked. Click the lock or info icon in your browser address bar, set Location to "Allow", then reload.'
+  }
+  if (err.kind === 'unsupported')
+    return 'Your browser does not support location. Location context will be unavailable for this determination.'
+  if (err.kind === 'timeout')
+    return 'Location request timed out. The determination will proceed without location context.'
+  return 'Location unavailable. The determination will proceed without location context.'
+}
+
 export default function VerifyPage({
   onResult,
   onBack,
   geo,
+  geoError,
   startNodeId,
   backLabel = 'Back to home',
 }: {
   onResult: (r: ResultState) => void
   onBack: () => void
   geo: GeoData | null
+  geoError?: GeoError | null
   startNodeId?: string
   backLabel?: string
 }) {
@@ -147,9 +166,9 @@ export default function VerifyPage({
           <div className="flex items-center gap-3">
             {jurisdictionLabel && (
               <div
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold cursor-help"
                 style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.75)' }}
-                title={districtLabel ? `Federal District: ${districtLabel}` : undefined}
+                title={`Location context: used to show the nearest CBP port of entry, immigration court, and ICE ERO field office relevant to this determination.${districtLabel ? `\nFederal District: ${districtLabel}` : ''}`}
               >
                 <MapPin size={11} aria-hidden="true" style={{ color: '#86efac' }} />
                 {jurisdictionLabel}
@@ -228,6 +247,14 @@ export default function VerifyPage({
             style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', color: '#fde68a' }}>
             <AlertTriangle size={13} className="flex-shrink-0" style={{ color: '#fbbf24' }} />
             Completing this determination on {activeGeo.tribalName ? `${activeGeo.tribalName} trust land` : 'tribal trust land'} — tribal enrollment may affect jurisdictional considerations.
+          </div>
+        )}
+
+        {geoError && !activeGeo && (
+          <div className="max-w-5xl mx-auto mt-2 px-3 py-2 rounded-xl text-xs font-semibold flex items-start gap-2"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.55)' }}>
+            <MapPin size={13} className="flex-shrink-0 mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }} />
+            <span>{geoErrorBanner(geoError)}</span>
           </div>
         )}
       </header>

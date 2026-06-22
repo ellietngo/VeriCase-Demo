@@ -147,15 +147,32 @@ export async function fetchGeoData(lat: number, lon: number): Promise<GeoData> {
   }
 }
 
+export type GeoError =
+  | { kind: 'unsupported' }
+  | { kind: 'denied' }
+  | { kind: 'unavailable' }
+  | { kind: 'timeout' }
+  | { kind: 'unknown'; message: string }
+
+export function classifyGeoError(err: GeolocationPositionError | Error): GeoError {
+  if ('code' in err) {
+    if (err.code === 1) return { kind: 'denied' }
+    if (err.code === 2) return { kind: 'unavailable' }
+    if (err.code === 3) return { kind: 'timeout' }
+  }
+  return { kind: 'unknown', message: err.message }
+}
+
 export function getLocation(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error('Geolocation not supported'))
+      reject(Object.assign(new Error('Geolocation not supported'), { kind: 'unsupported' }))
       return
     }
     navigator.geolocation.getCurrentPosition(resolve, reject, {
-      timeout: 8000,
+      timeout: 10_000,
       maximumAge: 60_000,
+      enableHighAccuracy: false,
     })
   })
 }

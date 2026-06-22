@@ -6,7 +6,7 @@ import TermsPage from './pages/TermsPage'
 import PrivacyPage from './pages/PrivacyPage'
 import SourcesPage from './pages/SourcesPage'
 import { type OutcomeNode, type Step, IMMIGRATION_ENGINE_START_NODE } from './engine/engine'
-import { type GeoData, fetchGeoData, getLocation } from './geo'
+import { type GeoData, fetchGeoData, getLocation, classifyGeoError, type GeoError } from './geo'
 
 export type Page = 'landing' | 'verify' | 'result' | 'terms' | 'privacy' | 'sources'
 export type ResultState = { outcome: OutcomeNode; nodeId: string; history: Step[] }
@@ -40,6 +40,7 @@ export default function App() {
   })
   const [result, setResult] = useState<ResultState | null>(null)
   const [geo, setGeo] = useState<GeoData | null>(null)
+  const [geoError, setGeoError] = useState<GeoError | null>(null)
   const [verifyStart, setVerifyStart] = useState<string | undefined>(undefined)
   const [verifyOrigin, setVerifyOrigin] = useState<'landing' | 'result' | undefined>(undefined)
 
@@ -77,18 +78,22 @@ export default function App() {
 
   const goToVerify = useCallback(async () => {
     setVerifyStart(undefined)
+    setGeoError(null)
     setPage('verify')
     try {
       const pos = await getLocation()
       const data = await fetchGeoData(pos.coords.latitude, pos.coords.longitude)
       setGeo(data)
-    } catch {
+    } catch (err) {
       setGeo(null)
+      if (err instanceof GeolocationPositionError || err instanceof Error) {
+        setGeoError(classifyGeoError(err as GeolocationPositionError))
+      }
     }
   }, [])
 
   const goToLanding = useCallback(() => {
-    setPage('landing'); setGeo(null); setVerifyStart(undefined); setVerifyOrigin(undefined)
+    setPage('landing'); setGeo(null); setGeoError(null); setVerifyStart(undefined); setVerifyOrigin(undefined)
   }, [])
   const goToResult = useCallback((r: ResultState) => { setResult(r); setPage('result') }, [])
   const goToNewCase = useCallback(() => { setResult(null); setVerifyStart(undefined); setVerifyOrigin(undefined); setPage('verify') }, [])
@@ -110,6 +115,7 @@ export default function App() {
         onResult={goToResult}
         onBack={verifyStart ? (verifyOrigin === 'result' ? backToResult : goToLanding) : goToLanding}
         geo={geo}
+        geoError={geoError}
         startNodeId={verifyStart}
         backLabel={verifyStart && verifyOrigin === 'result' ? 'Back to result' : 'Back to home'}
       />

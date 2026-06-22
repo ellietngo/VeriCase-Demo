@@ -15,10 +15,14 @@ export default function PrivacyPage({ onBack }: { onBack: () => void }) {
             <ArrowLeft size={15} aria-hidden="true" />
             Back
           </button>
-          <div className="flex items-center gap-2 ml-2">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 ml-2 hover:opacity-75 transition-opacity focus:outline-none focus:ring-2 focus:ring-green-700/20 rounded-lg px-1 py-0.5"
+            aria-label="Go to home"
+          >
             <TorchLogo size={17} className="text-[#065f46]" />
             <span className="font-bold text-sm" style={{ color: '#065f46' }}>VeriCase</span>
-          </div>
+          </button>
         </div>
       </header>
 

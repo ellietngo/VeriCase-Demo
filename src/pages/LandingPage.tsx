@@ -306,8 +306,9 @@ export default function LandingPage({ onStart, onCheckStatus }: { onStart: () =>
             </h1>
 
             <p className="text-sm md:text-base text-white/80 max-w-xs lg:max-w-sm leading-relaxed mb-10">
-              A guided, one-question-at-a-time engine across 14,280 legal pathways —
-              every determination cites controlling statute or case law.
+              Built for CBP officers, case reviewers, and authorized agency personnel
+              to determine the citizenship status of the person in front of them —
+              guided through 14,280 legal pathways, every step citing controlling statute or case law.
             </p>
 
             <button

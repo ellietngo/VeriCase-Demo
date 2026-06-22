@@ -46,12 +46,14 @@ function GeoCard({
   name,
   detail,
   accentColor,
+  updatedSince,
 }: {
   icon: React.ReactNode
   label: string
   name: string
   detail: string
   accentColor: string
+  updatedSince?: string
 }) {
   return (
     <div
@@ -68,6 +70,9 @@ function GeoCard({
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40 mb-0.5">{label}</p>
         <p className="text-sm font-semibold text-white leading-snug">{name}</p>
         <p className="text-xs text-white/50 mt-0.5">{detail}</p>
+        {updatedSince && (
+          <p className="text-[10px] text-white/30 mt-1.5">Up to date since {updatedSince}</p>
+        )}
       </div>
     </div>
   )
@@ -374,13 +379,17 @@ export default function ResultPage({
         style={{ background: 'rgba(0,25,15,0.45)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={onHome}
+            className="flex items-center gap-2 rounded-xl hover:bg-white/10 px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label="Go to home"
+          >
             <TorchLogo size={22} className="text-white" />
-            <div>
-              <span className="font-bold tracking-tight">VeriCase</span>
+            <div className="text-left">
+              <div className="font-bold tracking-tight text-sm">VeriCase</div>
               <p className="text-[9px] uppercase tracking-[0.25em] text-white/40 mt-0.5">by MetaPhase</p>
             </div>
-          </div>
+          </button>
           <div className="flex items-center gap-3">
             <div
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
@@ -741,6 +750,7 @@ export default function ResultPage({
                     name={`${activeGeo.cbpPort.name}${activeGeo.cbpPort.portCode ? ` (Port ${activeGeo.cbpPort.portCode})` : ''}`}
                     detail={`${activeGeo.cbpPort.distanceMiles} mi ${activeGeo.cbpPort.cardinal}`}
                     accentColor="#86efac"
+                    updatedSince="Jan 2025"
                   />
                 )}
 
@@ -752,6 +762,7 @@ export default function ResultPage({
                     name={activeGeo.immigrationCourt.name}
                     detail={`${activeGeo.immigrationCourt.distanceMiles} mi ${activeGeo.immigrationCourt.cardinal}`}
                     accentColor="#fca5a5"
+                    updatedSince="Mar 2025"
                   />
                 )}
 
@@ -762,6 +773,7 @@ export default function ResultPage({
                     name={activeGeo.iceEro.name}
                     detail={`${activeGeo.iceEro.distanceMiles} mi ${activeGeo.iceEro.cardinal}`}
                     accentColor="#fcd34d"
+                    updatedSince="Mar 2025"
                   />
                 )}
 

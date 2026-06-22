@@ -667,7 +667,7 @@
     },
     "GO_NAT": {
       "kind": "question",
-      "prompt": "The person did not acquire citizenship at birth. Begin the naturalization test. Is the person a Lawful Permanent Resident (green card holder)?",
+      "prompt": "Is the person a Lawful Permanent Resident (green card holder)?",
       "explanation": "Bridge node: all 'no acquisition at birth' paths converge here to test naturalization.",
       "citation": "8 U.S.C. § 1429; 8 C.F.R. § 316.2",
       "answer_type": "boolean",
